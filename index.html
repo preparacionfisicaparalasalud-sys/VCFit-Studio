@@ -906,10 +906,12 @@
     </div>
   </div>
   <div class="content">
-    <div class="tabs">
+    <div class="tabs" style="overflow-x:auto;flex-wrap:nowrap">
       <button class="tab active" onclick="switchTab('tab-anamnesis','detail')">Anamnesis</button>
       <button class="tab" onclick="switchTab('tab-metrics','detail')">Métricas</button>
       <button class="tab" onclick="switchTab('tab-assign','detail')">Rutina</button>
+      <button class="tab" onclick="switchTab('tab-nutrition','detail')">Nutrición</button>
+      <button class="tab" onclick="switchTab('tab-trainer-notes','detail')">Notas</button>
       <button class="tab" onclick="switchTab('tab-progress','detail')">Progreso</button>
     </div>
 
@@ -923,11 +925,11 @@
       </div>
     </div>
 
-
     <!-- TAB METRICS (trainer) -->
     <div id="tab-metrics" class="tab-content" style="display:none">
       <div id="trainer-metrics-view"></div>
     </div>
+
     <!-- TAB ASSIGN WORKOUT -->
     <div id="tab-assign" class="tab-content" style="display:none">
       <div class="card-title">Rutina asignada</div>
@@ -942,6 +944,54 @@
       <div class="flex gap-1">
         <button class="btn btn-primary btn-sm" onclick="assignWorkout()">Asignar</button>
         <button class="btn btn-whatsapp btn-sm" onclick="sendRoutineWhatsApp()">💬 Enviar por WhatsApp</button>
+      </div>
+    </div>
+
+    <!-- TAB NUTRICIÓN -->
+    <div id="tab-nutrition" class="tab-content" style="display:none">
+      <div class="card">
+        <div class="card-title">🥗 Plan de alimentación</div>
+        <div class="text-small text-gray mb-1" style="margin-bottom:0.8rem">
+          Escribí el plan en texto libre. El alumno lo puede ver en su perfil.
+        </div>
+        <textarea class="input-field" id="nutrition-plan-input" style="min-height:300px;font-family:monospace;font-size:0.88rem;line-height:1.7"
+          placeholder="PLAN DE ALIMENTACIÓN
+━━━━━━━━━━━━━━━━━━
+Calorías objetivo: 2200 kcal
+Proteína: 160g | Carbs: 220g | Grasas: 70g
+
+DESAYUNO
+- Avena 80g con leche descremada
+- 3 claras + 1 huevo entero
+- Fruta de estación
+
+ALMUERZO
+- Arroz integral 100g (en seco)
+- Pechuga de pollo 200g
+- Ensalada libre
+
+..."></textarea>
+        <div style="display:flex;gap:0.8rem;margin-top:1rem">
+          <button class="btn btn-primary btn-sm" style="flex:1" onclick="saveNutritionPlan()">💾 Guardar plan</button>
+          <button class="btn btn-whatsapp btn-sm" onclick="sendNutritionWhatsApp()">💬 WhatsApp</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB NOTAS DEL ENTRENADOR -->
+    <div id="tab-trainer-notes" class="tab-content" style="display:none">
+      <div class="card">
+        <div class="card-title">📝 Notas privadas del entrenador</div>
+        <div class="text-small text-gray mb-1" style="margin-bottom:0.8rem">
+          Solo vos las ves. El alumno no tiene acceso a estas notas.
+        </div>
+        <textarea class="input-field" id="trainer-notes-input" style="min-height:300px;font-size:0.9rem;line-height:1.7"
+          placeholder="Observaciones de clase, correcciones técnicas, actitud, adherencia, cosas a trabajar..."></textarea>
+        <button class="btn btn-primary btn-sm btn-full mt-2" onclick="saveTrainerNotes()">💾 Guardar notas</button>
+      </div>
+      <div class="card mt-2" id="trainer-notes-history" style="display:none">
+        <div class="card-title">📋 Historial de notas</div>
+        <div id="trainer-notes-history-list"></div>
       </div>
     </div>
 
@@ -983,8 +1033,9 @@
     <button class="btn-logout" onclick="logoutStudent()">Salir</button>
   </div>
   <div class="content" style="padding-bottom: 0;">
-    <div class="tabs">
+    <div class="tabs" style="overflow-x:auto;flex-wrap:nowrap">
       <button class="tab active" onclick="switchTab('tab-today','student')">Hoy</button>
+      <button class="tab" onclick="switchTab('tab-my-nutrition','student')">Alimentación</button>
       <button class="tab" onclick="switchTab('tab-my-profile','student')">Mi perfil</button>
       <button class="tab" onclick="switchTab('tab-my-metrics','student')">Métricas</button>
       <button class="tab" onclick="switchTab('tab-my-progress','student')">Progreso</button>
@@ -993,6 +1044,11 @@
     <!-- TAB TODAY -->
     <div id="tab-today" class="tab-content">
       <div id="today-workout-content"></div>
+    </div>
+
+    <!-- TAB MI ALIMENTACIÓN -->
+    <div id="tab-my-nutrition" class="tab-content" style="display:none">
+      <div id="student-nutrition-view"></div>
     </div>
 
     <!-- TAB MY PROFILE -->
@@ -2072,10 +2128,22 @@ function renderStudentsList() {
       <div class="student-info">
         <div class="student-name">${s.name}</div>
         <div class="student-meta">${s.anamnesis.age ? s.anamnesis.age + ' años' : ''}${s.anamnesis.weight ? ' · ' + s.anamnesis.weight + ' kg' : ''}${s.anamnesis.goal ? ' · ' + s.anamnesis.goal : ''}</div>
+        ${s.lastCompleted ? `<div class="student-meta" style="color:var(--success)">✅ Completó: ${s.lastCompleted.workoutName} · ${s.lastCompleted.date}</div>` : '<div class="student-meta" style="color:var(--gray)">⏳ Sin completar aún</div>'}
       </div>
       ${s.assignedWorkoutId ? '<span class="student-badge">Rutina asignada</span>' : ''}
+      <button class="btn btn-danger btn-sm" style="flex-shrink:0;margin-left:0.5rem" onclick="event.stopPropagation(); deleteStudent('${s.id}')">✕</button>
     </div>
   `).join('');
+}
+
+function deleteStudent(id) {
+  const s = state.students.find(x => x.id === id);
+  if (!s) return;
+  if (!confirm(`¿Eliminar a ${s.name}? Esta acción no se puede deshacer.`)) return;
+  state.students = state.students.filter(x => x.id !== id);
+  saveState();
+  renderStudentsList();
+  refreshTrainerDashboard();
 }
 
 function renderStudentSelectList() {
@@ -2100,6 +2168,8 @@ function openStudentDetail(id) {
   renderAssignTab(s);
   renderProgressTab(s);
   renderMetricsView(s, 'trainer');
+  renderNutritionTab(s);
+  renderTrainerNotesTab(s);
   switchTab('tab-anamnesis', 'detail');
   showScreen('screen-student-detail');
 }
@@ -2215,6 +2285,85 @@ function sendAnamnesisWhatsApp() {
   if (!s) return;
   const text = encodeURIComponent(buildAnamnesisText(s));
   window.open(`https://wa.me/?text=${text}`, '_blank');
+}
+
+function renderStudentNutritionView(s) {
+  const el = document.getElementById('student-nutrition-view');
+  if (!el) return;
+  if (!s.nutritionPlan) {
+    el.innerHTML = `<div class="empty-state">
+      <div class="empty-state-icon">🥗</div>
+      <div class="empty-state-text">Tu entrenador todavía no cargó tu plan de alimentación.</div>
+    </div>`;
+    return;
+  }
+  el.innerHTML = `<div class="card">
+    <div class="card-title">🥗 Mi plan de alimentación</div>
+    <pre style="white-space:pre-wrap;font-size:0.88rem;line-height:1.8;color:var(--white-dim);font-family:'Exo 2',sans-serif">${s.nutritionPlan}</pre>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════
+//  NUTRICIÓN
+// ═══════════════════════════════════════════
+function renderNutritionTab(s) {
+  const input = document.getElementById('nutrition-plan-input');
+  if (input) input.value = s.nutritionPlan || '';
+}
+
+function saveNutritionPlan() {
+  const s = state.students.find(x => x.id === state.currentStudentId);
+  if (!s) return;
+  s.nutritionPlan = document.getElementById('nutrition-plan-input').value.trim();
+  saveState();
+  alert('Plan de alimentación guardado ✅');
+}
+
+function sendNutritionWhatsApp() {
+  const s = state.students.find(x => x.id === state.currentStudentId);
+  if (!s || !s.nutritionPlan) { alert('Primero guardá el plan de alimentación.'); return; }
+  const text = encodeURIComponent(`*VC FIT STUDIO*\n*Plan de alimentación para ${s.name}*\n\n${s.nutritionPlan}`);
+  const phone = s.anamnesis.phone ? s.anamnesis.phone.replace(/\D/g,'') : '';
+  window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
+}
+
+// ═══════════════════════════════════════════
+//  NOTAS DEL ENTRENADOR
+// ═══════════════════════════════════════════
+function renderTrainerNotesTab(s) {
+  const input = document.getElementById('trainer-notes-input');
+  if (input) input.value = '';
+
+  const historyCard = document.getElementById('trainer-notes-history');
+  const historyList = document.getElementById('trainer-notes-history-list');
+  if (!s.trainerNotes || !s.trainerNotes.length) {
+    if (historyCard) historyCard.style.display = 'none';
+    return;
+  }
+  if (historyCard) historyCard.style.display = 'block';
+  if (historyList) {
+    historyList.innerHTML = s.trainerNotes.slice().reverse().map(n => `
+      <div class="progress-row" style="flex-direction:column;align-items:flex-start;gap:0.3rem;padding:0.8rem 0">
+        <div class="text-small text-orange">${n.date}</div>
+        <div style="font-size:0.88rem;line-height:1.6;white-space:pre-wrap;color:var(--white-dim)">${n.text}</div>
+      </div>`).join('');
+  }
+}
+
+function saveTrainerNotes() {
+  const s = state.students.find(x => x.id === state.currentStudentId);
+  if (!s) return;
+  const text = document.getElementById('trainer-notes-input').value.trim();
+  if (!text) { alert('Escribí algo antes de guardar.'); return; }
+  if (!s.trainerNotes) s.trainerNotes = [];
+  s.trainerNotes.push({
+    date: new Date().toLocaleDateString('es-AR'),
+    text
+  });
+  saveState();
+  renderTrainerNotesTab(s);
+  document.getElementById('trainer-notes-input').value = '';
+  alert('Nota guardada ✅');
 }
 
 // ═══════════════════════════════════════════
@@ -2401,6 +2550,7 @@ function refreshTrainerDashboard() {
       <div class="student-info">
         <div class="student-name">${s.name}</div>
         <div class="student-meta">${s.anamnesis.goal || '—'}</div>
+        ${s.lastCompleted ? `<div class="student-meta" style="color:var(--success)">✅ ${s.lastCompleted.date}</div>` : '<div class="student-meta" style="color:var(--gray)">⏳ Sin completar</div>'}
       </div>
     </div>
   `).join('');
@@ -2423,6 +2573,7 @@ function enterAsStudent(studentId) {
   renderStudentProfile(s);
   renderStudentProgress(s);
   renderMetricsView(s, 'student');
+  renderStudentNutritionView(s);
   switchTab('tab-today', 'student');
   showScreen('screen-student-view');
 }
@@ -2591,6 +2742,12 @@ function completeWorkout() {
 
   if (!s.progressLog) s.progressLog = [];
   s.progressLog.push(entry);
+
+  // Marcar última vez completada (visible para el entrenador)
+  s.lastCompleted = {
+    date: entry.date,
+    workoutName: entry.workoutName
+  };
 
   // Reset checks
   if (checksKey) state.exerciseChecks[checksKey] = {};
