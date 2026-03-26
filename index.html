@@ -1411,16 +1411,34 @@ ALMUERZO
     <div class="modal-title">Cargar Métricas</div>
     <div class="text-small text-gray mb-1" style="margin-bottom:1rem">Fecha: <span id="metrics-date-label"></span></div>
 
+    <!-- PEGAR DESDE TEXTO -->
+    <div class="card" style="margin-bottom:1.2rem;background:var(--dark3)">
+      <div class="card-title">📋 Pegar desde texto</div>
+      <div class="text-small text-gray" style="margin-bottom:0.8rem;line-height:1.6">
+        Pegá los datos en cualquier formato y la app los lee sola. Ejemplo:<br>
+        <span style="color:var(--orange);font-family:monospace;font-size:0.82rem">Peso: 84kg · Cintura: 92cm · Grasa: 23% · Músculo: 38%</span>
+      </div>
+      <textarea class="input-field" id="m-paste-text" rows="3"
+        placeholder="Pegá aquí el texto con los datos..."></textarea>
+      <button class="btn btn-secondary btn-sm btn-full mt-2" onclick="parseMetricsFromText()" style="margin-top:0.6rem">
+        🔍 Leer datos del texto
+      </button>
+    </div>
+
     <div class="anamnesis-block">
       <div class="anamnesis-block-title">Medidas corporales</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem">
         <div class="input-group">
-          <label class="input-label">Peso (kg)</label>
+          <label class="input-label">Peso (kg) *</label>
           <input type="number" class="input-field" id="m-weight" placeholder="70.5" step="0.1">
         </div>
         <div class="input-group">
-          <label class="input-label">% Grasa (si tenés)</label>
+          <label class="input-label">% Grasa medido</label>
           <input type="number" class="input-field" id="m-fat-manual" placeholder="18.5" step="0.1">
+        </div>
+        <div class="input-group">
+          <label class="input-label">% Músculo medido</label>
+          <input type="number" class="input-field" id="m-muscle-manual" placeholder="38.0" step="0.1">
         </div>
         <div class="input-group">
           <label class="input-label">Cintura (cm)</label>
@@ -1437,6 +1455,10 @@ ALMUERZO
         <div class="input-group">
           <label class="input-label">Muslo (cm)</label>
           <input type="number" class="input-field" id="m-thigh" placeholder="56" step="0.5">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Masa ósea (kg)</label>
+          <input type="number" class="input-field" id="m-bone" placeholder="3.2" step="0.1">
         </div>
       </div>
     </div>
@@ -3259,7 +3281,55 @@ function openMetricsModal(studentId) {
   openModal('modal-metrics');
 }
 
-function calcMetrics(weight, height, age, sex, fatManual, waist, activity) {
+function parseMetricsFromText() {
+  const text = document.getElementById('m-paste-text').value;
+  if (!text.trim()) { alert('Pegá algún texto primero.'); return; }
+
+  // Función helper: busca un número después de una palabra clave
+  const extract = (keys, unit) => {
+    for (const key of keys) {
+      // Busca "clave: 84.5 kg" o "clave 84.5" o "84.5kg" cerca de la clave
+      const re = new RegExp(key + '[:\\s]+([\\d.,]+)\\s*' + (unit || ''), 'i');
+      const m = text.match(re);
+      if (m) return m[1].replace(',', '.');
+    }
+    return null;
+  };
+
+  let found = 0;
+
+  const peso = extract(['peso','weight','p'], 'k?g?');
+  if (peso) { document.getElementById('m-weight').value = peso; found++; }
+
+  const grasa = extract(['grasa','fat','% grasa','%grasa','gr'], '%?');
+  if (grasa) { document.getElementById('m-fat-manual').value = grasa; found++; }
+
+  const musculo = extract(['musculo','músculo','muscle','masa muscular','% musculo','%musculo','mm'], '%?');
+  if (musculo) { document.getElementById('m-muscle-manual').value = musculo; found++; }
+
+  const cintura = extract(['cintura','waist'], 'c?m?');
+  if (cintura) { document.getElementById('m-waist').value = cintura; found++; }
+
+  const cadera = extract(['cadera','hip'], 'c?m?');
+  if (cadera) { document.getElementById('m-hip').value = cadera; found++; }
+
+  const pecho = extract(['pecho','chest','torax','tórax'], 'c?m?');
+  if (pecho) { document.getElementById('m-chest').value = pecho; found++; }
+
+  const muslo = extract(['muslo','thigh'], 'c?m?');
+  if (muslo) { document.getElementById('m-thigh').value = muslo; found++; }
+
+  const hueso = extract(['osea','ósea','hueso','bone','masa osea'], 'k?g?');
+  if (hueso) { document.getElementById('m-bone').value = hueso; found++; }
+
+  if (found === 0) {
+    alert('No encontré ningún dato reconocible. Revisá el formato del texto.');
+  } else {
+    alert(`✅ Se encontraron ${found} dato${found > 1 ? 's' : ''}. Revisá los campos y guardá.`);
+  }
+}
+
+function calcMetrics(weight, height, age, sex, fatManual, muscleManual, waist, activity) {
   const h = parseFloat(height);
   const w = parseFloat(weight);
   const a = parseFloat(age);
@@ -3281,8 +3351,9 @@ function calcMetrics(weight, height, age, sex, fatManual, waist, activity) {
   // Masa grasa y muscular
   const fatMass = fatPct ? (w * fatPct / 100) : null;
   const leanMass = fatMass ? (w - fatMass) : null;
-  // Músculo estimado ~75-80% de masa magra
-  const musclePct = leanMass ? ((leanMass * 0.78) / w * 100) : null;
+  // Músculo: usar medido si está disponible, sino estimar
+  const musclePct = muscleManual ? parseFloat(muscleManual) : (leanMass ? ((leanMass * 0.78) / w * 100) : null);
+  const muscleManualUsed = !!muscleManual;
 
   // Grasa visceral estimada (índice cintura/altura)
   let visceralEst = null;
@@ -3311,7 +3382,7 @@ function calcMetrics(weight, height, age, sex, fatManual, waist, activity) {
   else if (bmi < 30) { bmiStatus = 'Sobrepeso'; bmiClass = 'status-warn'; }
   else { bmiStatus = 'Obesidad'; bmiClass = 'status-alert'; }
 
-  return { bmi, fatPct, fatMass, leanMass, musclePct, visceralEst, tdee, bmr, bmiStatus, bmiClass };
+  return { bmi, fatPct, fatMass, leanMass, musclePct, muscleManualUsed, visceralEst, tdee, bmr, bmiStatus, bmiClass };
 }
 
 function calcProjection(currentWeight, goalWeight, tdee, goal) {
@@ -3338,6 +3409,8 @@ function saveMetrics() {
 
   const weight = document.getElementById('m-weight').value;
   const fatManual = document.getElementById('m-fat-manual').value;
+  const muscleManual = document.getElementById('m-muscle-manual').value;
+  const bone = document.getElementById('m-bone').value;
   const waist = document.getElementById('m-waist').value;
   const hip = document.getElementById('m-hip').value;
   const chest = document.getElementById('m-chest').value;
@@ -3348,7 +3421,7 @@ function saveMetrics() {
 
   const calc = calcMetrics(
     weight, s.anamnesis.height, s.anamnesis.age,
-    s.anamnesis.sex, fatManual, waist, activity
+    s.anamnesis.sex, fatManual, muscleManual, waist, activity
   );
 
   const entry = {
@@ -3356,6 +3429,8 @@ function saveMetrics() {
     dateISO: new Date().toISOString(),
     weight: parseFloat(weight),
     fatManual: fatManual ? parseFloat(fatManual) : null,
+    muscleManual: muscleManual ? parseFloat(muscleManual) : null,
+    bone: bone ? parseFloat(bone) : null,
     waist: waist ? parseFloat(waist) : null,
     hip: hip ? parseFloat(hip) : null,
     chest: chest ? parseFloat(chest) : null,
@@ -3430,7 +3505,7 @@ function renderMetricsView(s, role) {
       <div class="metric-card">
         <div class="metric-label">% Músculo</div>
         <div class="metric-value">${fmt(c.musclePct)}</div>
-        <div class="metric-unit">% (estimado)</div>
+        <div class="metric-unit">%${latest.muscleManual ? ' (medido)' : ' (estimado)'}</div>
       </div>
       <div class="metric-card">
         <div class="metric-label">Grasa visceral</div>
@@ -3449,7 +3524,8 @@ function renderMetricsView(s, role) {
     ['Cintura', latest.waist, 'cm'],
     ['Cadera', latest.hip, 'cm'],
     ['Pecho', latest.chest, 'cm'],
-    ['Muslo', latest.thigh, 'cm']
+    ['Muslo', latest.thigh, 'cm'],
+    ['Masa ósea', latest.bone, 'kg']
   ].filter(([,v]) => v);
 
   if (medidas.length) {
