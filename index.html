@@ -913,10 +913,10 @@
         <div class="nav-card-label">Progreso</div>
         <div class="nav-card-count">→</div>
       </div>
-      <div class="nav-card" onclick="showScreen('screen-workouts')">
-        <div class="nav-card-icon">✏️</div>
-        <div class="nav-card-label">Nueva rutina</div>
-        <div class="nav-card-count">+</div>
+      <div class="nav-card" onclick="openTrainerProfile()">
+        <div class="nav-card-icon">⚙️</div>
+        <div class="nav-card-label">Mi perfil</div>
+        <div class="nav-card-count">→</div>
       </div>
     </div>
 
@@ -924,9 +924,87 @@
       <div class="card-title">👥 Alumnos recientes</div>
       <div id="trainer-recent-students"></div>
     </div>
+  </div>
+</div>
 
+<!-- ═══════════════════════════════════════════
+     SCREEN: TRAINER PROFILE
+═══════════════════════════════════════════ -->
+<div id="screen-trainer-profile" class="screen">
+  <div class="topbar" style="background:linear-gradient(135deg,#1a1a1a,#222)">
+    <button class="btn-back" onclick="showScreen('screen-trainer')">←</button>
+    <div style="flex:1">
+      <div class="topbar-title">Mi Perfil</div>
+      <div class="topbar-sub">Configuración del entrenador</div>
+    </div>
+  </div>
+  <div class="content">
+
+    <!-- Logo -->
     <div class="card">
-      <div class="card-title">🔐 Cambiar contraseña de entrenador</div>
+      <div class="card-title">🖼️ Logo de la app</div>
+      <div class="photo-upload-area" id="logo-upload-area" onclick="document.getElementById('logo-file-input').click()" style="width:120px;height:120px;margin:0 auto 1rem">
+        <img id="logo-preview-profile" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:50%">
+        <span id="logo-icon-profile" class="photo-upload-icon">🏋️</span>
+        <input type="file" id="logo-file-input" accept="image/jpeg,image/png,image/webp" onchange="handleLogoUpload(event)" style="display:none">
+      </div>
+      <div class="text-center text-small text-gray">Tocá para cambiar el logo</div>
+    </div>
+
+    <!-- Datos del entrenador -->
+    <div class="card">
+      <div class="card-title">👤 Datos del entrenador</div>
+      <div class="input-group">
+        <label class="input-label">Nombre completo</label>
+        <input type="text" class="input-field" id="tp-name" placeholder="ej: Víctor A. Corrales">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Especialidad</label>
+        <input type="text" class="input-field" id="tp-specialty" placeholder="ej: Entrenador Personal Funcional">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Certificaciones</label>
+        <input type="text" class="input-field" id="tp-certs" placeholder="ej: ICET A-1062 · Funcional · Fuerza">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Ciudad</label>
+        <input type="text" class="input-field" id="tp-city" placeholder="ej: Ciudad Autónoma de Buenos Aires">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Teléfono / WhatsApp</label>
+        <input type="tel" class="input-field" id="tp-phone" placeholder="ej: +5491112345678">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Instagram</label>
+        <input type="text" class="input-field" id="tp-instagram" placeholder="ej: @vcfit.entrenamiento">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Sitio web (opcional)</label>
+        <input type="text" class="input-field" id="tp-web" placeholder="ej: www.vcfit.com.ar">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Bio corta (visible para alumnos)</label>
+        <textarea class="input-field" id="tp-bio" rows="3" placeholder="ej: +20 años de experiencia en fuerza funcional para adultos +40. Método basado en evidencia, sin máquinas."></textarea>
+      </div>
+      <button class="btn btn-primary btn-sm btn-full" onclick="saveTrainerProfile()">💾 Guardar datos</button>
+      <div id="tp-save-msg" style="font-size:0.8rem;min-height:1.2rem;margin-top:0.8rem;text-align:center"></div>
+    </div>
+
+    <!-- Mensaje de bienvenida -->
+    <div class="card">
+      <div class="card-title">💬 Mensaje de bienvenida para alumnos</div>
+      <div class="text-small text-gray" style="margin-bottom:0.8rem;line-height:1.6">
+        Este mensaje aparece en el panel del alumno cada vez que entra.
+      </div>
+      <textarea class="input-field" id="tp-welcome" rows="3"
+        placeholder="ej: ¡Bienvenido! Recordá hidratarte bien antes de entrenar. Cualquier consulta escribime por WhatsApp. 💪"></textarea>
+      <button class="btn btn-primary btn-sm btn-full mt-2" onclick="saveWelcomeMessage()" style="margin-top:0.8rem">💾 Guardar mensaje</button>
+      <div id="tp-welcome-msg" style="font-size:0.8rem;min-height:1.2rem;margin-top:0.8rem;text-align:center"></div>
+    </div>
+
+    <!-- Cambiar contraseña -->
+    <div class="card">
+      <div class="card-title">🔐 Cambiar contraseña de acceso</div>
       <div class="input-group">
         <label class="input-label">Contraseña actual</label>
         <input type="password" class="input-field" id="pwd-current" placeholder="••••••••">
@@ -942,6 +1020,7 @@
       <div id="pwd-change-msg" style="font-size:0.8rem;min-height:1.2rem;margin-bottom:0.8rem"></div>
       <button class="btn btn-primary btn-sm btn-full" onclick="saveTrainerPassword()">Cambiar contraseña</button>
     </div>
+
   </div>
 </div>
 
@@ -1170,6 +1249,7 @@ ALMUERZO
 
     <!-- TAB TODAY -->
     <div id="tab-today" class="tab-content">
+      <div id="student-welcome-banner"></div>
       <div id="today-workout-content"></div>
     </div>
 
@@ -2122,7 +2202,7 @@ applyLogo();
 // ═══════════════════════════════════════════
 // Pantallas exclusivas del entrenador
 const TRAINER_SCREENS = [
-  'screen-trainer','screen-students','screen-student-detail',
+  'screen-trainer','screen-trainer-profile','screen-students','screen-student-detail',
   'screen-workouts'
 ];
 
@@ -2138,6 +2218,86 @@ function showScreen(id) {
     el.classList.add('active');
     window.scrollTo(0, 0);
   }
+}
+
+// ═══════════════════════════════════════════
+//  PERFIL DEL ENTRENADOR
+// ═══════════════════════════════════════════
+function openTrainerProfile() {
+  const p = state.trainerProfile || {};
+  const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+  setVal('tp-name', p.name);
+  setVal('tp-specialty', p.specialty);
+  setVal('tp-certs', p.certs);
+  setVal('tp-city', p.city);
+  setVal('tp-phone', p.phone);
+  setVal('tp-instagram', p.instagram);
+  setVal('tp-web', p.web);
+  setVal('tp-bio', p.bio);
+  setVal('tp-welcome', p.welcomeMessage);
+  if (state.logoDataUrl) {
+    const prev = document.getElementById('logo-preview-profile');
+    const icon = document.getElementById('logo-icon-profile');
+    if (prev) { prev.src = state.logoDataUrl; prev.style.display = 'block'; }
+    if (icon) icon.style.display = 'none';
+  }
+  document.getElementById('tp-save-msg').textContent = '';
+  document.getElementById('tp-welcome-msg').textContent = '';
+  document.getElementById('pwd-change-msg').textContent = '';
+  showScreen('screen-trainer-profile');
+}
+
+function saveTrainerProfile() {
+  if (!state.trainerProfile) state.trainerProfile = {};
+  const getVal = id => document.getElementById(id)?.value.trim() || '';
+  state.trainerProfile.name      = getVal('tp-name');
+  state.trainerProfile.specialty = getVal('tp-specialty');
+  state.trainerProfile.certs     = getVal('tp-certs');
+  state.trainerProfile.city      = getVal('tp-city');
+  state.trainerProfile.phone     = getVal('tp-phone');
+  state.trainerProfile.instagram = getVal('tp-instagram');
+  state.trainerProfile.web       = getVal('tp-web');
+  state.trainerProfile.bio       = getVal('tp-bio');
+  saveState();
+  updateTrainerTopbar();
+  const msg = document.getElementById('tp-save-msg');
+  msg.style.color = 'var(--success)';
+  msg.textContent = '✅ Datos guardados';
+  setTimeout(() => { msg.textContent = ''; }, 3000);
+}
+
+function saveWelcomeMessage() {
+  if (!state.trainerProfile) state.trainerProfile = {};
+  state.trainerProfile.welcomeMessage = document.getElementById('tp-welcome')?.value.trim() || '';
+  saveState();
+  const msg = document.getElementById('tp-welcome-msg');
+  msg.style.color = 'var(--success)';
+  msg.textContent = '✅ Mensaje guardado';
+  setTimeout(() => { msg.textContent = ''; }, 3000);
+}
+
+function handleLogoUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    state.logoDataUrl = e.target.result;
+    savePhotosLocal();
+    applyLogo();
+    const prev = document.getElementById('logo-preview-profile');
+    const icon = document.getElementById('logo-icon-profile');
+    if (prev) { prev.src = e.target.result; prev.style.display = 'block'; }
+    if (icon) icon.style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function updateTrainerTopbar() {
+  const p = state.trainerProfile || {};
+  const nameEl = document.querySelector('#screen-trainer .topbar-title');
+  const subEl  = document.querySelector('#screen-trainer .topbar-sub');
+  if (nameEl) nameEl.textContent = p.name ? `VC FIT · ${p.name}` : 'VC FIT';
+  if (subEl)  subEl.textContent  = [p.specialty, p.city].filter(Boolean).join(' · ') || 'Entrenador Personal Funcional';
 }
 
 // ── CONTRASEÑA ENTRENADOR ──
@@ -2992,6 +3152,7 @@ function renderProgressTab(s) {
 function refreshTrainerDashboard() {
   document.getElementById('count-students').textContent = state.students.length;
   document.getElementById('count-workouts').textContent = state.workouts.length;
+  updateTrainerTopbar();
 
   const recent = document.getElementById('trainer-recent-students');
   if (!state.students.length) {
@@ -3028,8 +3189,38 @@ function enterAsStudent(studentId) {
   renderStudentProgress(s);
   renderMetricsView(s, 'student');
   renderStudentNutritionView(s);
+  renderStudentWelcomeBanner(s);
   switchTab('tab-today', 'student');
   showScreen('screen-student-view');
+}
+
+function renderStudentWelcomeBanner(s) {
+  const el = document.getElementById('student-welcome-banner');
+  if (!el) return;
+  const p = state.trainerProfile || {};
+  const parts = [];
+
+  if (p.welcomeMessage) {
+    parts.push(`<div class="card" style="border-color:var(--orange-border);background:var(--dark2)">
+      <div style="font-size:0.88rem;line-height:1.7;color:var(--white-dim)">💬 ${p.welcomeMessage}</div>
+    </div>`);
+  }
+
+  if (p.name || p.specialty || p.bio) {
+    parts.push(`<div class="card" style="margin-bottom:0.8rem">
+      <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:${p.bio ? '0.8rem' : '0'}">
+        <div style="font-family:var(--font-label);font-weight:700;font-size:1rem;color:var(--white)">${p.name || 'Tu entrenador'}</div>
+        ${p.specialty ? `<span class="tag tag-orange" style="font-size:0.65rem">${p.specialty}</span>` : ''}
+      </div>
+      ${p.bio ? `<div class="text-small text-gray" style="line-height:1.6">${p.bio}</div>` : ''}
+      ${p.instagram || p.phone ? `<div style="margin-top:0.6rem;display:flex;gap:0.8rem;flex-wrap:wrap">
+        ${p.instagram ? `<span class="text-small text-orange">📷 ${p.instagram}</span>` : ''}
+        ${p.phone ? `<span class="text-small text-gray">📱 ${p.phone}</span>` : ''}
+      </div>` : ''}
+    </div>`);
+  }
+
+  el.innerHTML = parts.join('');
 }
 
 function parseWorkoutExercises(content) {
