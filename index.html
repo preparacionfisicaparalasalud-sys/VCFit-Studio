@@ -919,6 +919,7 @@
     <div id="tab-anamnesis" class="tab-content">
       <div id="anamnesis-view"></div>
       <div class="export-grid mt-2">
+        <button class="btn btn-primary btn-sm" onclick="openEditAnamnesisModal()">✏️ Editar</button>
         <button class="btn btn-secondary btn-sm" onclick="exportAnamnesisText()">📄 TXT</button>
         <button class="btn btn-secondary btn-sm" onclick="copyAnamnesis()">📋 Copiar</button>
         <button class="btn btn-whatsapp btn-sm" onclick="sendAnamnesisWhatsApp()">💬 WhatsApp</button>
@@ -2061,6 +2062,118 @@ function handleNewStudentPhoto(event) {
     document.getElementById('new-student-photo-icon').style.display = 'none';
   };
   reader.readAsDataURL(file);
+}
+
+function openEditAnamnesisModal() {
+  const s = state.students.find(x => x.id === state.currentStudentId);
+  if (!s) return;
+  const a = s.anamnesis;
+
+  // Precargar todos los campos del formulario con los datos actuales
+  const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+  setVal('ns-name', s.name);
+  setVal('ns-age', a.age);
+  setVal('ns-weight', a.weight);
+  setVal('ns-height', a.height);
+  setVal('ns-phone', a.phone);
+  setVal('ns-medical', a.medical);
+  setVal('ns-meds', a.meds);
+  setVal('ns-injuries', a.injuries);
+  setVal('ns-pain', a.pain);
+  setVal('ns-train-type', a.trainType);
+  setVal('ns-motivation', a.motivation);
+  setVal('ns-extra', a.extra);
+  setVal('ns-goal-weight', a.goalWeight);
+  setVal('ns-sex', a.sex);
+  setVal('ns-job', a.job);
+  setVal('ns-job-type', a.jobType);
+  setVal('ns-cardio', a.cardio);
+  setVal('ns-trains-now', a.trainsNow);
+  setVal('ns-days', a.days);
+  setVal('ns-duration', a.duration);
+  setVal('ns-goal', a.goal);
+  setVal('ns-sleep', a.sleep);
+  setVal('ns-smoke', a.smoke);
+  setVal('ns-alcohol', a.alcohol);
+  setVal('ns-hydration', a.hydration);
+  setVal('ns-stress', a.stress || 5);
+  const stressVal = document.getElementById('stress-val');
+  if (stressVal) stressVal.textContent = a.stress || 5;
+
+  // Foto actual
+  if (s.photo) {
+    const preview = document.getElementById('new-student-photo-preview');
+    if (preview) { preview.src = s.photo; preview.style.display = 'block'; }
+    const icon = document.getElementById('new-student-photo-icon');
+    if (icon) icon.style.display = 'none';
+    state._newStudentPhoto = s.photo;
+  }
+
+  // Cambiar el título y el botón del modal
+  const title = document.querySelector('#modal-new-student .modal-title');
+  if (title) title.textContent = '✏️ Editar alumno';
+  const saveBtn = document.querySelector('#modal-new-student button.btn-primary:last-of-type');
+  if (saveBtn) { saveBtn.textContent = 'Guardar cambios'; saveBtn.setAttribute('onclick', 'saveEditAnamnesis()'); }
+
+  // Ocultar el campo PIN (no se edita desde acá)
+  const pinGroup = document.getElementById('ns-pin')?.closest('.input-group');
+  if (pinGroup) pinGroup.style.display = 'none';
+
+  document.getElementById('modal-new-student').classList.add('show');
+}
+
+function saveEditAnamnesis() {
+  const s = state.students.find(x => x.id === state.currentStudentId);
+  if (!s) return;
+  const name = document.getElementById('ns-name').value.trim();
+  if (!name) { alert('El nombre es obligatorio.'); return; }
+
+  s.name = name;
+  if (state._newStudentPhoto) s.photo = state._newStudentPhoto;
+
+  s.anamnesis = {
+    age: document.getElementById('ns-age').value,
+    sex: document.getElementById('ns-sex').value,
+    weight: document.getElementById('ns-weight').value,
+    height: document.getElementById('ns-height').value,
+    job: document.getElementById('ns-job').value,
+    jobType: document.getElementById('ns-job-type').value,
+    phone: document.getElementById('ns-phone').value,
+    medical: document.getElementById('ns-medical').value,
+    meds: document.getElementById('ns-meds').value,
+    injuries: document.getElementById('ns-injuries').value,
+    pain: document.getElementById('ns-pain').value,
+    cardio: document.getElementById('ns-cardio').value,
+    trainsNow: document.getElementById('ns-trains-now').value,
+    trainType: document.getElementById('ns-train-type').value,
+    days: document.getElementById('ns-days').value,
+    duration: document.getElementById('ns-duration').value,
+    goal: document.getElementById('ns-goal').value,
+    goalWeight: document.getElementById('ns-goal-weight').value,
+    motivation: document.getElementById('ns-motivation').value,
+    sleep: document.getElementById('ns-sleep').value,
+    stress: document.getElementById('ns-stress').value,
+    smoke: document.getElementById('ns-smoke').value,
+    alcohol: document.getElementById('ns-alcohol').value,
+    hydration: document.getElementById('ns-hydration').value,
+    extra: document.getElementById('ns-extra').value
+  };
+
+  saveState();
+
+  // Restaurar modal a estado "nuevo alumno"
+  const title = document.querySelector('#modal-new-student .modal-title');
+  if (title) title.textContent = 'Nuevo Alumno';
+  const saveBtn = document.querySelector('#modal-new-student button.btn-primary:last-of-type');
+  if (saveBtn) { saveBtn.textContent = 'Guardar alumno'; saveBtn.setAttribute('onclick', 'saveNewStudent()'); }
+  const pinGroup = document.getElementById('ns-pin')?.closest('.input-group');
+  if (pinGroup) pinGroup.style.display = '';
+
+  closeModal('modal-new-student');
+  renderAnamnesisView(s);
+  renderStudentsList();
+  refreshTrainerDashboard();
+  alert('Datos actualizados ✅');
 }
 
 function saveNewStudent() {
