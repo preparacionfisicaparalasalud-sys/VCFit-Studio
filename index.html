@@ -1979,8 +1979,8 @@ function checkPin() {
 // ═══════════════════════════════════════════
 function switchTab(tabId, group) {
   const groupMap = {
-    detail: ['tab-anamnesis','tab-metrics','tab-assign','tab-progress'],
-    student: ['tab-today','tab-my-profile','tab-my-metrics','tab-my-progress']
+    detail: ['tab-anamnesis','tab-metrics','tab-assign','tab-nutrition','tab-trainer-notes','tab-progress'],
+    student: ['tab-today','tab-my-nutrition','tab-my-profile','tab-my-metrics','tab-my-progress']
   };
   const tabs = groupMap[group] || [];
   tabs.forEach(t => {
