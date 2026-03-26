@@ -964,19 +964,74 @@
 
     <!-- TAB ASSIGN WORKOUT -->
     <div id="tab-assign" class="tab-content" style="display:none">
-      <div class="card-title">Rutina asignada</div>
+
+      <!-- Rutina asignada actualmente -->
+      <div class="card-title">📋 Rutina asignada</div>
       <div id="assigned-workout-view"></div>
+
       <hr class="divider">
-      <div class="card-title">Asignar rutina</div>
+
+      <!-- Crear rutina directa para este alumno -->
+      <div class="card" style="margin-bottom:1rem">
+        <div class="card-title">✏️ Crear / editar rutina para este alumno</div>
+        <div class="input-group">
+          <label class="input-label">Nombre de la rutina *</label>
+          <input type="text" class="input-field" id="aw-name" placeholder="ej: Tren Superior A">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Descripción (opcional)</label>
+          <input type="text" class="input-field" id="aw-desc" placeholder="ej: Fuerza — 3 días / semana">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Contenido de la rutina</label>
+          <textarea class="input-field" id="aw-content" style="min-height:260px;font-family:monospace;font-size:0.88rem;line-height:1.7"
+            placeholder="DÍA 1 - TREN SUPERIOR
+Dominadas: 4x8
+Press de hombros: 4x10
+Remo con mancuerna: 4x10
+
+DÍA 2 - TREN INFERIOR
+Sentadilla búlgara: 4x10
+Peso muerto rumano: 4x12
+Hip thrust: 4x15"></textarea>
+        </div>
+        <div class="text-small text-gray" style="margin-bottom:1rem">
+          ¿Dónde guardar esta rutina?
+        </div>
+        <div style="display:flex;flex-direction:column;gap:0.6rem;margin-bottom:1rem">
+          <label style="display:flex;align-items:center;gap:0.8rem;cursor:pointer">
+            <input type="radio" name="aw-save-mode" value="exclusive" checked
+              style="accent-color:var(--orange);width:18px;height:18px">
+            <div>
+              <div style="font-family:var(--font-label);font-weight:700;font-size:0.95rem">Solo para este alumno</div>
+              <div class="text-small text-gray">No aparece en la lista general de rutinas</div>
+            </div>
+          </label>
+          <label style="display:flex;align-items:center;gap:0.8rem;cursor:pointer">
+            <input type="radio" name="aw-save-mode" value="global"
+              style="accent-color:var(--orange);width:18px;height:18px">
+            <div>
+              <div style="font-family:var(--font-label);font-weight:700;font-size:0.95rem">Guardar en lista general</div>
+              <div class="text-small text-gray">Queda disponible para asignar a otros alumnos</div>
+            </div>
+          </label>
+        </div>
+        <div style="display:flex;gap:0.8rem">
+          <button class="btn btn-primary btn-sm" style="flex:1" onclick="saveWorkoutFromStudentTab()">💾 Guardar y asignar</button>
+          <button class="btn btn-whatsapp btn-sm" onclick="sendRoutineWhatsApp()">💬 WhatsApp</button>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- Asignar rutina existente de la lista general -->
+      <div class="card-title">📂 Asignar rutina existente</div>
       <div class="input-group">
         <select class="input-field" id="assign-workout-select">
           <option value="">— Seleccioná una rutina —</option>
         </select>
       </div>
-      <div class="flex gap-1">
-        <button class="btn btn-primary btn-sm" onclick="assignWorkout()">Asignar</button>
-        <button class="btn btn-whatsapp btn-sm" onclick="sendRoutineWhatsApp()">💬 Enviar por WhatsApp</button>
-      </div>
+      <button class="btn btn-secondary btn-sm" onclick="assignWorkout()">Asignar</button>
     </div>
 
     <!-- TAB NUTRICIÓN -->
@@ -2636,21 +2691,78 @@ function exportWorkoutTxt(id) {
 // ═══════════════════════════════════════════
 //  ASSIGN WORKOUT TAB
 // ═══════════════════════════════════════════
+function saveWorkoutFromStudentTab() {
+  const s = state.students.find(x => x.id === state.currentStudentId);
+  if (!s) return;
+
+  const name = document.getElementById('aw-name').value.trim();
+  if (!name) { alert('El nombre de la rutina es obligatorio.'); return; }
+
+  const content = document.getElementById('aw-content').value.trim();
+  const desc = document.getElementById('aw-desc').value.trim();
+  const mode = document.querySelector('input[name="aw-save-mode"]:checked')?.value || 'exclusive';
+
+  if (mode === 'exclusive') {
+    // Guardar como rutina exclusiva del alumno
+    s.exclusiveWorkout = { name, desc, content };
+    s.assignedWorkoutId = '__exclusive__';
+    saveState();
+    renderAssignTab(s);
+    renderTodayWorkout(s);
+    alert('Rutina guardada y asignada a ' + s.name.split(' ')[0] + ' ✅');
+  } else {
+    // Guardar en lista general y asignar
+    const workout = { id: genId(), name, desc, content };
+    state.workouts.push(workout);
+    s.assignedWorkoutId = workout.id;
+    saveState();
+    renderAssignTab(s);
+    renderWorkoutsList();
+    refreshTrainerDashboard();
+    renderTodayWorkout(s);
+    alert('Rutina guardada en lista general y asignada ✅');
+  }
+}
+
 function renderAssignTab(s) {
   const sel = document.getElementById('assign-workout-select');
-  sel.innerHTML = '<option value="">— Seleccioná una rutina —</option>' +
-    state.workouts.map(w => `<option value="${w.id}" ${s.assignedWorkoutId === w.id ? 'selected' : ''}>${w.name}</option>`).join('');
+  if (sel) {
+    sel.innerHTML = '<option value="">— Seleccioná una rutina —</option>' +
+      state.workouts.map(w => `<option value="${w.id}" ${s.assignedWorkoutId === w.id ? 'selected' : ''}>${w.name}</option>`).join('');
+  }
 
+  // Mostrar rutina asignada actual
   const assignedView = document.getElementById('assigned-workout-view');
-  if (s.assignedWorkoutId) {
-    const w = state.workouts.find(x => x.id === s.assignedWorkoutId);
-    if (w) {
+  if (assignedView) {
+    if (s.assignedWorkoutId === '__exclusive__' && s.exclusiveWorkout) {
+      const ew = s.exclusiveWorkout;
       assignedView.innerHTML = `
-        <div class="tag tag-orange mb-1">${w.name}</div>
-        <pre style="background:var(--dark3);padding:0.8rem;border-radius:8px;font-size:0.82rem;line-height:1.7;white-space:pre-wrap;color:var(--white-dim);font-family:var(--font-body);margin-top:0.5rem">${w.content}</pre>`;
+        <div class="tag tag-orange mb-1">${ew.name} <span style="font-size:0.7rem;opacity:0.7">· exclusiva</span></div>
+        <pre style="background:var(--dark3);padding:0.8rem;border-radius:8px;font-size:0.82rem;line-height:1.7;white-space:pre-wrap;color:var(--white-dim);font-family:var(--font-body);margin-top:0.5rem">${ew.content}</pre>`;
+    } else if (s.assignedWorkoutId) {
+      const w = state.workouts.find(x => x.id === s.assignedWorkoutId);
+      if (w) {
+        assignedView.innerHTML = `
+          <div class="tag tag-orange mb-1">${w.name}</div>
+          <pre style="background:var(--dark3);padding:0.8rem;border-radius:8px;font-size:0.82rem;line-height:1.7;white-space:pre-wrap;color:var(--white-dim);font-family:var(--font-body);margin-top:0.5rem">${w.content}</pre>`;
+      }
+    } else {
+      assignedView.innerHTML = '<div class="text-small text-gray">Ninguna rutina asignada aún.</div>';
     }
-  } else {
-    assignedView.innerHTML = '<div class="text-small text-gray">Ninguna rutina asignada aún.</div>';
+  }
+
+  // Precargar campos del editor con la rutina actual
+  const currentWorkout = s.assignedWorkoutId === '__exclusive__'
+    ? s.exclusiveWorkout
+    : state.workouts.find(x => x.id === s.assignedWorkoutId);
+
+  if (currentWorkout) {
+    const nameEl = document.getElementById('aw-name');
+    const descEl = document.getElementById('aw-desc');
+    const contentEl = document.getElementById('aw-content');
+    if (nameEl) nameEl.value = currentWorkout.name || '';
+    if (descEl) descEl.value = currentWorkout.desc || '';
+    if (contentEl) contentEl.value = currentWorkout.content || '';
   }
 }
 
@@ -2661,14 +2773,22 @@ function assignWorkout() {
   s.assignedWorkoutId = id || null;
   saveState();
   renderAssignTab(s);
+  renderTodayWorkout(s);
   alert(id ? 'Rutina asignada ✅' : 'Rutina removida');
 }
 
 function sendRoutineWhatsApp() {
   const s = state.students.find(x => x.id === state.currentStudentId);
   if (!s || !s.assignedWorkoutId) { alert('Primero asigná una rutina.'); return; }
-  const w = state.workouts.find(x => x.id === s.assignedWorkoutId);
+
+  let w;
+  if (s.assignedWorkoutId === '__exclusive__') {
+    w = s.exclusiveWorkout;
+  } else {
+    w = state.workouts.find(x => x.id === s.assignedWorkoutId);
+  }
   if (!w) return;
+
   const text = encodeURIComponent(
     `*VC FIT STUDIO*\n*Rutina para ${s.name}*\n\n${w.name}\n${w.desc ? w.desc + '\n' : ''}\n${w.content}`
   );
@@ -2776,7 +2896,12 @@ function renderTodayWorkout(s) {
     return;
   }
 
-  const w = state.workouts.find(x => x.id === s.assignedWorkoutId);
+  const w = s.assignedWorkoutId === '__exclusive__'
+    ? s.exclusiveWorkout
+    : state.workouts.find(x => x.id === s.assignedWorkoutId);
+
+  const wId = s.assignedWorkoutId === '__exclusive__' ? '__exclusive__' : s.assignedWorkoutId;
+
   if (!w) {
     container.innerHTML = '<div class="text-small text-gray">Rutina no encontrada.</div>';
     completeBtnWrapper.style.display = 'none';
@@ -2784,7 +2909,7 @@ function renderTodayWorkout(s) {
   }
 
   const exercises = parseWorkoutExercises(w.content);
-  const checksKey = `${s.id}_${w.id}`;
+  const checksKey = `${s.id}_${wId}`;
   if (!state.exerciseChecks[checksKey]) state.exerciseChecks[checksKey] = {};
 
   // Group by day
