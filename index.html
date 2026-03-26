@@ -1416,6 +1416,36 @@ Plancha: 3x45seg"></textarea>
 </div>
 
 <!-- ═══════════════════════════════════════════
+     MODAL: EDIT WORKOUT
+═══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-edit-workout">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">✏️ Editar Rutina</div>
+    <input type="hidden" id="ew-id">
+    <div class="input-group">
+      <label class="input-label">Nombre de la rutina *</label>
+      <input type="text" class="input-field" id="ew-name" placeholder="ej: Tren Superior A">
+    </div>
+    <div class="input-group">
+      <label class="input-label">Descripción (opcional)</label>
+      <input type="text" class="input-field" id="ew-desc" placeholder="ej: Fuerza — 3 días / semana">
+    </div>
+    <div class="input-group">
+      <label class="input-label">Contenido de la rutina</label>
+      <textarea class="input-field" id="ew-content" style="min-height:280px; font-family: monospace; font-size:0.88rem"></textarea>
+    </div>
+    <div class="text-small text-gray mb-1" style="margin-bottom:1rem">
+      💡 Editá el texto libremente. Los cambios se guardan en la nube automáticamente.
+    </div>
+    <div style="display:flex; gap:0.8rem; padding-bottom:1rem">
+      <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-edit-workout')">Cancelar</button>
+      <button class="btn btn-primary" style="flex:1" onclick="saveEditWorkout()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
      LOADING OVERLAY (Firebase init)
 ═══════════════════════════════════════════ -->
 <div id="loading-overlay" style="
@@ -2190,6 +2220,31 @@ function sendAnamnesisWhatsApp() {
 // ═══════════════════════════════════════════
 //  WORKOUTS
 // ═══════════════════════════════════════════
+function openEditWorkoutModal(id) {
+  const w = state.workouts.find(x => x.id === id);
+  if (!w) return;
+  document.getElementById('ew-id').value = id;
+  document.getElementById('ew-name').value = w.name;
+  document.getElementById('ew-desc').value = w.desc || '';
+  document.getElementById('ew-content').value = w.content || '';
+  document.getElementById('modal-edit-workout').classList.add('show');
+}
+
+function saveEditWorkout() {
+  const id = document.getElementById('ew-id').value;
+  const w = state.workouts.find(x => x.id === id);
+  if (!w) return;
+  const name = document.getElementById('ew-name').value.trim();
+  if (!name) { alert('El nombre es obligatorio.'); return; }
+  w.name = name;
+  w.desc = document.getElementById('ew-desc').value.trim();
+  w.content = document.getElementById('ew-content').value.trim();
+  saveState();
+  closeModal('modal-edit-workout');
+  renderWorkoutsList();
+  alert('Rutina actualizada ✅');
+}
+
 function saveNewWorkout() {
   const name = document.getElementById('nw-name').value.trim();
   if (!name) { alert('El nombre es obligatorio.'); return; }
@@ -2222,7 +2277,10 @@ function renderWorkoutsList() {
           <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.1rem;letter-spacing:1px">${w.name}</div>
           ${w.desc ? `<div class="text-small text-gray">${w.desc}</div>` : ''}
         </div>
-        <button class="btn btn-danger btn-sm" onclick="deleteWorkout('${w.id}')">✕</button>
+        <div style="display:flex;gap:0.5rem">
+          <button class="btn btn-secondary btn-sm" onclick="openEditWorkoutModal('${w.id}')">✏️ Editar</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteWorkout('${w.id}')">✕</button>
+        </div>
       </div>
       <pre style="background:var(--dark3);padding:0.8rem;border-radius:8px;font-size:0.82rem;line-height:1.7;white-space:pre-wrap;color:var(--white-dim);font-family:'Exo 2',sans-serif">${w.content || '(sin contenido)'}</pre>
       <div class="export-grid mt-2">
@@ -2421,7 +2479,13 @@ function renderTodayWorkout(s) {
 
   let html = `<div class="card mb-1">
     <div class="card-title">📋 ${w.name}</div>
-    ${w.desc ? `<div class="text-small text-gray">${w.desc}</div>` : ''}
+    ${w.desc ? `<div class="text-small text-gray mb-1">${w.desc}</div>` : ''}
+    <div class="input-group mt-1" style="margin-bottom:0">
+      <label class="input-label">📝 Mi nota general de esta rutina</label>
+      <textarea class="input-field" id="student-workout-note" rows="2"
+        placeholder="Cómo me sentí, qué mejoré, qué me costó..."
+        onchange="saveStudentWorkoutNote(this.value)">${s.workoutNote || ''}</textarea>
+    </div>
   </div>`;
 
   if (exercises.length === 0) {
@@ -2452,6 +2516,13 @@ function renderTodayWorkout(s) {
   container.innerHTML = html;
   completeBtnWrapper.style.display = 'block';
   updateCompleteButton(checksKey, exercises.length);
+}
+
+function saveStudentWorkoutNote(value) {
+  const s = state.students.find(x => x.id === state.currentStudentId);
+  if (!s) return;
+  s.workoutNote = value;
+  saveState();
 }
 
 function toggleExercise(checksKey, idx) {
