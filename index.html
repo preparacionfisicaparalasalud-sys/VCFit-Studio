@@ -859,6 +859,28 @@
 </div>
 
 <!-- ═══════════════════════════════════════════
+     SCREEN: TRAINER LOGIN (contraseña)
+═══════════════════════════════════════════ -->
+<div id="screen-trainer-login" class="screen" style="align-items:center;justify-content:center;padding:2rem;background:var(--black)">
+  <div style="width:100%;max-width:380px">
+    <div style="text-align:center;margin-bottom:2rem">
+      <div style="font-family:var(--font-title);font-size:2rem;color:var(--orange);letter-spacing:6px">ENTRENADOR</div>
+      <div style="font-size:0.78rem;color:var(--gray-light);letter-spacing:2px;text-transform:uppercase;margin-top:0.4rem">Ingresá tu contraseña</div>
+    </div>
+    <div class="card">
+      <div class="input-group">
+        <label class="input-label">Contraseña</label>
+        <input type="password" class="input-field" id="trainer-pwd-input" placeholder="••••••••" autocomplete="current-password"
+          onkeydown="if(event.key==='Enter') checkTrainerPassword()">
+      </div>
+      <div id="trainer-pwd-error" style="font-size:0.8rem;min-height:1.2rem;margin-bottom:0.8rem;color:var(--danger)"></div>
+      <button class="btn btn-primary btn-full" onclick="checkTrainerPassword()">Entrar</button>
+    </div>
+    <button class="btn btn-secondary btn-sm btn-full mt-2" onclick="showScreen('screen-login')">← Volver</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
      SCREEN: TRAINER DASHBOARD
 ═══════════════════════════════════════════ -->
 <div id="screen-trainer" class="screen">
@@ -901,6 +923,24 @@
     <div class="card">
       <div class="card-title">👥 Alumnos recientes</div>
       <div id="trainer-recent-students"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🔐 Cambiar contraseña de entrenador</div>
+      <div class="input-group">
+        <label class="input-label">Contraseña actual</label>
+        <input type="password" class="input-field" id="pwd-current" placeholder="••••••••">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Nueva contraseña</label>
+        <input type="password" class="input-field" id="pwd-new-1" placeholder="Mínimo 4 caracteres">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Confirmar nueva contraseña</label>
+        <input type="password" class="input-field" id="pwd-new-2" placeholder="Repetí la nueva contraseña">
+      </div>
+      <div id="pwd-change-msg" style="font-size:0.8rem;min-height:1.2rem;margin-bottom:0.8rem"></div>
+      <button class="btn btn-primary btn-sm btn-full" onclick="saveTrainerPassword()">Cambiar contraseña</button>
     </div>
   </div>
 </div>
@@ -1539,6 +1579,81 @@ ALMUERZO
 </div>
 
 <!-- ═══════════════════════════════════════════
+     MODAL: EDIT METRICS ENTRY
+═══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-edit-metrics">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">✏️ Editar medición</div>
+    <input type="hidden" id="em-idx">
+
+    <div class="anamnesis-block">
+      <div class="anamnesis-block-title">Fecha</div>
+      <div class="input-group">
+        <label class="input-label">Fecha de la medición</label>
+        <input type="text" class="input-field" id="em-date" placeholder="ej: 15/03/2026">
+      </div>
+    </div>
+
+    <div class="anamnesis-block">
+      <div class="anamnesis-block-title">Medidas corporales</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem">
+        <div class="input-group">
+          <label class="input-label">Peso (kg) *</label>
+          <input type="number" class="input-field" id="em-weight" placeholder="70.5" step="0.1">
+        </div>
+        <div class="input-group">
+          <label class="input-label">% Grasa medido</label>
+          <input type="number" class="input-field" id="em-fat-manual" placeholder="18.5" step="0.1">
+        </div>
+        <div class="input-group">
+          <label class="input-label">% Músculo medido</label>
+          <input type="number" class="input-field" id="em-muscle-manual" placeholder="38.0" step="0.1">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Cintura (cm)</label>
+          <input type="number" class="input-field" id="em-waist" placeholder="82" step="0.5">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Cadera (cm)</label>
+          <input type="number" class="input-field" id="em-hip" placeholder="96" step="0.5">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Pecho (cm)</label>
+          <input type="number" class="input-field" id="em-chest" placeholder="100" step="0.5">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Muslo (cm)</label>
+          <input type="number" class="input-field" id="em-thigh" placeholder="56" step="0.5">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Masa ósea (kg)</label>
+          <input type="number" class="input-field" id="em-bone" placeholder="3.2" step="0.1">
+        </div>
+      </div>
+    </div>
+
+    <div class="anamnesis-block">
+      <div class="anamnesis-block-title">Nivel de actividad (para TDEE)</div>
+      <div class="input-group">
+        <select class="input-field" id="em-activity">
+          <option value="1.2">Sedentario (sin ejercicio)</option>
+          <option value="1.375">Ligero (1-3 días/semana)</option>
+          <option value="1.55" selected>Moderado (3-5 días/semana)</option>
+          <option value="1.725">Activo (6-7 días/semana)</option>
+          <option value="1.9">Muy activo (trabajo físico + ejercicio)</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:0.8rem;padding-bottom:1rem">
+      <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-edit-metrics')">Cancelar</button>
+      <button class="btn btn-primary" style="flex:1" onclick="saveEditMetrics()">Recalcular y guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
      MODAL: NEW WORKOUT
 ═══════════════════════════════════════════ -->
 <div class="modal-overlay" id="modal-new-workout">
@@ -2025,13 +2140,66 @@ function showScreen(id) {
   }
 }
 
+// ── CONTRASEÑA ENTRENADOR ──
+const DEFAULT_TRAINER_PASSWORD = 'vcfit2024';
+
 function enterAs(role) {
-  state.currentRole = role;
-  saveState();
   if (role === 'trainer') {
-    refreshTrainerDashboard();
-    showScreen('screen-trainer');
+    showTrainerPasswordScreen();
   }
+}
+
+function showTrainerPasswordScreen() {
+  document.getElementById('trainer-pwd-input').value = '';
+  document.getElementById('trainer-pwd-error').textContent = '';
+  showScreen('screen-trainer-login');
+}
+
+function checkTrainerPassword() {
+  const input = document.getElementById('trainer-pwd-input').value;
+  const savedPwd = state.trainerPassword || DEFAULT_TRAINER_PASSWORD;
+  if (input === savedPwd) {
+    state.currentRole = 'trainer';
+    saveState();
+    refreshTrainerDashboard();
+    applyLogo();
+    showScreen('screen-trainer');
+  } else {
+    document.getElementById('trainer-pwd-error').textContent = '❌ Contraseña incorrecta';
+    document.getElementById('trainer-pwd-input').value = '';
+    document.getElementById('trainer-pwd-input').focus();
+  }
+}
+
+function saveTrainerPassword() {
+  const current = document.getElementById('pwd-current').value;
+  const newPwd = document.getElementById('pwd-new-1').value;
+  const confirm = document.getElementById('pwd-new-2').value;
+  const msgEl = document.getElementById('pwd-change-msg');
+
+  const savedPwd = state.trainerPassword || DEFAULT_TRAINER_PASSWORD;
+  if (current !== savedPwd) {
+    msgEl.style.color = 'var(--danger)';
+    msgEl.textContent = '❌ La contraseña actual no es correcta';
+    return;
+  }
+  if (newPwd.length < 4) {
+    msgEl.style.color = 'var(--danger)';
+    msgEl.textContent = '❌ La nueva contraseña debe tener al menos 4 caracteres';
+    return;
+  }
+  if (newPwd !== confirm) {
+    msgEl.style.color = 'var(--danger)';
+    msgEl.textContent = '❌ Las contraseñas no coinciden';
+    return;
+  }
+  state.trainerPassword = newPwd;
+  saveState();
+  msgEl.style.color = 'var(--success)';
+  msgEl.textContent = '✅ Contraseña actualizada';
+  document.getElementById('pwd-current').value = '';
+  document.getElementById('pwd-new-1').value = '';
+  document.getElementById('pwd-new-2').value = '';
 }
 
 // ── PIN STATE ──
@@ -3391,6 +3559,81 @@ function buildChartHTML(studentId, role) {
 //  METRICS & PROJECTION ENGINE
 // ═══════════════════════════════════════════
 
+function openEditMetricsModal(idx) {
+  const s = state.students.find(x => x.id === state.currentStudentId);
+  if (!s || !s.metricsLog || !s.metricsLog[idx]) return;
+  const e = s.metricsLog[idx];
+
+  document.getElementById('em-idx').value = idx;
+  document.getElementById('em-date').value = e.date || '';
+  document.getElementById('em-weight').value = e.weight || '';
+  document.getElementById('em-fat-manual').value = e.fatManual || '';
+  document.getElementById('em-muscle-manual').value = e.muscleManual || '';
+  document.getElementById('em-waist').value = e.waist || '';
+  document.getElementById('em-hip').value = e.hip || '';
+  document.getElementById('em-chest').value = e.chest || '';
+  document.getElementById('em-thigh').value = e.thigh || '';
+  document.getElementById('em-bone').value = e.bone || '';
+  document.getElementById('em-activity').value = e.activity || 1.55;
+
+  document.getElementById('modal-edit-metrics').classList.add('show');
+}
+
+function saveEditMetrics() {
+  const s = state.students.find(x => x.id === state.currentStudentId);
+  if (!s || !s.metricsLog) return;
+  const idx = parseInt(document.getElementById('em-idx').value);
+  if (isNaN(idx) || idx < 0 || idx >= s.metricsLog.length) return;
+
+  const weight = document.getElementById('em-weight').value;
+  if (!weight) { alert('El peso es obligatorio.'); return; }
+
+  const fatManual = document.getElementById('em-fat-manual').value;
+  const muscleManual = document.getElementById('em-muscle-manual').value;
+  const waist = document.getElementById('em-waist').value;
+  const activity = document.getElementById('em-activity').value;
+
+  const calc = calcMetrics(
+    weight, s.anamnesis.height, s.anamnesis.age,
+    s.anamnesis.sex, fatManual, muscleManual, waist, activity
+  );
+
+  s.metricsLog[idx] = {
+    ...s.metricsLog[idx],
+    date: document.getElementById('em-date').value || s.metricsLog[idx].date,
+    weight: parseFloat(weight),
+    fatManual: fatManual ? parseFloat(fatManual) : null,
+    muscleManual: muscleManual ? parseFloat(muscleManual) : null,
+    waist: waist ? parseFloat(waist) : null,
+    hip: document.getElementById('em-hip').value ? parseFloat(document.getElementById('em-hip').value) : null,
+    chest: document.getElementById('em-chest').value ? parseFloat(document.getElementById('em-chest').value) : null,
+    thigh: document.getElementById('em-thigh').value ? parseFloat(document.getElementById('em-thigh').value) : null,
+    bone: document.getElementById('em-bone').value ? parseFloat(document.getElementById('em-bone').value) : null,
+    activity: parseFloat(activity),
+    calc
+  };
+
+  saveState();
+  closeModal('modal-edit-metrics');
+  renderMetricsView(s, 'trainer');
+  renderMetricsView(s, 'student');
+  alert('Medición actualizada ✅');
+}
+
+function deleteMetricEntry(idx) {
+  const s = state.students.find(x => x.id === state.currentStudentId);
+  if (!s || !s.metricsLog) return;
+  const entry = s.metricsLog[idx];
+  if (!entry) return;
+
+  if (!confirm(`¿Estás seguro de que querés eliminar la medición del ${entry.date} (${entry.weight} kg)?\n\nEsta acción no se puede deshacer.`)) return;
+
+  s.metricsLog.splice(idx, 1);
+  saveState();
+  renderMetricsView(s, 'trainer');
+  renderMetricsView(s, 'student');
+}
+
 function openMetricsModal(studentId) {
   state.currentStudentId = studentId || state.currentStudentId;
   document.getElementById('metrics-date-label').textContent = new Date().toLocaleDateString('es-AR');
@@ -3728,20 +3971,26 @@ function renderMetricsView(s, role) {
   }
 
   // Historial de mediciones
-  if (s.metricsLog && s.metricsLog.length > 1) {
+  if (s.metricsLog && s.metricsLog.length > 0) {
     html += `<div class="card mt-2">
       <div class="card-title">📈 Historial de mediciones</div>
-      ${s.metricsLog.slice().reverse().map(entry => `
-        <div class="progress-row">
-          <div>
+      ${s.metricsLog.slice().reverse().map((entry, revIdx) => {
+        const realIdx = s.metricsLog.length - 1 - revIdx;
+        return `
+        <div class="progress-row" style="align-items:flex-start;padding:0.8rem 0;gap:0.5rem">
+          <div style="flex:1">
             <div class="bold text-small">${entry.date}</div>
-            ${entry.waist ? `<div class="text-small text-gray">Cin: ${entry.waist}cm</div>` : ''}
-          </div>
-          <div style="text-align:right">
             <div class="text-orange bold">${entry.weight} kg</div>
-            ${entry.calc ? `<div class="text-small text-gray">BMI ${fmt(entry.calc.bmi)} · G ${fmt(entry.calc.fatPct)}%</div>` : ''}
+            ${entry.waist ? `<div class="text-small text-gray">Cin: ${entry.waist}cm</div>` : ''}
+            ${entry.calc ? `<div class="text-small text-gray">BMI ${fmt(entry.calc.bmi)} · G ${fmt(entry.calc.fatPct)}% · M ${fmt(entry.calc.musclePct)}%</div>` : ''}
           </div>
-        </div>`).join('')}
+          ${canAdd ? `
+          <div style="display:flex;flex-direction:column;gap:0.4rem;flex-shrink:0">
+            <button class="btn btn-secondary btn-sm" style="padding:0.3rem 0.6rem;font-size:0.75rem" onclick="openEditMetricsModal(${realIdx})">✏️</button>
+            <button class="btn btn-danger btn-sm" style="padding:0.3rem 0.6rem;font-size:0.75rem" onclick="deleteMetricEntry(${realIdx})">🗑️</button>
+          </div>` : ''}
+        </div>`;
+      }).join('')}
     </div>`;
   }
 
