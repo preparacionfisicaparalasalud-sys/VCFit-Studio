@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<meta name="theme-color" content="#0a0a0a">
+<meta name="theme-color" content="#141414">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="VC Fit">
@@ -11,27 +11,34 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Exo+2:wght@300;400;500;600;700&family=Rajdhani:wght@@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
   :root {
-    --orange: #E8650A;
-    --orange-light: #FF7A20;
-    --black: #0a0a0a;
-    --dark: #141414;
-    --dark2: #1e1e1e;
-    --dark3: #2a2a2a;
+    --orange: #FF6B00;
+    --orange-light: #FF8C00;
+    --orange-dim: rgba(255,107,0,0.15);
+    --orange-border: rgba(255,107,0,0.35);
+    --black: #141414;
+    --dark: #1A1A1A;
+    --dark2: #222222;
+    --dark3: #2E2E2E;
+    --dark4: #383838;
     --gray: #555;
     --gray-light: #888;
-    --white: #f5f5f5;
-    --white-dim: #ccc;
-    --success: #4CAF50;
-    --danger: #e53935;
+    --white: #F0F0F0;
+    --white-dim: #C8C8C8;
+    --success: #3DB85A;
+    --danger: #E53935;
+    --font-title: 'Bebas Neue', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+    --font-label: 'Rajdhani', sans-serif;
+    --font-mono: 'Share Tech Mono', monospace;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
   body {
-    font-family: 'Exo 2', monospace;
+    font-family: var(--font-body);
     background: var(--black);
     color: var(--white);
     min-height: 100vh;
@@ -71,22 +78,23 @@
   }
   .login-logo img { width: 100%; height: 100%; object-fit: cover; }
   .login-logo-placeholder {
-    font-family: 'Share Tech Mono', sans-serif;
+    font-family: var(--font-title);
     font-size: 3rem;
     color: var(--orange);
     letter-spacing: 2px;
   }
   .login-title {
-    font-family: 'Share Tech Mono', sans-serif;
-    font-size: 2.4rem;
-    letter-spacing: 6px;
+    font-family: var(--font-title);
+    font-size: 3.5rem;
+    letter-spacing: 10px;
     color: var(--white);
     margin-bottom: 0.3rem;
     text-align: center;
+    line-height: 1;
   }
   .login-sub {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 0.85rem;
+    font-family: var(--font-label);
+    font-size: 0.88rem;
     letter-spacing: 3px;
     color: var(--gray-light);
     text-transform: uppercase;
@@ -96,36 +104,38 @@
   .login-card {
     background: var(--dark2);
     border: 1px solid var(--dark3);
-    border-radius: 16px;
+    border-radius: 20px;
     padding: 2rem;
     width: 100%;
     max-width: 380px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
   }
   .login-btn-group { display: flex; flex-direction: column; gap: 1rem; }
   .btn-login-role {
-    padding: 1.1rem 1.5rem;
-    border-radius: 10px;
+    padding: 1.2rem 1.5rem;
+    border-radius: 12px;
     border: none;
     cursor: pointer;
-    font-family: 'Rajdhani', sans-serif;
+    font-family: var(--font-label);
     font-size: 1.1rem;
     font-weight: 700;
     letter-spacing: 2px;
     text-transform: uppercase;
-    transition: all 0.2s;
+    transition: all 0.25s;
     display: flex; align-items: center; gap: 0.8rem;
   }
   .btn-trainer {
-    background: var(--orange);
-    color: var(--black);
+    background: linear-gradient(135deg, var(--orange), var(--orange-light));
+    color: #000;
+    box-shadow: 0 4px 16px rgba(255,107,0,0.35);
   }
-  .btn-trainer:hover { background: var(--orange-light); transform: translateY(-1px); }
+  .btn-trainer:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(255,107,0,0.5); }
   .btn-student {
-    background: transparent;
+    background: var(--dark3);
     color: var(--white);
-    border: 1.5px solid var(--dark3);
+    border: 1.5px solid var(--dark4);
   }
-  .btn-student:hover { border-color: var(--orange); color: var(--orange); }
+  .btn-student:hover { border-color: var(--orange); color: var(--orange); background: var(--dark2); }
   .btn-icon { font-size: 1.3rem; }
 
   /* ── TOPBAR ── */
@@ -149,7 +159,7 @@
   }
   .topbar-logo img { width: 100%; height: 100%; object-fit: cover; }
   .topbar-title {
-    font-family: 'Share Tech Mono', sans-serif;
+    font-family: var(--font-title);
     font-size: 1.4rem;
     letter-spacing: 2px;
     color: var(--orange);
@@ -175,7 +185,7 @@
     color: var(--gray-light);
     font-size: 0.75rem;
     cursor: pointer;
-    font-family: 'Rajdhani', sans-serif;
+    font-family: var(--font-label);
     letter-spacing: 1px;
     text-transform: uppercase;
     padding: 0.4rem 0.8rem;
@@ -192,18 +202,20 @@
   .card {
     background: var(--dark2);
     border: 1px solid var(--dark3);
-    border-radius: 12px;
-    padding: 1.2rem;
+    border-radius: 16px;
+    padding: 1.3rem;
     margin-bottom: 1rem;
   }
   .card-title {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 0.75rem;
+    font-family: var(--font-label);
+    font-size: 0.78rem;
     letter-spacing: 2px;
     text-transform: uppercase;
     color: var(--orange);
     margin-bottom: 1rem;
     display: flex; align-items: center; gap: 0.5rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--dark3);
   }
 
   /* ── INPUTS ── */
@@ -219,16 +231,16 @@
   .input-field {
     width: 100%;
     background: var(--dark3);
-    border: 1px solid #333;
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
+    border: 1.5px solid var(--dark4);
+    border-radius: 10px;
+    padding: 0.8rem 1rem;
     color: var(--white);
-    font-family: 'Exo 2', sans-serif;
+    font-family: var(--font-body);
     font-size: 0.95rem;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s;
     outline: none;
   }
-  .input-field:focus { border-color: var(--orange); }
+  .input-field:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(255,107,0,0.12); }
   .input-field::placeholder { color: var(--gray); }
   textarea.input-field { resize: vertical; min-height: 120px; line-height: 1.6; font-size: 0.9rem; }
   select.input-field { cursor: pointer; }
@@ -239,7 +251,7 @@
     border-radius: 8px;
     border: none;
     cursor: pointer;
-    font-family: 'Rajdhani', sans-serif;
+    font-family: var(--font-label);
     font-size: 1rem;
     font-weight: 700;
     letter-spacing: 1.5px;
@@ -247,9 +259,13 @@
     transition: all 0.2s;
     display: inline-flex; align-items: center; gap: 0.5rem;
   }
-  .btn-primary { background: var(--orange); color: var(--black); }
-  .btn-primary:hover { background: var(--orange-light); transform: translateY(-1px); }
-  .btn-secondary { background: var(--dark3); color: var(--white); border: 1px solid #444; }
+  .btn-primary { 
+    background: linear-gradient(135deg, var(--orange), var(--orange-light)); 
+    color: #000;
+    box-shadow: 0 3px 12px rgba(255,107,0,0.3);
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 5px 18px rgba(255,107,0,0.45); }
+  .btn-secondary { background: var(--dark3); color: var(--white); border: 1px solid var(--dark4); }
   .btn-secondary:hover { border-color: var(--orange); color: var(--orange); }
   .btn-danger { background: var(--danger); color: var(--white); }
   .btn-success { background: var(--success); color: var(--white); }
@@ -259,18 +275,20 @@
 
   /* ── TRAINER DASHBOARD ── */
   .section-title {
-    font-family: 'Share Tech Mono', sans-serif;
-    font-size: 1.8rem;
-    letter-spacing: 3px;
+    font-family: var(--font-title);
+    font-size: 2.4rem;
+    letter-spacing: 4px;
     color: var(--white);
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.2rem;
+    line-height: 1;
   }
   .section-sub {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     color: var(--gray-light);
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
     text-transform: uppercase;
     margin-bottom: 1.5rem;
+    font-family: var(--font-label);
   }
 
   .nav-grid {
@@ -282,17 +300,29 @@
   .nav-card {
     background: var(--dark2);
     border: 1px solid var(--dark3);
-    border-radius: 12px;
-    padding: 1.3rem 1rem;
+    border-radius: 16px;
+    padding: 1.4rem 1.2rem;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.25s;
     display: flex; flex-direction: column;
     align-items: flex-start; gap: 0.6rem;
+    position: relative;
+    overflow: hidden;
   }
-  .nav-card:hover { border-color: var(--orange); transform: translateY(-2px); }
+  .nav-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--orange), var(--orange-light));
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  .nav-card:hover { border-color: var(--orange); transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+  .nav-card:hover::before { opacity: 1; }
   .nav-card-icon { font-size: 1.8rem; }
   .nav-card-label {
-    font-family: 'Rajdhani', sans-serif;
+    font-family: var(--font-label);
     font-size: 0.85rem;
     font-weight: 700;
     letter-spacing: 1.5px;
@@ -300,7 +330,7 @@
     color: var(--white-dim);
   }
   .nav-card-count {
-    font-family: 'Share Tech Mono', sans-serif;
+    font-family: var(--font-title);
     font-size: 1.5rem;
     color: var(--orange);
   }
@@ -309,16 +339,16 @@
   .student-item {
     background: var(--dark2);
     border: 1px solid var(--dark3);
-    border-radius: 10px;
+    border-radius: 14px;
     padding: 1rem;
     margin-bottom: 0.7rem;
     display: flex;
     align-items: center;
     gap: 1rem;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.25s;
   }
-  .student-item:hover { border-color: var(--orange); }
+  .student-item:hover { border-color: var(--orange); background: var(--dark3); box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
   .student-avatar {
     width: 48px; height: 48px;
     border-radius: 50%;
@@ -326,7 +356,7 @@
     overflow: hidden;
     flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
-    font-family: 'Share Tech Mono', sans-serif;
+    font-family: var(--font-title);
     font-size: 1.3rem;
     color: var(--orange);
     border: 2px solid var(--dark3);
@@ -334,7 +364,7 @@
   .student-avatar img { width: 100%; height: 100%; object-fit: cover; }
   .student-info { flex: 1; }
   .student-name {
-    font-family: 'Rajdhani', sans-serif;
+    font-family: var(--font-label);
     font-size: 1.1rem;
     font-weight: 700;
     letter-spacing: 1px;
@@ -343,7 +373,7 @@
   .student-meta { font-size: 0.78rem; color: var(--gray-light); margin-top: 0.2rem; }
   .student-badge {
     font-size: 0.7rem;
-    font-family: 'Rajdhani', sans-serif;
+    font-family: var(--font-label);
     letter-spacing: 1px;
     text-transform: uppercase;
     padding: 0.2rem 0.6rem;
@@ -368,7 +398,7 @@
     background: var(--dark3);
   }
   .workout-day-title {
-    font-family: 'Rajdhani', sans-serif;
+    font-family: var(--font-label);
     font-size: 1rem;
     font-weight: 700;
     letter-spacing: 1.5px;
@@ -410,7 +440,7 @@
   }
   .exercise-details { flex: 1; }
   .exercise-name {
-    font-family: 'Rajdhani', sans-serif;
+    font-family: var(--font-label);
     font-size: 1.05rem;
     font-weight: 700;
     letter-spacing: 0.5px;
@@ -427,7 +457,7 @@
     width: 100%;
     margin-top: 0.5rem;
     outline: none;
-    font-family: 'Exo 2', sans-serif;
+    font-family: var(--font-body);
   }
   .exercise-note-input:focus { border-color: var(--orange); }
 
@@ -441,18 +471,18 @@
   .btn-complete {
     width: 100%;
     padding: 1.3rem;
-    background: var(--success);
+    background: linear-gradient(135deg, #3DB85A, #2EA64A);
     color: #fff;
     border: none;
-    border-radius: 14px;
-    font-family: 'Share Tech Mono', sans-serif;
-    font-size: 1.8rem;
-    letter-spacing: 3px;
+    border-radius: 16px;
+    font-family: var(--font-title);
+    font-size: 2rem;
+    letter-spacing: 4px;
     cursor: pointer;
-    transition: all 0.2s;
-    box-shadow: 0 4px 20px rgba(76,175,80,0.3);
+    transition: all 0.25s;
+    box-shadow: 0 4px 20px rgba(61,184,90,0.35);
   }
-  .btn-complete:hover { transform: translateY(-2px); box-shadow: 0 6px 25px rgba(76,175,80,0.4); }
+  .btn-complete:hover { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(61,184,90,0.5); }
   .btn-complete:disabled { background: var(--gray); box-shadow: none; cursor: default; transform: none; }
 
   /* ── COMPLETED OVERLAY ── */
@@ -472,10 +502,11 @@
   .completed-overlay.show { display: flex; }
   .completed-emoji { font-size: 5rem; animation: bounce 0.5s ease; }
   .completed-title {
-    font-family: 'Share Tech Mono', sans-serif;
-    font-size: 3.5rem;
-    letter-spacing: 4px;
+    font-family: var(--font-title);
+    font-size: 4.5rem;
+    letter-spacing: 6px;
     color: var(--success);
+    line-height: 1;
   }
   .completed-sub { color: var(--gray-light); font-size: 1rem; }
   @keyframes bounce {
@@ -491,7 +522,7 @@
     margin-bottom: 1.5rem;
   }
   .anamnesis-block-title {
-    font-family: 'Rajdhani', sans-serif;
+    font-family: var(--font-label);
     font-size: 0.8rem;
     font-weight: 700;
     letter-spacing: 2px;
@@ -535,7 +566,7 @@
     border: none;
     color: var(--gray-light);
     cursor: pointer;
-    font-family: 'Rajdhani', sans-serif;
+    font-family: var(--font-label);
     font-size: 0.85rem;
     font-weight: 700;
     letter-spacing: 1.5px;
@@ -555,7 +586,7 @@
     border-bottom: 1px solid var(--dark3);
   }
   .progress-label { font-size: 0.85rem; color: var(--gray-light); }
-  .progress-value { font-family: 'Rajdhani', sans-serif; font-size: 1rem; font-weight: 700; color: var(--white); }
+  .progress-value { font-family: var(--font-label); font-size: 1rem; font-weight: 700; color: var(--white); }
 
   /* ── MODAL ── */
   .modal-overlay {
@@ -590,7 +621,7 @@
     margin: 0 auto 1.5rem;
   }
   .modal-title {
-    font-family: 'Share Tech Mono', sans-serif;
+    font-family: var(--font-title);
     font-size: 1.8rem;
     letter-spacing: 3px;
     margin-bottom: 1.2rem;
@@ -619,12 +650,12 @@
     padding: 0.2rem 0.6rem;
     border-radius: 20px;
     font-size: 0.7rem;
-    font-family: 'Rajdhani', sans-serif;
+    font-family: var(--font-label);
     letter-spacing: 1px;
     text-transform: uppercase;
   }
-  .tag-orange { background: rgba(232,101,10,0.15); color: var(--orange); border: 1px solid rgba(232,101,10,0.3); }
-  .tag-green { background: rgba(76,175,80,0.15); color: var(--success); border: 1px solid rgba(76,175,80,0.3); }
+  .tag-orange { background: var(--orange-dim); color: var(--orange); border: 1px solid var(--orange-border); }
+  .tag-green { background: rgba(61,184,90,0.15); color: var(--success); border: 1px solid rgba(61,184,90,0.3); }
 
   /* ── EMPTY STATE ── */
   .empty-state {
@@ -657,7 +688,7 @@
     margin-bottom: 1rem;
   }
   .chart-title {
-    font-family: 'Rajdhani', sans-serif;
+    font-family: var(--font-label);
     font-size: 0.75rem;
     letter-spacing: 2px;
     text-transform: uppercase;
@@ -676,7 +707,7 @@
     border: 1px solid var(--dark3);
     background: var(--dark2);
     color: var(--gray-light);
-    font-family: 'Rajdhani', sans-serif;
+    font-family: var(--font-label);
     font-size: 0.72rem;
     letter-spacing: 1px;
     text-transform: uppercase;
@@ -714,7 +745,7 @@
     border: 1px solid var(--dark3);
     border-radius: 12px;
     color: var(--white);
-    font-family: 'Share Tech Mono', monospace;
+    font-family: var(--font-title);
     font-size: 1.5rem;
     padding: 1rem;
     cursor: pointer;
@@ -743,8 +774,8 @@
   .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; margin-bottom: 1rem; }
   .metric-card { background: var(--dark3); border-radius: 10px; padding: 0.9rem; text-align: center; border: 1px solid transparent; transition: border-color 0.2s; }
   .metric-card.highlight { border-color: var(--orange); }
-  .metric-label { font-size: 0.68rem; font-family: 'Rajdhani', sans-serif; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gray-light); margin-bottom: 0.3rem; }
-  .metric-value { font-family: 'Share Tech Mono', sans-serif; font-size: 1.8rem; color: var(--orange); line-height: 1; }
+  .metric-label { font-size: 0.68rem; font-family: var(--font-label); letter-spacing: 1.5px; text-transform: uppercase; color: var(--gray-light); margin-bottom: 0.3rem; }
+  .metric-value { font-family: var(--font-title); font-size: 1.8rem; color: var(--orange); line-height: 1; }
   .metric-unit { font-size: 0.7rem; color: var(--gray-light); margin-top: 0.2rem; }
   .metric-status { font-size: 0.68rem; margin-top: 0.3rem; padding: 0.15rem 0.5rem; border-radius: 10px; display: inline-block; }
   .status-ok { background: rgba(76,175,80,0.15); color: var(--success); }
@@ -752,15 +783,15 @@
   .status-alert { background: rgba(229,57,53,0.15); color: var(--danger); }
   .projection-timeline { display: flex; gap: 0.6rem; margin-bottom: 1rem; }
   .projection-node { flex: 1; background: var(--dark3); border-radius: 10px; padding: 0.9rem 0.6rem; text-align: center; border-top: 3px solid var(--orange); }
-  .projection-node-label { font-family: 'Rajdhani', sans-serif; font-size: 0.72rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--orange); margin-bottom: 0.5rem; }
-  .projection-node-weight { font-family: 'Share Tech Mono', sans-serif; font-size: 1.5rem; color: var(--white); line-height: 1; }
+  .projection-node-label { font-family: var(--font-label); font-size: 0.72rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--orange); margin-bottom: 0.5rem; }
+  .projection-node-weight { font-family: var(--font-title); font-size: 1.5rem; color: var(--white); line-height: 1; }
   .projection-node-detail { font-size: 0.72rem; color: var(--gray-light); margin-top: 0.4rem; line-height: 1.5; }
   .disclaimer-box { background: rgba(232,101,10,0.07); border: 1px solid rgba(232,101,10,0.2); border-radius: 8px; padding: 0.8rem; font-size: 0.78rem; color: var(--gray-light); line-height: 1.5; margin-top: 0.5rem; }
   .progress-photo-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.6rem; margin-top: 0.5rem; }
   .progress-photo-slot { aspect-ratio: 1; background: var(--dark3); border-radius: 8px; border: 1.5px dashed var(--gray); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; font-size: 1.5rem; transition: border-color 0.2s; position: relative; }
   .progress-photo-slot:hover { border-color: var(--orange); }
   .progress-photo-slot img { width:100%; height:100%; object-fit:cover; position:absolute; inset:0; }
-  .progress-photo-label { font-size: 0.65rem; font-family: 'Rajdhani', sans-serif; letter-spacing: 1px; text-transform: uppercase; color: var(--gray-light); margin-top: 0.3rem; position: relative; z-index: 1; }
+  .progress-photo-label { font-size: 0.65rem; font-family: var(--font-label); letter-spacing: 1px; text-transform: uppercase; color: var(--gray-light); margin-top: 0.3rem; position: relative; z-index: 1; }
 </style>
 </head>
 <body>
@@ -792,7 +823,7 @@
 <div id="screen-select-student" class="screen" style="align-items:center;justify-content:center;padding:2rem;background:var(--black)">
   <div style="width:100%;max-width:380px">
     <div style="text-align:center;margin-bottom:2rem">
-      <div style="font-family:'Share Tech Mono',monospace;font-size:1.8rem;color:var(--orange);letter-spacing:4px">ACCESO ALUMNO</div>
+      <div style="font-family:var(--font-title);font-size:1.8rem;color:var(--orange);letter-spacing:4px">ACCESO ALUMNO</div>
       <div style="font-size:0.78rem;color:var(--gray-light);letter-spacing:2px;text-transform:uppercase;margin-top:0.4rem">Ingresá tu PIN de 4 dígitos</div>
     </div>
 
@@ -837,7 +868,7 @@
       <div class="topbar-title">VC FIT</div>
       <div class="topbar-sub" style="font-size:0.65rem;letter-spacing:1.5px">Víctor A. Corrales · Entrenador Personal Funcional</div>
     </div>
-    <span id="sync-status" style="font-size:0.65rem;font-family:'Rajdhani',sans-serif;letter-spacing:1px;color:var(--gray-light);margin-right:0.3rem">🟡 ...</span>
+    <span id="sync-status" style="font-size:0.65rem;font-family:var(--font-label);letter-spacing:1px;color:var(--gray-light);margin-right:0.3rem">🟡 ...</span>
     <button class="btn-logout" onclick="logoutTrainer()">Salir</button>
   </div>
   <div class="content">
@@ -1506,12 +1537,12 @@ Plancha: 3x45seg"></textarea>
      LOADING OVERLAY (Firebase init)
 ═══════════════════════════════════════════ -->
 <div id="loading-overlay" style="
-  position:fixed;inset:0;background:#0a0a0a;z-index:999;
+  position:fixed;inset:0;background:#141414;z-index:999;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.2rem;
 ">
-  <div style="font-family:'Share Tech Mono',monospace;font-size:2rem;letter-spacing:4px;color:#E8650A">VC FIT</div>
-  <div style="font-family:'Rajdhani',sans-serif;font-size:0.8rem;letter-spacing:3px;color:#888;text-transform:uppercase">Conectando con la nube...</div>
-  <div id="loading-msg" style="font-family:'Exo 2',sans-serif;font-size:0.75rem;color:#555;margin-top:0.5rem"> </div>
+  <div style="font-family:var(--font-title);font-size:2rem;letter-spacing:4px;color:var(--orange)">VC FIT</div>
+  <div style="font-family:var(--font-label);font-size:0.8rem;letter-spacing:3px;color:#888;text-transform:uppercase">Conectando con la nube...</div>
+  <div id="loading-msg" style="font-family:var(--font-body);font-size:0.75rem;color:#555;margin-top:0.5rem"> </div>
 </div>
 
 <script>
@@ -2311,7 +2342,7 @@ function renderAnamnesisView(s) {
     <div class="progress-row" style="margin-top:0.5rem">
       <span class="progress-label">PIN alumno</span>
       <div style="display:flex;align-items:center;gap:0.8rem">
-        <span class="progress-value" style="font-family:'Share Tech Mono',monospace;color:var(--orange);letter-spacing:3px" id="pin-display-${s.id}">${s.pin || '—'}</span>
+        <span class="progress-value" style="font-family:var(--font-title);color:var(--orange);letter-spacing:3px" id="pin-display-${s.id}">${s.pin || '—'}</span>
         <button class="btn btn-secondary btn-sm" onclick="openResetPinModal('${s.id}')">Resetear</button>
       </div>
     </div>
@@ -2412,7 +2443,7 @@ function renderStudentNutritionView(s) {
   }
   el.innerHTML = `<div class="card">
     <div class="card-title">🥗 Mi plan de alimentación</div>
-    <pre style="white-space:pre-wrap;font-size:0.88rem;line-height:1.8;color:var(--white-dim);font-family:'Exo 2',sans-serif">${s.nutritionPlan}</pre>
+    <pre style="white-space:pre-wrap;font-size:0.88rem;line-height:1.8;color:var(--white-dim);font-family:var(--font-body)">${s.nutritionPlan}</pre>
   </div>`;
 }
 
@@ -2536,7 +2567,7 @@ function renderWorkoutsList() {
     <div class="card" style="cursor:default">
       <div class="flex-between mb-1">
         <div>
-          <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.1rem;letter-spacing:1px">${w.name}</div>
+          <div style="font-family:var(--font-label);font-weight:700;font-size:1.1rem;letter-spacing:1px">${w.name}</div>
           ${w.desc ? `<div class="text-small text-gray">${w.desc}</div>` : ''}
         </div>
         <div style="display:flex;gap:0.5rem">
@@ -2544,7 +2575,7 @@ function renderWorkoutsList() {
           <button class="btn btn-danger btn-sm" onclick="deleteWorkout('${w.id}')">✕</button>
         </div>
       </div>
-      <pre style="background:var(--dark3);padding:0.8rem;border-radius:8px;font-size:0.82rem;line-height:1.7;white-space:pre-wrap;color:var(--white-dim);font-family:'Exo 2',sans-serif">${w.content || '(sin contenido)'}</pre>
+      <pre style="background:var(--dark3);padding:0.8rem;border-radius:8px;font-size:0.82rem;line-height:1.7;white-space:pre-wrap;color:var(--white-dim);font-family:var(--font-body)">${w.content || '(sin contenido)'}</pre>
       <div class="export-grid mt-2">
         <button class="btn btn-secondary btn-sm" onclick="copyWorkout('${w.id}')">📋 Copiar</button>
         <button class="btn btn-secondary btn-sm" onclick="exportWorkoutTxt('${w.id}')">📄 TXT</button>
@@ -2594,7 +2625,7 @@ function renderAssignTab(s) {
     if (w) {
       assignedView.innerHTML = `
         <div class="tag tag-orange mb-1">${w.name}</div>
-        <pre style="background:var(--dark3);padding:0.8rem;border-radius:8px;font-size:0.82rem;line-height:1.7;white-space:pre-wrap;color:var(--white-dim);font-family:'Exo 2',sans-serif;margin-top:0.5rem">${w.content}</pre>`;
+        <pre style="background:var(--dark3);padding:0.8rem;border-radius:8px;font-size:0.82rem;line-height:1.7;white-space:pre-wrap;color:var(--white-dim);font-family:var(--font-body);margin-top:0.5rem">${w.content}</pre>`;
     }
   } else {
     assignedView.innerHTML = '<div class="text-small text-gray">Ninguna rutina asignada aún.</div>';
@@ -3071,9 +3102,9 @@ function confirmResetPin() {
 const chartInstances = {};
 
 const CHART_VARS = {
-  weight:  { label: 'Peso',     unit: 'kg',  color: '#E8650A', key: 'weight' },
+  weight:  { label: 'Peso',     unit: 'kg',  color: '#FF6B00', key: 'weight' },
   fat:     { label: '% Grasa',  unit: '%',   color: '#e53935', key: (e) => e.calc?.fatPct },
-  muscle:  { label: '% Músculo',unit: '%',   color: '#4CAF50', key: (e) => e.calc?.musclePct },
+  muscle:  { label: '% Músculo',unit: '%',   color: '#3DB85A', key: (e) => e.calc?.musclePct },
   bmi:     { label: 'BMI',      unit: '',    color: '#FFC107', key: (e) => e.calc?.bmi },
   waist:   { label: 'Cintura',  unit: 'cm',  color: '#29B6F6', key: 'waist' },
   hip:     { label: 'Cadera',   unit: 'cm',  color: '#AB47BC', key: 'hip' }
@@ -3140,27 +3171,27 @@ function renderChart(studentId, role) {
         legend: {
           labels: {
             color: '#ccc',
-            font: { family: 'Exo 2', size: 11 },
+            font: { family: 'DM Sans', size: 11 },
             boxWidth: 12
           }
         },
         tooltip: {
-          backgroundColor: '#1e1e1e',
-          borderColor: '#2a2a2a',
+          backgroundColor: '#222222',
+          borderColor: '#2E2E2E',
           borderWidth: 1,
-          titleColor: '#E8650A',
+          titleColor: '#FF6B00',
           bodyColor: '#ccc',
           padding: 10
         }
       },
       scales: {
         x: {
-          ticks: { color: '#888', font: { family: 'Exo 2', size: 10 } },
-          grid: { color: '#2a2a2a' }
+          ticks: { color: '#888', font: { family: 'DM Sans', size: 10 } },
+          grid: { color: '#2E2E2E' }
         },
         y: {
-          ticks: { color: '#888', font: { family: 'Exo 2', size: 10 } },
-          grid: { color: '#2a2a2a' }
+          ticks: { color: '#888', font: { family: 'DM Sans', size: 10 } },
+          grid: { color: '#2E2E2E' }
         }
       }
     }
@@ -3583,8 +3614,8 @@ const manifest = {
   short_name: "VC Fit",
   start_url: "./",
   display: "standalone",
-  background_color: "#0a0a0a",
-  theme_color: "#0a0a0a",
+  background_color: "#141414",
+  theme_color: "#141414",
   icons: [{ src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%230a0a0a'/><text y='.9em' font-size='70' x='50%' text-anchor='middle' fill='%23E8650A' font-weight='bold'>VC</text></svg>", sizes: "192x192", type: "image/svg+xml" }]
 };
 const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
