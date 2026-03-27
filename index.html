@@ -4128,8 +4128,7 @@ function renderMetricsView(s, role) {
   const targetEl = document.getElementById(role === 'trainer' ? 'trainer-metrics-view' : 'student-metrics-view');
   if (!targetEl) return;
 
-  const canAdd = role === 'trainer';
-  const canEdit = true; // ambos pueden editar y eliminar
+  const canAdd = true; // tanto entrenador como alumno pueden agregar, editar y eliminar
 
   if (!latest) {
     targetEl.innerHTML = `
