@@ -463,27 +463,33 @@
 
   /* ── COMPLETE BUTTON ── */
   .complete-btn-wrapper {
-    padding: 1.5rem 1.2rem;
+    padding: 1rem 1.2rem;
     position: sticky;
     bottom: 0;
     background: linear-gradient(to top, var(--black) 70%, transparent);
   }
   .btn-complete {
     width: 100%;
-    padding: 1.3rem;
+    padding: 0.9rem 1.2rem;
     background: linear-gradient(135deg, #3DB85A, #2EA64A);
     color: #fff;
     border: none;
-    border-radius: 16px;
-    font-family: var(--font-title);
-    font-size: 2rem;
-    letter-spacing: 4px;
+    border-radius: 12px;
+    font-family: var(--font-label);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
     cursor: pointer;
     transition: all 0.25s;
-    box-shadow: 0 4px 20px rgba(61,184,90,0.35);
+    box-shadow: 0 3px 14px rgba(61,184,90,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
   }
-  .btn-complete:hover { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(61,184,90,0.5); }
-  .btn-complete:disabled { background: var(--gray); box-shadow: none; cursor: default; transform: none; }
+  .btn-complete:hover { transform: translateY(-1px); box-shadow: 0 5px 20px rgba(61,184,90,0.45); }
+  .btn-complete:disabled { background: var(--dark3); color: var(--gray-light); box-shadow: none; cursor: default; transform: none; border: 1px solid var(--dark4); }
 
   /* ── COMPLETED OVERLAY ── */
   .completed-overlay {
@@ -1318,8 +1324,20 @@ ALMUERZO
   </div>
 
   <div class="complete-btn-wrapper" id="complete-btn-wrapper" style="display:none">
+    <div id="session-progress-bar" style="margin-bottom:0.6rem;display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.3rem">
+        <span class="text-small text-gray" id="session-progress-label">0 de 0 ejercicios</span>
+        <span class="text-small text-orange" id="session-progress-pct">0%</span>
+      </div>
+      <div style="height:4px;background:var(--dark3);border-radius:2px;overflow:hidden">
+        <div id="session-progress-fill" style="height:100%;background:linear-gradient(90deg,var(--orange),var(--success));border-radius:2px;width:0%;transition:width 0.3s"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:0.6rem;margin-bottom:0.6rem;display:none" id="session-note-row">
+      <input type="text" class="input-field" id="session-note-input" placeholder="¿Cómo te sentiste hoy? (opcional)" style="font-size:0.85rem;padding:0.6rem 0.8rem">
+    </div>
     <button class="btn-complete" id="complete-btn" onclick="completeWorkout()">
-      ✅ RUTINA COMPLETADA
+      ✅ Marcar como completada
     </button>
   </div>
 </div>
@@ -3361,15 +3379,33 @@ function updateCompleteButton(checksKey, total) {
   const checks = state.exerciseChecks[checksKey] || {};
   const done = Object.values(checks).filter(c => c.done).length;
   const btn = document.getElementById('complete-btn');
+  const progressBar = document.getElementById('session-progress-bar');
+  const noteRow = document.getElementById('session-note-row');
+  const label = document.getElementById('session-progress-label');
+  const pct = document.getElementById('session-progress-pct');
+  const fill = document.getElementById('session-progress-fill');
+
+  // Mostrar barra si hay ejercicios
+  if (progressBar && total > 0) {
+    progressBar.style.display = 'block';
+    const pctVal = Math.round((done / total) * 100);
+    if (label) label.textContent = `${done} de ${total} ejercicios`;
+    if (pct) pct.textContent = `${pctVal}%`;
+    if (fill) fill.style.width = `${pctVal}%`;
+  }
+
+  // Mostrar campo de nota siempre
+  if (noteRow) noteRow.style.display = 'flex';
+
   if (btn) {
     if (total === 0) {
       btn.disabled = false;
-      btn.textContent = '✅ MARCAR COMO COMPLETADA';
+      btn.innerHTML = '✅ Marcar como completada';
     } else {
       btn.disabled = done < total;
-      btn.textContent = done < total
-        ? `${done}/${total} EJERCICIOS — COMPLETÁ TODOS`
-        : '✅ RUTINA COMPLETADA';
+      btn.innerHTML = done < total
+        ? `⏳ ${done}/${total} ejercicios completados`
+        : '✅ Marcar como completada';
     }
   }
 }
@@ -3379,8 +3415,12 @@ function completeWorkout() {
   if (!s) return;
   const w = state.workouts.find(x => x.id === s.assignedWorkoutId);
   const checksKey = s.assignedWorkoutId ? `${s.id}_${s.assignedWorkoutId}` : null;
-  const notes = checksKey ? Object.values(state.exerciseChecks[checksKey] || {})
-    .filter(c => c.note).map(c => c.note).join('; ') : '';
+  const sessionNote = document.getElementById('session-note-input')?.value.trim() || '';
+  const notes = [
+    sessionNote,
+    checksKey ? Object.values(state.exerciseChecks[checksKey] || {})
+      .filter(c => c.note).map(c => c.note).join('; ') : ''
+  ].filter(Boolean).join(' | ');
 
   const entry = {
     date: new Date().toLocaleDateString('es-AR'),
@@ -3479,22 +3519,38 @@ function renderStudentProgress(s) {
   el.innerHTML = `
     <div class="card">
       <div class="card-title">📈 Mis sesiones</div>
-      ${s.progressLog.slice().reverse().map(entry => `
-        <div class="progress-row">
-          <div>
+      ${s.progressLog.slice().reverse().map((entry, revIdx) => {
+        const realIdx = s.progressLog.length - 1 - revIdx;
+        return `
+        <div class="progress-row" style="align-items:flex-start;padding:0.8rem 0;gap:0.5rem">
+          <div style="flex:1">
             <div class="bold text-small">${entry.date}</div>
             <div class="text-small text-gray">${entry.workoutName || '—'}</div>
+            ${entry.weight ? `<div class="text-orange bold text-small">${entry.weight} kg</div>` : ''}
+            ${entry.note ? `<div class="text-small text-gray" style="margin-top:0.2rem;font-style:italic">"${entry.note}"</div>` : ''}
           </div>
-          <div class="text-right">
-            ${entry.weight ? `<div class="text-orange bold">${entry.weight} kg</div>` : ''}
-            <div class="text-small text-gray">${entry.exercises || 0} ejercicios</div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.4rem;flex-shrink:0">
+            <div class="text-small text-gray">${entry.exercises || 0} ej.</div>
+            <button class="btn btn-danger btn-sm" style="padding:0.3rem 0.6rem;font-size:0.75rem" onclick="deleteProgressEntry(${realIdx})">🗑️</button>
           </div>
-        </div>`).join('')}
+        </div>`;
+      }).join('')}
     </div>`;
 }
 
 
 
+
+function deleteProgressEntry(idx) {
+  const s = state.students.find(x => x.id === state.currentStudentId);
+  if (!s || !s.progressLog) return;
+  const entry = s.progressLog[idx];
+  if (!entry) return;
+  if (!confirm(`¿Estás seguro de que querés eliminar la sesión del ${entry.date}?\n\nEsta acción no se puede deshacer.`)) return;
+  s.progressLog.splice(idx, 1);
+  saveState();
+  renderStudentProgress(s);
+}
 
 // ═══════════════════════════════════════════
 //  SESSION MANAGEMENT
@@ -4019,6 +4075,7 @@ function renderMetricsView(s, role) {
   if (!targetEl) return;
 
   const canAdd = role === 'trainer';
+  const canDelete = true; // tanto entrenador como alumno pueden eliminar
 
   if (!latest) {
     targetEl.innerHTML = `
@@ -4179,7 +4236,10 @@ function renderMetricsView(s, role) {
           <div style="display:flex;flex-direction:column;gap:0.4rem;flex-shrink:0">
             <button class="btn btn-secondary btn-sm" style="padding:0.3rem 0.6rem;font-size:0.75rem" onclick="openEditMetricsModal(${realIdx})">✏️</button>
             <button class="btn btn-danger btn-sm" style="padding:0.3rem 0.6rem;font-size:0.75rem" onclick="deleteMetricEntry(${realIdx})">🗑️</button>
-          </div>` : ''}
+          </div>` : `
+          <div style="flex-shrink:0">
+            <button class="btn btn-danger btn-sm" style="padding:0.3rem 0.6rem;font-size:0.75rem" onclick="deleteMetricEntry(${realIdx})">🗑️</button>
+          </div>`}
         </div>`;
       }).join('')}
     </div>`;
