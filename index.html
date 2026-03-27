@@ -1608,8 +1608,8 @@ ALMUERZO
     <div class="card" style="margin-bottom:1.2rem;background:var(--dark3)">
       <div class="card-title">📋 Pegar desde texto</div>
       <div class="text-small text-gray" style="margin-bottom:0.8rem;line-height:1.6">
-        Pegá los datos en cualquier formato y la app los lee sola. Ejemplo:<br>
-        <span style="color:var(--orange);font-family:monospace;font-size:0.82rem">Peso: 84kg · Cintura: 92cm · Grasa: 23% · Músculo: 38%</span>
+        Pegá el reporte de tu báscula o app en cualquier formato:<br>
+        <span style="color:var(--orange);font-family:monospace;font-size:0.82rem">Peso: 84kg · Grasa: 23% · Músculo: 38% · Visceral: 8 · BMR: 1750 · BMI: 27.4</span>
       </div>
       <textarea class="input-field" id="m-paste-text" rows="3"
         placeholder="Pegá aquí el texto con los datos..."></textarea>
@@ -1632,6 +1632,18 @@ ALMUERZO
         <div class="input-group">
           <label class="input-label">% Músculo medido</label>
           <input type="number" class="input-field" id="m-muscle-manual" placeholder="38.0" step="0.1">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Grasa visceral (nivel)</label>
+          <input type="number" class="input-field" id="m-visceral" placeholder="ej: 8" step="1" min="1" max="59">
+        </div>
+        <div class="input-group">
+          <label class="input-label">BMR / Metab. basal (kcal)</label>
+          <input type="number" class="input-field" id="m-bmr-manual" placeholder="ej: 1750" step="1">
+        </div>
+        <div class="input-group">
+          <label class="input-label">BMI / Índice masa corporal</label>
+          <input type="number" class="input-field" id="m-bmi-manual" placeholder="ej: 27.4" step="0.1">
         </div>
         <div class="input-group">
           <label class="input-label">Cintura (cm)</label>
@@ -1707,6 +1719,18 @@ ALMUERZO
         <div class="input-group">
           <label class="input-label">% Músculo medido</label>
           <input type="number" class="input-field" id="em-muscle-manual" placeholder="38.0" step="0.1">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Grasa visceral (nivel)</label>
+          <input type="number" class="input-field" id="em-visceral" placeholder="ej: 8" step="1" min="1" max="59">
+        </div>
+        <div class="input-group">
+          <label class="input-label">BMR / Metab. basal (kcal)</label>
+          <input type="number" class="input-field" id="em-bmr-manual" placeholder="ej: 1750" step="1">
+        </div>
+        <div class="input-group">
+          <label class="input-label">BMI / Índice masa corporal</label>
+          <input type="number" class="input-field" id="em-bmi-manual" placeholder="ej: 27.4" step="0.1">
         </div>
         <div class="input-group">
           <label class="input-label">Cintura (cm)</label>
@@ -3870,6 +3894,9 @@ function openEditMetricsModal(idx) {
   document.getElementById('em-weight').value = e.weight || '';
   document.getElementById('em-fat-manual').value = e.fatManual || '';
   document.getElementById('em-muscle-manual').value = e.muscleManual || '';
+  document.getElementById('em-visceral').value = e.visceralManual || '';
+  document.getElementById('em-bmr-manual').value = e.bmrManual || '';
+  document.getElementById('em-bmi-manual').value = e.bmiManual || '';
   document.getElementById('em-waist').value = e.waist || '';
   document.getElementById('em-hip').value = e.hip || '';
   document.getElementById('em-chest').value = e.chest || '';
@@ -3886,31 +3913,40 @@ function saveEditMetrics() {
   const idx = parseInt(document.getElementById('em-idx').value);
   if (isNaN(idx) || idx < 0 || idx >= s.metricsLog.length) return;
 
-  const weight = document.getElementById('em-weight').value;
+  const weight        = document.getElementById('em-weight').value;
   if (!weight) { alert('El peso es obligatorio.'); return; }
 
-  const fatManual = document.getElementById('em-fat-manual').value;
-  const muscleManual = document.getElementById('em-muscle-manual').value;
-  const waist = document.getElementById('em-waist').value;
-  const activity = document.getElementById('em-activity').value;
+  const fatManual     = document.getElementById('em-fat-manual').value;
+  const muscleManual  = document.getElementById('em-muscle-manual').value;
+  const waist         = document.getElementById('em-waist').value;
+  const activity      = document.getElementById('em-activity').value;
+  const visceralManual= document.getElementById('em-visceral').value;
+  const bmrManual     = document.getElementById('em-bmr-manual').value;
+  const bmiManual     = document.getElementById('em-bmi-manual').value;
 
   const calc = calcMetrics(
     weight, s.anamnesis.height, s.anamnesis.age,
-    s.anamnesis.sex, fatManual, muscleManual, waist, activity
+    s.anamnesis.sex, fatManual, muscleManual, waist, activity,
+    visceralManual, bmrManual, bmiManual
   );
+
+  const gv = id => document.getElementById(id)?.value ? parseFloat(document.getElementById(id).value) : null;
 
   s.metricsLog[idx] = {
     ...s.metricsLog[idx],
-    date: document.getElementById('em-date').value || s.metricsLog[idx].date,
-    weight: parseFloat(weight),
-    fatManual: fatManual ? parseFloat(fatManual) : null,
-    muscleManual: muscleManual ? parseFloat(muscleManual) : null,
-    waist: waist ? parseFloat(waist) : null,
-    hip: document.getElementById('em-hip').value ? parseFloat(document.getElementById('em-hip').value) : null,
-    chest: document.getElementById('em-chest').value ? parseFloat(document.getElementById('em-chest').value) : null,
-    thigh: document.getElementById('em-thigh').value ? parseFloat(document.getElementById('em-thigh').value) : null,
-    bone: document.getElementById('em-bone').value ? parseFloat(document.getElementById('em-bone').value) : null,
-    activity: parseFloat(activity),
+    date:         document.getElementById('em-date').value || s.metricsLog[idx].date,
+    weight:       parseFloat(weight),
+    fatManual:    gv('em-fat-manual'),
+    muscleManual: gv('em-muscle-manual'),
+    visceralManual: gv('em-visceral'),
+    bmrManual:    gv('em-bmr-manual'),
+    bmiManual:    gv('em-bmi-manual'),
+    waist:        gv('em-waist'),
+    hip:          gv('em-hip'),
+    chest:        gv('em-chest'),
+    thigh:        gv('em-thigh'),
+    bone:         gv('em-bone'),
+    activity:     parseFloat(activity),
     calc
   };
 
@@ -3943,7 +3979,8 @@ function openMetricsModal(studentId) {
   if (s) {
     document.getElementById('m-weight').value = s.selfData?.weight || s.anamnesis.weight || '';
   }
-  ['m-fat-manual','m-waist','m-hip','m-chest','m-thigh'].forEach(id => {
+  ['m-fat-manual','m-muscle-manual','m-visceral','m-bmr-manual','m-bmi-manual',
+   'm-waist','m-hip','m-chest','m-thigh','m-bone','m-paste-text'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -3991,6 +4028,15 @@ function parseMetricsFromText() {
   const hueso = extract(['osea','ósea','hueso','bone','masa osea'], 'k?g?');
   if (hueso) { document.getElementById('m-bone').value = hueso; found++; }
 
+  const visceral = extract(['visceral','grasa visceral','fat visceral','nivel visceral'], '');
+  if (visceral) { document.getElementById('m-visceral').value = visceral; found++; }
+
+  const bmr = extract(['bmr','metabolismo basal','basal metabolic','metabolismo en reposo','tmb','tasa metabolica'], 'k?c?a?l?');
+  if (bmr) { document.getElementById('m-bmr-manual').value = bmr; found++; }
+
+  const bmi = extract(['bmi','imc','indice de masa','índice de masa','masa corporal'], '');
+  if (bmi) { document.getElementById('m-bmi-manual').value = bmi; found++; }
+
   if (found === 0) {
     alert('No encontré ningún dato reconocible. Revisá el formato del texto.');
   } else {
@@ -3998,7 +4044,7 @@ function parseMetricsFromText() {
   }
 }
 
-function calcMetrics(weight, height, age, sex, fatManual, muscleManual, waist, activity) {
+function calcMetrics(weight, height, age, sex, fatManual, muscleManual, waist, activity, visceralManual, bmrManual, bmiManual) {
   const h = parseFloat(height);
   const w = parseFloat(weight);
   const a = parseFloat(age);
@@ -4006,27 +4052,29 @@ function calcMetrics(weight, height, age, sex, fatManual, muscleManual, waist, a
 
   if (!h || !w) return null;
 
-  // BMI
-  const bmi = w / ((h / 100) ** 2);
+  // BMI — usar manual si existe, sino calcular
+  const bmiCalc = w / ((h / 100) ** 2);
+  const bmi = bmiManual ? parseFloat(bmiManual) : bmiCalc;
+  const bmiFromScale = !!bmiManual;
 
   // % Grasa — Deurenberg (si no hay manual)
   let fatPct = fatManual ? parseFloat(fatManual) : null;
-  if (!fatPct && bmi && a) {
+  if (!fatPct && bmiCalc && a) {
     const sexVal = sex === 'Femenino' ? 1 : 0;
-    fatPct = (1.20 * bmi) + (0.23 * a) - (10.8 * sexVal) - 5.4;
+    fatPct = (1.20 * bmiCalc) + (0.23 * a) - (10.8 * sexVal) - 5.4;
     fatPct = Math.max(3, Math.min(60, fatPct));
   }
 
   // Masa grasa y muscular
   const fatMass = fatPct ? (w * fatPct / 100) : null;
   const leanMass = fatMass ? (w - fatMass) : null;
-  // Músculo: usar medido si está disponible, sino estimar
   const musclePct = muscleManual ? parseFloat(muscleManual) : (leanMass ? ((leanMass * 0.78) / w * 100) : null);
   const muscleManualUsed = !!muscleManual;
 
-  // Grasa visceral estimada (índice cintura/altura)
-  let visceralEst = null;
-  if (waist && h) {
+  // Grasa visceral — usar manual si existe, sino estimar por cintura
+  let visceralEst = visceralManual ? parseFloat(visceralManual) : null;
+  const visceralFromScale = !!visceralManual;
+  if (!visceralEst && waist && h) {
     const whr = parseFloat(waist) / h;
     if (whr < 0.46) visceralEst = 1;
     else if (whr < 0.50) visceralEst = 3;
@@ -4035,13 +4083,16 @@ function calcMetrics(weight, height, age, sex, fatManual, muscleManual, waist, a
     else visceralEst = 12;
   }
 
-  // TDEE — Mifflin-St Jeor
+  // BMR — usar manual si existe, sino Mifflin-St Jeor
   let bmr = 0;
-  if (sex === 'Femenino') {
+  if (bmrManual) {
+    bmr = parseFloat(bmrManual);
+  } else if (sex === 'Femenino') {
     bmr = (10 * w) + (6.25 * h) - (5 * a) - 161;
   } else {
     bmr = (10 * w) + (6.25 * h) - (5 * a) + 5;
   }
+  const bmrFromScale = !!bmrManual;
   const tdee = Math.round(bmr * act);
 
   // BMI status
@@ -4051,7 +4102,7 @@ function calcMetrics(weight, height, age, sex, fatManual, muscleManual, waist, a
   else if (bmi < 30) { bmiStatus = 'Sobrepeso'; bmiClass = 'status-warn'; }
   else { bmiStatus = 'Obesidad'; bmiClass = 'status-alert'; }
 
-  return { bmi, fatPct, fatMass, leanMass, musclePct, muscleManualUsed, visceralEst, tdee, bmr, bmiStatus, bmiClass };
+  return { bmi, bmiFromScale, fatPct, fatMass, leanMass, musclePct, muscleManualUsed, visceralEst, visceralFromScale, tdee, bmr, bmrFromScale, bmiStatus, bmiClass };
 }
 
 function calcProjection(currentWeight, goalWeight, tdee, goal) {
@@ -4076,34 +4127,41 @@ function saveMetrics() {
   const s = state.students.find(x => x.id === state.currentStudentId);
   if (!s) return;
 
-  const weight = document.getElementById('m-weight').value;
-  const fatManual = document.getElementById('m-fat-manual').value;
-  const muscleManual = document.getElementById('m-muscle-manual').value;
-  const bone = document.getElementById('m-bone').value;
-  const waist = document.getElementById('m-waist').value;
-  const hip = document.getElementById('m-hip').value;
-  const chest = document.getElementById('m-chest').value;
-  const thigh = document.getElementById('m-thigh').value;
-  const activity = document.getElementById('m-activity').value;
+  const weight      = document.getElementById('m-weight').value;
+  const fatManual   = document.getElementById('m-fat-manual').value;
+  const muscleManual= document.getElementById('m-muscle-manual').value;
+  const bone        = document.getElementById('m-bone').value;
+  const waist       = document.getElementById('m-waist').value;
+  const hip         = document.getElementById('m-hip').value;
+  const chest       = document.getElementById('m-chest').value;
+  const thigh       = document.getElementById('m-thigh').value;
+  const activity    = document.getElementById('m-activity').value;
+  const visceralManual = document.getElementById('m-visceral').value;
+  const bmrManual   = document.getElementById('m-bmr-manual').value;
+  const bmiManual   = document.getElementById('m-bmi-manual').value;
 
   if (!weight) { alert('El peso es obligatorio para calcular las métricas.'); return; }
 
   const calc = calcMetrics(
     weight, s.anamnesis.height, s.anamnesis.age,
-    s.anamnesis.sex, fatManual, muscleManual, waist, activity
+    s.anamnesis.sex, fatManual, muscleManual, waist, activity,
+    visceralManual, bmrManual, bmiManual
   );
 
   const entry = {
     date: new Date().toLocaleDateString('es-AR'),
     dateISO: new Date().toISOString(),
     weight: parseFloat(weight),
-    fatManual: fatManual ? parseFloat(fatManual) : null,
+    fatManual:    fatManual    ? parseFloat(fatManual)    : null,
     muscleManual: muscleManual ? parseFloat(muscleManual) : null,
-    bone: bone ? parseFloat(bone) : null,
-    waist: waist ? parseFloat(waist) : null,
-    hip: hip ? parseFloat(hip) : null,
-    chest: chest ? parseFloat(chest) : null,
-    thigh: thigh ? parseFloat(thigh) : null,
+    bone:         bone         ? parseFloat(bone)         : null,
+    waist:        waist        ? parseFloat(waist)        : null,
+    hip:          hip          ? parseFloat(hip)          : null,
+    chest:        chest        ? parseFloat(chest)        : null,
+    thigh:        thigh        ? parseFloat(thigh)        : null,
+    visceralManual: visceralManual ? parseFloat(visceralManual) : null,
+    bmrManual:    bmrManual    ? parseFloat(bmrManual)    : null,
+    bmiManual:    bmiManual    ? parseFloat(bmiManual)    : null,
     activity: parseFloat(activity),
     calc
   };
@@ -4163,7 +4221,7 @@ function renderMetricsView(s, role) {
       <div class="metric-card">
         <div class="metric-label">BMI</div>
         <div class="metric-value">${fmt(c.bmi)}</div>
-        <div class="metric-unit">índice</div>
+        <div class="metric-unit">índice${c.bmiFromScale ? ' (báscula)' : ' (calc.)'}</div>
         <div class="metric-status ${c.bmiClass}">${c.bmiStatus}</div>
       </div>
       <div class="metric-card">
@@ -4179,12 +4237,17 @@ function renderMetricsView(s, role) {
       <div class="metric-card">
         <div class="metric-label">Grasa visceral</div>
         <div class="metric-value">${c.visceralEst !== null ? c.visceralEst : '—'}</div>
-        <div class="metric-unit">${c.visceralEst !== null ? 'nivel est.' : 'sin cintura'}</div>
+        <div class="metric-unit">${c.visceralEst !== null ? (c.visceralFromScale ? 'nivel (báscula)' : 'nivel est.') : 'sin datos'}</div>
       </div>
       <div class="metric-card highlight">
-        <div class="metric-label">Metabolismo</div>
+        <div class="metric-label">Metab. basal (BMR)</div>
+        <div class="metric-value">${fmtInt(c.bmr)}</div>
+        <div class="metric-unit">kcal/día${c.bmrFromScale ? ' (báscula)' : ' (calc.)'}</div>
+      </div>
+      <div class="metric-card highlight">
+        <div class="metric-label">TDEE total</div>
         <div class="metric-value">${fmtInt(c.tdee)}</div>
-        <div class="metric-unit">kcal/día (TDEE)</div>
+        <div class="metric-unit">kcal/día con actividad</div>
       </div>` : ''}
     </div>`;
 
