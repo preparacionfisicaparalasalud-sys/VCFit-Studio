@@ -3285,7 +3285,9 @@ function renderTodayWorkout(s) {
     return;
   }
 
-  const exercises = parseWorkoutExercises(w.content);
+  // Usar contenido personalizado del alumno si existe
+  const workoutContent = s.customWorkoutContent || w.content;
+  const exercises = parseWorkoutExercises(workoutContent);
   const checksKey = `${s.id}_${wId}`;
   if (!state.exerciseChecks[checksKey]) state.exerciseChecks[checksKey] = {};
 
@@ -3297,19 +3299,36 @@ function renderTodayWorkout(s) {
   });
 
   let html = `<div class="card mb-1">
-    <div class="card-title">📋 ${w.name}</div>
-    ${w.desc ? `<div class="text-small text-gray mb-1">${w.desc}</div>` : ''}
+    <div class="flex-between mb-1">
+      <div>
+        <div class="card-title" style="margin-bottom:0.2rem;border:none;padding:0">📋 ${w.name}</div>
+        ${w.desc ? `<div class="text-small text-gray">${w.desc}</div>` : ''}
+      </div>
+      <button class="btn btn-secondary btn-sm" style="font-size:0.75rem;padding:0.3rem 0.7rem;flex-shrink:0" onclick="toggleStudentWorkoutEditor('${s.id}','${wId}')">✏️ Editar</button>
+    </div>
     <div class="input-group mt-1" style="margin-bottom:0">
       <label class="input-label">📝 Mi nota general de esta rutina</label>
       <textarea class="input-field" id="student-workout-note" rows="2"
         placeholder="Cómo me sentí, qué mejoré, qué me costó..."
         onchange="saveStudentWorkoutNote(this.value)">${s.workoutNote || ''}</textarea>
     </div>
+  </div>
+
+  <!-- Editor de texto libre (oculto por defecto) -->
+  <div id="student-workout-editor" style="display:none" class="card mb-1">
+    <div class="card-title">✏️ Personalizar mi rutina</div>
+    <div class="text-small text-gray" style="margin-bottom:0.8rem;line-height:1.6">
+      Podés ajustar los pesos, repeticiones y series según tu nivel real. Estos cambios son solo tuyos — el entrenador no los ve.
+    </div>
+    <textarea class="input-field" id="student-workout-custom-text" style="min-height:220px;font-family:monospace;font-size:0.88rem;line-height:1.7">${s.customWorkoutContent || w.content || ''}</textarea>
+    <div style="display:flex;gap:0.6rem;margin-top:0.8rem">
+      <button class="btn btn-secondary btn-sm" onclick="resetStudentWorkoutCustom('${s.id}','${wId}')">↩️ Restaurar original</button>
+      <button class="btn btn-primary btn-sm" style="flex:1" onclick="saveStudentWorkoutCustom('${s.id}','${wId}')">💾 Guardar cambios</button>
+    </div>
   </div>`;
 
   if (exercises.length === 0) {
-    // Show raw content if no exercises parsed
-    html += `<div class="card"><pre style="white-space:pre-wrap;font-size:0.88rem;line-height:1.7;color:var(--white-dim)">${w.content}</pre></div>`;
+    html += `<div class="card"><pre style="white-space:pre-wrap;font-size:0.88rem;line-height:1.7;color:var(--white-dim)">${workoutContent}</pre></div>`;
   } else {
     Object.keys(days).forEach(day => {
       if (day) html += `<div class="card-title mt-2" style="padding-left:0.2rem;margin-bottom:0.5rem">${day}</div>`;
@@ -3335,6 +3354,41 @@ function renderTodayWorkout(s) {
   container.innerHTML = html;
   completeBtnWrapper.style.display = 'block';
   updateCompleteButton(checksKey, exercises.length);
+}
+
+function toggleStudentWorkoutEditor(studentId, wId) {
+  const editorEl = document.getElementById('student-workout-editor');
+  if (!editorEl) return;
+  const isVisible = editorEl.style.display !== 'none';
+  editorEl.style.display = isVisible ? 'none' : 'block';
+  if (!isVisible) {
+    // Precargar contenido actual
+    const s = state.students.find(x => x.id === studentId);
+    const w = wId === '__exclusive__' ? s?.exclusiveWorkout : state.workouts.find(x => x.id === wId);
+    const textarea = document.getElementById('student-workout-custom-text');
+    if (textarea && s && w) textarea.value = s.customWorkoutContent || w.content || '';
+  }
+}
+
+function saveStudentWorkoutCustom(studentId, wId) {
+  const s = state.students.find(x => x.id === studentId);
+  if (!s) return;
+  const text = document.getElementById('student-workout-custom-text')?.value || '';
+  s.customWorkoutContent = text;
+  saveState();
+  document.getElementById('student-workout-editor').style.display = 'none';
+  renderTodayWorkout(s);
+  alert('Rutina actualizada ✅');
+}
+
+function resetStudentWorkoutCustom(studentId, wId) {
+  if (!confirm('¿Restaurar la rutina original del entrenador? Perderás tus cambios.')) return;
+  const s = state.students.find(x => x.id === studentId);
+  if (!s) return;
+  s.customWorkoutContent = null;
+  saveState();
+  document.getElementById('student-workout-editor').style.display = 'none';
+  renderTodayWorkout(s);
 }
 
 function saveStudentWorkoutNote(value) {
@@ -4075,7 +4129,7 @@ function renderMetricsView(s, role) {
   if (!targetEl) return;
 
   const canAdd = role === 'trainer';
-  const canDelete = true; // tanto entrenador como alumno pueden eliminar
+  const canEdit = true; // ambos pueden editar y eliminar
 
   if (!latest) {
     targetEl.innerHTML = `
@@ -4232,14 +4286,10 @@ function renderMetricsView(s, role) {
             ${entry.waist ? `<div class="text-small text-gray">Cin: ${entry.waist}cm</div>` : ''}
             ${entry.calc ? `<div class="text-small text-gray">BMI ${fmt(entry.calc.bmi)} · G ${fmt(entry.calc.fatPct)}% · M ${fmt(entry.calc.musclePct)}%</div>` : ''}
           </div>
-          ${canAdd ? `
           <div style="display:flex;flex-direction:column;gap:0.4rem;flex-shrink:0">
             <button class="btn btn-secondary btn-sm" style="padding:0.3rem 0.6rem;font-size:0.75rem" onclick="openEditMetricsModal(${realIdx})">✏️</button>
             <button class="btn btn-danger btn-sm" style="padding:0.3rem 0.6rem;font-size:0.75rem" onclick="deleteMetricEntry(${realIdx})">🗑️</button>
-          </div>` : `
-          <div style="flex-shrink:0">
-            <button class="btn btn-danger btn-sm" style="padding:0.3rem 0.6rem;font-size:0.75rem" onclick="deleteMetricEntry(${realIdx})">🗑️</button>
-          </div>`}
+          </div>
         </div>`;
       }).join('')}
     </div>`;
