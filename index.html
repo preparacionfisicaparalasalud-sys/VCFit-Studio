@@ -1068,6 +1068,7 @@
       <button class="tab" onclick="switchTab('tab-assign','detail')">Rutina</button>
       <button class="tab" onclick="switchTab('tab-nutrition','detail')">Nutrición</button>
       <button class="tab" onclick="switchTab('tab-trainer-notes','detail')">Notas</button>
+      <button class="tab" onclick="switchTab('tab-payments','detail')">💰 Pagos</button>
       <button class="tab" onclick="switchTab('tab-progress','detail')">Progreso</button>
     </div>
 
@@ -1207,6 +1208,11 @@ ALMUERZO
       </div>
     </div>
 
+    <!-- TAB PAGOS -->
+    <div id="tab-payments" class="tab-content" style="display:none">
+      <div id="payments-view"></div>
+    </div>
+
     <!-- TAB PROGRESS -->
     <div id="tab-progress" class="tab-content" style="display:none">
       <div id="progress-log-view"></div>
@@ -1255,6 +1261,7 @@ ALMUERZO
 
     <!-- TAB TODAY -->
     <div id="tab-today" class="tab-content">
+      <div id="student-payment-banner"></div>
       <div id="student-welcome-banner"></div>
       <div id="today-workout-content"></div>
     </div>
@@ -2458,7 +2465,7 @@ function checkPin() {
 // ═══════════════════════════════════════════
 function switchTab(tabId, group) {
   const groupMap = {
-    detail: ['tab-anamnesis','tab-metrics','tab-assign','tab-nutrition','tab-trainer-notes','tab-progress'],
+    detail: ['tab-anamnesis','tab-metrics','tab-assign','tab-nutrition','tab-trainer-notes','tab-payments','tab-progress'],
     student: ['tab-today','tab-my-nutrition','tab-my-profile','tab-my-metrics','tab-my-progress']
   };
   const tabs = groupMap[group] || [];
@@ -2711,7 +2718,11 @@ function renderStudentsList() {
     return;
   }
   empty.style.display = 'none';
-  list.innerHTML = state.students.map(s => `
+  list.innerHTML = state.students.map(s => {
+    const now = new Date();
+    const mesActual = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    const pagado = s.payments && s.payments.some(p => p.mes === mesActual);
+    return `
     <div class="student-item" onclick="openStudentDetail('${s.id}')">
       <div class="student-avatar">
         ${s.photo ? `<img src="${s.photo}" alt="">` : getInitials(s.name)}
@@ -2721,10 +2732,13 @@ function renderStudentsList() {
         <div class="student-meta">${s.anamnesis.age ? s.anamnesis.age + ' años' : ''}${s.anamnesis.weight ? ' · ' + s.anamnesis.weight + ' kg' : ''}${s.anamnesis.goal ? ' · ' + s.anamnesis.goal : ''}</div>
         ${s.lastCompleted ? `<div class="student-meta" style="color:var(--success)">✅ Completó: ${s.lastCompleted.workoutName} · ${s.lastCompleted.date}</div>` : '<div class="student-meta" style="color:var(--gray)">⏳ Sin completar aún</div>'}
       </div>
-      ${s.assignedWorkoutId ? '<span class="student-badge">Rutina asignada</span>' : ''}
-      <button class="btn btn-danger btn-sm" style="flex-shrink:0;margin-left:0.5rem" onclick="event.stopPropagation(); deleteStudent('${s.id}')">✕</button>
-    </div>
-  `).join('');
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.4rem;flex-shrink:0;margin-left:0.5rem">
+        <span style="font-size:0.7rem;font-family:var(--font-label);letter-spacing:0.5px;color:${pagado ? 'var(--success)' : 'var(--danger)'}">${pagado ? '💰 Al día' : '💰 Pendiente'}</span>
+        ${s.assignedWorkoutId ? '<span class="student-badge">Rutina</span>' : ''}
+        <button class="btn btn-danger btn-sm" style="padding:0.2rem 0.5rem;font-size:0.75rem" onclick="event.stopPropagation(); deleteStudent('${s.id}')">✕</button>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function deleteStudent(id) {
@@ -2761,6 +2775,7 @@ function openStudentDetail(id) {
   renderMetricsView(s, 'trainer');
   renderNutritionTab(s);
   renderTrainerNotesTab(s);
+  renderPaymentsTab(s);
   switchTab('tab-anamnesis', 'detail');
   showScreen('screen-student-detail');
 }
@@ -3232,6 +3247,7 @@ function enterAsStudent(studentId) {
   renderMetricsView(s, 'student');
   renderStudentNutritionView(s);
   renderStudentWelcomeBanner(s);
+  renderStudentPaymentBanner(s);
   switchTab('tab-today', 'student');
   showScreen('screen-student-view');
 }
@@ -3881,8 +3897,186 @@ function buildChartHTML(studentId, role) {
 }
 
 // ═══════════════════════════════════════════
-//  METRICS & PROJECTION ENGINE
+//  SISTEMA DE PAGOS
 // ═══════════════════════════════════════════
+function renderPaymentsTab(s) {
+  const el = document.getElementById('payments-view');
+  if (!el) return;
+  if (!s.payments) s.payments = [];
+
+  const now = new Date();
+  const mesActual = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const mesLabel = now.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
+  const pagoActual = s.payments.find(p => p.mes === mesActual);
+
+  html = `
+    <!-- Estado mes actual -->
+    <div class="card" style="border-color:${pagoActual ? 'var(--success)' : 'var(--danger)'};margin-bottom:1rem">
+      <div class="card-title" style="color:${pagoActual ? 'var(--success)' : 'var(--danger)'}">
+        ${pagoActual ? '✅ Pagado' : '⏳ Pendiente'} — ${mesLabel}
+      </div>
+      ${pagoActual ? `
+        <div class="progress-row">
+          <span class="progress-label">Fecha de pago</span>
+          <span class="progress-value">${pagoActual.fecha}</span>
+        </div>
+        ${pagoActual.monto ? `<div class="progress-row">
+          <span class="progress-label">Monto</span>
+          <span class="progress-value text-orange">$${pagoActual.monto}</span>
+        </div>` : ''}
+        ${pagoActual.nota ? `<div class="text-small text-gray mt-1" style="font-style:italic">"${pagoActual.nota}"</div>` : ''}
+        <button class="btn btn-danger btn-sm mt-2" onclick="deletePayment('${s.id}','${mesActual}')">🗑️ Eliminar pago</button>
+      ` : `
+        <div class="text-small text-gray" style="margin-bottom:1rem;line-height:1.6">
+          Registrá el pago del mes actual para actualizar el estado del alumno.
+        </div>
+        <div class="input-group">
+          <label class="input-label">Monto (opcional)</label>
+          <input type="number" class="input-field" id="pay-monto" placeholder="ej: 15000" step="100">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Nota (opcional)</label>
+          <input type="text" class="input-field" id="pay-nota" placeholder="ej: Transferencia, efectivo...">
+        </div>
+        <button class="btn btn-success btn-full" onclick="registrarPago('${s.id}')" style="margin-top:0.5rem">
+          ✅ Marcar como pagado
+        </button>
+      `}
+    </div>
+
+    <!-- Registrar mes anterior -->
+    <div class="card" style="margin-bottom:1rem">
+      <div class="card-title">📅 Registrar pago de otro mes</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem">
+        <div class="input-group">
+          <label class="input-label">Mes (YYYY-MM)</label>
+          <input type="month" class="input-field" id="pay-mes-custom" value="${mesActual}">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Monto</label>
+          <input type="number" class="input-field" id="pay-monto-custom" placeholder="ej: 15000" step="100">
+        </div>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Nota (opcional)</label>
+        <input type="text" class="input-field" id="pay-nota-custom" placeholder="ej: Pago atrasado, cuota doble...">
+      </div>
+      <button class="btn btn-primary btn-sm btn-full" onclick="registrarPagoCustom('${s.id}')">
+        💾 Guardar pago
+      </button>
+    </div>
+
+    <!-- Historial -->
+    <div class="card">
+      <div class="card-title">📋 Historial de pagos</div>
+      ${s.payments.length === 0 ? `<div class="text-small text-gray">Sin pagos registrados aún.</div>` :
+        s.payments.slice().sort((a,b) => b.mes.localeCompare(a.mes)).map(p => {
+          const [y, m] = p.mes.split('-');
+          const label = new Date(parseInt(y), parseInt(m)-1, 1).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
+          return `
+          <div class="progress-row" style="align-items:flex-start;padding:0.7rem 0">
+            <div style="flex:1">
+              <div class="bold text-small" style="text-transform:capitalize">${label}</div>
+              <div class="text-small text-gray">${p.fecha}${p.nota ? ` · ${p.nota}` : ''}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.6rem;flex-shrink:0">
+              ${p.monto ? `<span class="text-orange bold text-small">$${p.monto}</span>` : ''}
+              <span class="tag tag-green" style="font-size:0.65rem">✅</span>
+              <button class="btn btn-danger btn-sm" style="padding:0.2rem 0.5rem;font-size:0.7rem" onclick="deletePayment('${s.id}','${p.mes}')">🗑️</button>
+            </div>
+          </div>`;
+        }).join('')}
+    </div>`;
+
+  el.innerHTML = html;
+}
+
+function registrarPago(studentId) {
+  const s = state.students.find(x => x.id === studentId);
+  if (!s) return;
+  const now = new Date();
+  const mes = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const monto = document.getElementById('pay-monto')?.value || '';
+  const nota = document.getElementById('pay-nota')?.value.trim() || '';
+
+  if (!s.payments) s.payments = [];
+  // Eliminar si ya existe para reemplazar
+  s.payments = s.payments.filter(p => p.mes !== mes);
+  s.payments.push({
+    mes,
+    fecha: now.toLocaleDateString('es-AR'),
+    monto: monto ? parseFloat(monto) : null,
+    nota
+  });
+  saveState();
+  renderPaymentsTab(s);
+  renderStudentPaymentBanner(s);
+}
+
+function registrarPagoCustom(studentId) {
+  const s = state.students.find(x => x.id === studentId);
+  if (!s) return;
+  const mes = document.getElementById('pay-mes-custom')?.value;
+  if (!mes) { alert('Seleccioná un mes.'); return; }
+  const monto = document.getElementById('pay-monto-custom')?.value || '';
+  const nota = document.getElementById('pay-nota-custom')?.value.trim() || '';
+  const [y, m] = mes.split('-');
+  const fecha = new Date(parseInt(y), parseInt(m)-1, 1).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
+
+  if (!s.payments) s.payments = [];
+  s.payments = s.payments.filter(p => p.mes !== mes);
+  s.payments.push({
+    mes,
+    fecha: new Date().toLocaleDateString('es-AR'),
+    monto: monto ? parseFloat(monto) : null,
+    nota
+  });
+  saveState();
+  renderPaymentsTab(s);
+  alert(`✅ Pago de ${fecha} registrado`);
+}
+
+function deletePayment(studentId, mes) {
+  const s = state.students.find(x => x.id === studentId);
+  if (!s || !s.payments) return;
+  const p = s.payments.find(x => x.mes === mes);
+  if (!p) return;
+  const [y, m] = mes.split('-');
+  const label = new Date(parseInt(y), parseInt(m)-1, 1).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
+  if (!confirm(`¿Eliminar el pago de ${label}?\n\nEsta acción no se puede deshacer.`)) return;
+  s.payments = s.payments.filter(x => x.mes !== mes);
+  saveState();
+  renderPaymentsTab(s);
+  renderStudentPaymentBanner(s);
+}
+
+function renderStudentPaymentBanner(s) {
+  const el = document.getElementById('student-payment-banner');
+  if (!el) return;
+  if (!s.payments) s.payments = [];
+
+  const now = new Date();
+  const mesActual = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const pagado = s.payments.some(p => p.mes === mesActual);
+
+  if (pagado) {
+    el.innerHTML = `<div style="background:rgba(61,184,90,0.1);border:1px solid rgba(61,184,90,0.3);border-radius:12px;padding:0.6rem 1rem;margin-bottom:0.8rem;display:flex;align-items:center;gap:0.6rem">
+      <span style="color:var(--success);font-size:1.1rem">✅</span>
+      <span class="text-small" style="color:var(--success)">Estás al día con tu cuota del mes</span>
+    </div>`;
+  } else {
+    el.innerHTML = `<div style="background:rgba(229,57,53,0.1);border:1px solid rgba(229,57,53,0.3);border-radius:12px;padding:0.6rem 1rem;margin-bottom:0.8rem;display:flex;align-items:center;gap:0.6rem">
+      <span style="color:var(--danger);font-size:1.1rem">⚠️</span>
+      <span class="text-small" style="color:var(--danger)">Tenés un pago pendiente este mes</span>
+    </div>`;
+  }
+}
+
+// ═══════════════════════════════════════════
+//  SISTEMA DE PAGOS — FIN
+// ═══════════════════════════════════════════
+
+
 
 function openEditMetricsModal(idx) {
   const s = state.students.find(x => x.id === state.currentStudentId);
