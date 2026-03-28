@@ -33,38 +33,193 @@
     --font-body: 'DM Sans', sans-serif;
     --font-label: 'Rajdhani', sans-serif;
     --font-mono: 'Share Tech Mono', monospace;
+    --text-weight: 400;
+    --label-weight: 600;
+    --is-light: 0;
   }
 
-  /* ── TEMA CLARO ── */
-  body.theme-light {
-    --black: #F2F2F5;
-    --dark: #FFFFFF;
+  /* ══════════════════════════════════════
+     TEMAS
+  ══════════════════════════════════════ */
+
+  /* AZUL MEDIANOCHE */
+  [data-theme="azul"] {
+    --black: #0D1B2A;
+    --dark: #132236;
+    --dark2: #1A2E48;
+    --dark3: #213858;
+    --dark4: #2A4268;
+    --white: #E4EFFA;
+    --white-dim: #AABFD4;
+    --gray: #7A9AB5;
+    --gray-light: #557090;
+    --orange-dim: rgba(255,107,0,0.18);
+  }
+
+  /* BURDEOS OSCURO */
+  [data-theme="burdeos"] {
+    --black: #180A0E;
+    --dark: #22101A;
+    --dark2: #2C1520;
+    --dark3: #3A1D2A;
+    --dark4: #4A2535;
+    --white: #F5EAF0;
+    --white-dim: #D4B0C0;
+    --gray: #A07080;
+    --gray-light: #784058;
+    --orange-dim: rgba(255,107,0,0.18);
+  }
+
+  /* VERDE PROFUNDO */
+  [data-theme="verde"] {
+    --black: #0A1F18;
+    --dark: #102820;
+    --dark2: #163228;
+    --dark3: #1E3D30;
+    --dark4: #264838;
+    --white: #E2F5EE;
+    --white-dim: #A8D4C4;
+    --gray: #6A9884;
+    --gray-light: #487864;
+    --orange-dim: rgba(255,107,0,0.18);
+  }
+
+  /* GRIS PIEDRA — light */
+  [data-theme="gris"] {
+    --black: #EEEEF3;
+    --dark: #FAFAFD;
     --dark2: #FFFFFF;
-    --dark3: #F0F0F4;
-    --dark4: #E4E4EA;
-    --gray: #9A9AAF;
-    --gray-light: #6B6B80;
-    --white: #111118;
-    --white-dim: #333344;
-    --orange-dim: rgba(255,107,0,0.10);
-    --orange-border: rgba(255,107,0,0.30);
+    --dark3: #E8E8EE;
+    --dark4: #D8D8E2;
+    --white: #16161E;
+    --white-dim: #2E2E3A;
+    --gray: #5C5C72;
+    --gray-light: #3A3A50;
+    --orange-dim: rgba(255,107,0,0.12);
+    --orange-border: rgba(255,107,0,0.35);
+    --success: #1E8A3C;
+    --danger: #C41C18;
+    --is-light: 1;
+    --text-weight: 500;
+    --label-weight: 700;
   }
-  body.theme-light .card { box-shadow: 0 1px 6px rgba(0,0,0,0.07); }
-  body.theme-light .student-item { box-shadow: 0 1px 6px rgba(0,0,0,0.06); }
-  body.theme-light .topbar { background: #ffffff; border-bottom: 1px solid #e8e8ee; box-shadow: 0 1px 8px rgba(0,0,0,0.06); }
-  body.theme-light .modal { background: #ffffff; box-shadow: 0 8px 40px rgba(0,0,0,0.18); }
-  body.theme-light .nav-card { box-shadow: 0 1px 6px rgba(0,0,0,0.07); }
-  body.theme-light .btn-secondary { background: #F0F0F4; color: #333344; border: 1px solid #D8D8E4; }
-  body.theme-light .btn-secondary:hover { background: #E4E4EA; }
-  body.theme-light .exercise-item { background: #F8F8FB; border-color: #E4E4EA; }
-  body.theme-light .exercise-item.done { background: #F0FAF2; border-color: #C8EACF; }
-  body.theme-light .complete-btn-wrapper { background: linear-gradient(to top, var(--black) 70%, transparent); }
-  body.theme-light .tabs { background: var(--black); border-bottom: 1px solid #E4E4EA; }
-  body.theme-light .tab { color: var(--gray-light); }
-  body.theme-light .tab.active { color: var(--orange); border-bottom-color: var(--orange); }
-  body.theme-light pre { background: #F0F0F4 !important; color: #333344 !important; }
 
-  /* ── BOTÓN TEMA ── */
+  /* BLANCO PURO — light */
+  [data-theme="blanco"] {
+    --black: #FFFFFF;
+    --dark: #F8F8FA;
+    --dark2: #F4F4F8;
+    --dark3: #EBEBF0;
+    --dark4: #DCDCE6;
+    --white: #0F0F18;
+    --white-dim: #28283A;
+    --gray: #525265;
+    --gray-light: #303048;
+    --orange-dim: rgba(255,107,0,0.10);
+    --orange-border: rgba(255,107,0,0.40);
+    --success: #1A7A34;
+    --danger: #C01818;
+    --is-light: 1;
+    --text-weight: 500;
+    --label-weight: 700;
+  }
+
+  /* Ajustes visuales para temas claros */
+  [data-theme="gris"], [data-theme="blanco"] {
+    color: var(--white);
+  }
+  [data-theme="gris"] .card,
+  [data-theme="blanco"] .card {
+    box-shadow: 0 1px 8px rgba(0,0,0,0.08);
+    border-color: var(--dark4);
+  }
+  [data-theme="gris"] .student-item,
+  [data-theme="blanco"] .student-item {
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  }
+  [data-theme="gris"] .topbar,
+  [data-theme="blanco"] .topbar {
+    background: var(--dark2);
+    border-bottom: 1px solid var(--dark4);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  [data-theme="gris"] .modal,
+  [data-theme="blanco"] .modal {
+    background: var(--dark2);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+  }
+  [data-theme="gris"] .nav-card,
+  [data-theme="blanco"] .nav-card {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  }
+  [data-theme="gris"] .btn-secondary,
+  [data-theme="blanco"] .btn-secondary {
+    background: var(--dark3);
+    color: var(--white);
+    border: 1.5px solid var(--dark4);
+  }
+  [data-theme="gris"] .exercise-item,
+  [data-theme="blanco"] .exercise-item {
+    background: var(--dark3);
+    border-color: var(--dark4);
+  }
+  [data-theme="gris"] .exercise-item.done,
+  [data-theme="blanco"] .exercise-item.done {
+    background: rgba(26,122,52,0.08);
+    border-color: rgba(26,122,52,0.3);
+  }
+  [data-theme="gris"] pre,
+  [data-theme="blanco"] pre {
+    background: var(--dark3) !important;
+    color: var(--white-dim) !important;
+  }
+  [data-theme="gris"] .tabs,
+  [data-theme="blanco"] .tabs {
+    background: var(--dark2);
+    border-bottom: 1px solid var(--dark4);
+  }
+  /* Texto más grueso en temas claros */
+  [data-theme="gris"] body,
+  [data-theme="blanco"] body,
+  [data-theme="gris"] .student-name,
+  [data-theme="blanco"] .student-name,
+  [data-theme="gris"] .student-meta,
+  [data-theme="blanco"] .student-meta,
+  [data-theme="gris"] .text-small,
+  [data-theme="blanco"] .text-small {
+    font-weight: var(--text-weight, 400);
+  }
+  [data-theme="gris"] .input-label,
+  [data-theme="blanco"] .input-label,
+  [data-theme="gris"] .card-title,
+  [data-theme="blanco"] .card-title,
+  [data-theme="gris"] .section-title,
+  [data-theme="blanco"] .section-title,
+  [data-theme="gris"] .bold,
+  [data-theme="blanco"] .bold {
+    font-weight: var(--label-weight, 600);
+  }
+  [data-theme="gris"] .complete-btn-wrapper,
+  [data-theme="blanco"] .complete-btn-wrapper {
+    background: linear-gradient(to top, var(--black) 70%, transparent);
+  }
+  /* Señalización colores en temas claros */
+  [data-theme="gris"] .tag-green,
+  [data-theme="blanco"] .tag-green {
+    background: rgba(26,122,52,0.15);
+    color: #1A7A34;
+  }
+  [data-theme="gris"] .tag-orange,
+  [data-theme="blanco"] .tag-orange {
+    background: rgba(200,80,0,0.12);
+    color: #CC4400;
+  }
+  [data-theme="gris"] .text-orange,
+  [data-theme="blanco"] .text-orange { color: #CC4400; }
+  [data-theme="gris"] .btn-complete,
+  [data-theme="blanco"] .btn-complete { box-shadow: 0 3px 14px rgba(26,122,52,0.25); }
+
+  /* ── BOTÓN TEMA / PICKER ── */
   .theme-toggle-btn {
     width: 34px; height: 34px;
     border-radius: 50%;
@@ -75,9 +230,57 @@
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
     transition: all 0.2s;
-    font-size: 1rem;
   }
+  .theme-toggle-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .theme-toggle-btn:hover { border-color: var(--orange); color: var(--orange); }
+
+  /* Theme picker panel */
+  .theme-picker {
+    position: fixed;
+    top: 60px; right: 12px;
+    background: var(--dark2);
+    border: 1px solid var(--dark4);
+    border-radius: 14px;
+    padding: 1rem;
+    z-index: 1000;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+    min-width: 220px;
+    display: none;
+  }
+  .theme-picker.show { display: block; animation: fadeIn 0.15s ease; }
+  .theme-picker-title {
+    font-family: var(--font-label);
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gray-light);
+    margin-bottom: 0.8rem;
+  }
+  .theme-swatches { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+  .theme-swatch {
+    border-radius: 10px;
+    height: 52px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+    display: flex; align-items: flex-end; padding: 4px 5px;
+  }
+  .theme-swatch:hover { transform: scale(1.05); }
+  .theme-swatch.active { border-color: var(--orange); }
+  .theme-swatch-label {
+    font-size: 0.62rem;
+    font-family: var(--font-label);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    line-height: 1;
+    padding: 2px 4px;
+    border-radius: 4px;
+    background: rgba(0,0,0,0.4);
+    color: #fff;
+  }
 
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
@@ -2090,6 +2293,39 @@ Plancha: 3x45seg"></textarea>
 <!-- ═══════════════════════════════════════════
      LOADING OVERLAY (Firebase init)
 ═══════════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════════
+     THEME PICKER
+═══════════════════════════════════════════ -->
+<div id="theme-picker-panel" class="theme-picker">
+  <div class="theme-picker-title">Elegí tu tema</div>
+  <div class="theme-swatches">
+    <div class="theme-swatch" data-theme="carbono" onclick="selectTheme('carbono')"
+      style="background:linear-gradient(135deg,#141414,#2E2E2E)">
+      <span class="theme-swatch-label">Carbono</span>
+    </div>
+    <div class="theme-swatch" data-theme="azul" onclick="selectTheme('azul')"
+      style="background:linear-gradient(135deg,#0D1B2A,#213858)">
+      <span class="theme-swatch-label">Azul noche</span>
+    </div>
+    <div class="theme-swatch" data-theme="burdeos" onclick="selectTheme('burdeos')"
+      style="background:linear-gradient(135deg,#180A0E,#3A1D2A)">
+      <span class="theme-swatch-label">Burdeos</span>
+    </div>
+    <div class="theme-swatch" data-theme="verde" onclick="selectTheme('verde')"
+      style="background:linear-gradient(135deg,#0A1F18,#1E3D30)">
+      <span class="theme-swatch-label">Verde</span>
+    </div>
+    <div class="theme-swatch" data-theme="gris" onclick="selectTheme('gris')"
+      style="background:linear-gradient(135deg,#EEEEF3,#D8D8E2)">
+      <span class="theme-swatch-label" style="background:rgba(0,0,0,0.15);color:#333">Gris</span>
+    </div>
+    <div class="theme-swatch" data-theme="blanco" onclick="selectTheme('blanco')"
+      style="background:linear-gradient(135deg,#FFFFFF,#E8E8EE)">
+      <span class="theme-swatch-label" style="background:rgba(0,0,0,0.12);color:#222">Blanco</span>
+    </div>
+  </div>
+</div>
+
 <div id="loading-overlay" style="
   position:fixed;inset:0;background:#141414;z-index:999;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.2rem;
@@ -2114,32 +2350,73 @@ const SVG = {
 };
 
 // ═══════════════════════════════════════════
-//  SISTEMA DE TEMAS (CLARO / OSCURO)
+//  SISTEMA DE TEMAS
 // ═══════════════════════════════════════════
+const THEME_ICONS = {
+  carbono: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>`,
+  azul:    `<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
+  burdeos: `<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
+  verde:   `<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
+  gris:    `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>`,
+  blanco:  `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>`,
+};
+
+let _activeThemeRole = null;
+
 function applyTheme(theme) {
-  if (theme === 'light') {
-    document.body.classList.add('theme-light');
-  } else {
-    document.body.classList.remove('theme-light');
-  }
-  // Actualizar iconos de los botones de tema
-  const isDark = theme !== 'light';
+  const t = theme || 'carbono';
+  document.body.setAttribute('data-theme', t === 'carbono' ? '' : t);
+  // Actualizar ícono en ambos botones
   ['trainer','student'].forEach(role => {
     const btn = document.getElementById(`theme-btn-${role}`);
-    if (btn) btn.innerHTML = isDark ? SVG.moon : SVG.sun;
+    if (btn) btn.innerHTML = THEME_ICONS[t] || THEME_ICONS.carbono;
+  });
+  // Marcar swatch activo
+  document.querySelectorAll('.theme-swatch').forEach(sw => {
+    sw.classList.toggle('active', sw.dataset.theme === t);
   });
 }
 
 function toggleTheme(role) {
-  const current = localStorage.getItem('vcfit-theme') || 'dark';
-  const next = current === 'dark' ? 'light' : 'dark';
-  localStorage.setItem('vcfit-theme', next);
-  applyTheme(next);
+  _activeThemeRole = role;
+  const panel = document.getElementById('theme-picker-panel');
+  if (!panel) return;
+  const isOpen = panel.classList.contains('show');
+  panel.classList.toggle('show', !isOpen);
+  // Cerrar al hacer click fuera
+  if (!isOpen) {
+    setTimeout(() => {
+      document.addEventListener('click', closeThemePickerOutside, { once: true });
+    }, 50);
+  }
+}
+
+function closeThemePickerOutside(e) {
+  const panel = document.getElementById('theme-picker-panel');
+  const btns = document.querySelectorAll('.theme-toggle-btn');
+  let clickedInside = panel?.contains(e.target);
+  btns.forEach(b => { if (b.contains(e.target)) clickedInside = true; });
+  if (!clickedInside) panel?.classList.remove('show');
+}
+
+function selectTheme(theme) {
+  const key = _activeThemeRole === 'student' ? 'vcfit-theme-student' : 'vcfit-theme-trainer';
+  localStorage.setItem(key, theme);
+  applyTheme(theme);
+  document.getElementById('theme-picker-panel')?.classList.remove('show');
 }
 
 function initTheme() {
-  const saved = localStorage.getItem('vcfit-theme') || 'dark';
+  // Se llama sin rol — aplica el tema del entrenador por defecto al inicio
+  const saved = localStorage.getItem('vcfit-theme-trainer') || 'carbono';
   applyTheme(saved);
+}
+
+function applyThemeForRole(role) {
+  const key = role === 'student' ? 'vcfit-theme-student' : 'vcfit-theme-trainer';
+  const saved = localStorage.getItem(key) || 'carbono';
+  applyTheme(saved);
+  _activeThemeRole = role;
 }
 
 // ═══════════════════════════════════════════
@@ -2656,6 +2933,7 @@ function checkTrainerPassword() {
     saveState();
     refreshTrainerDashboard();
     applyLogo();
+    applyThemeForRole('trainer');
     showScreen('screen-trainer');
   } else {
     document.getElementById('trainer-pwd-error').textContent = '❌ Contraseña incorrecta';
@@ -3731,6 +4009,7 @@ function enterAsStudent(studentId) {
   const s = state.students.find(x => x.id === studentId);
   if (!s) return;
 
+  applyThemeForRole('student');
   document.getElementById('student-view-name').textContent = s.name;
   if (state.logoDataUrl) setLogoInEl('student-view-logo', state.logoDataUrl);
 
@@ -4759,10 +5038,10 @@ function logoutStudent() {
   state.currentRole = null;
   state.currentStudentId = null;
   saveState();
-  // Limpiar campos de PIN por si quedaron
   pinCurrent = '';
   updatePinDisplay();
   document.getElementById('pin-error').textContent = '';
+  applyThemeForRole('trainer');
   showScreen('screen-login');
 }
 
