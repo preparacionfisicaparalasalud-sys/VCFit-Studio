@@ -889,6 +889,9 @@
     from { transform: translateY(100%); }
     to { transform: translateY(0); }
   }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
   .modal-handle {
     width: 40px; height: 4px;
     background: var(--dark3);
@@ -1441,7 +1444,11 @@
 
       <!-- Crear rutina directa para este alumno -->
       <div class="card" style="margin-bottom:1rem">
-        <div class="card-title">✏️ Crear / editar rutina para este alumno</div>
+        <div class="card-title" style="justify-content:space-between">
+          <span>✏️ Crear / editar rutina</span>
+          <button class="btn btn-secondary btn-sm" style="font-size:0.75rem;padding:0.3rem 0.8rem"
+            onclick="openAIGenerator('routine')">🤖 Generar con IA</button>
+        </div>
         <div class="input-group">
           <label class="input-label">Nombre de la rutina *</label>
           <input type="text" class="input-field" id="aw-name" placeholder="ej: Tren Superior A">
@@ -1518,7 +1525,11 @@ Hip thrust: 4x15"></textarea>
 
       <!-- Periodización / Plan de ciclos -->
       <div class="card">
-        <div class="card-title">📅 Plan de ciclos (periodización)</div>
+        <div class="card-title" style="justify-content:space-between">
+          <span>📅 Plan de ciclos (periodización)</span>
+          <button class="btn btn-secondary btn-sm" style="font-size:0.75rem;padding:0.3rem 0.8rem"
+            onclick="openAIGenerator('periodization')">🤖 Generar con IA</button>
+        </div>
         <div class="text-small text-gray" style="margin-bottom:0.8rem;line-height:1.6">
           Planificá la progresión de rutinas semana a semana. El alumno ve en qué fase está.
         </div>
@@ -1622,6 +1633,127 @@ ALMUERZO
 </div>
 
 <!-- ═══════════════════════════════════════════
+     MODAL: GENERADOR IA
+═══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-ai-generator">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="ai-gen-title">🤖 Generador IA</div>
+
+    <div id="ai-gen-form">
+      <div class="anamnesis-block">
+        <div class="anamnesis-block-title">Parámetros</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem">
+          <div class="input-group">
+            <label class="input-label">Días por semana</label>
+            <select class="input-field" id="ai-days">
+              <option value="2">2 días</option>
+              <option value="3" selected>3 días</option>
+              <option value="4">4 días</option>
+              <option value="5">5 días</option>
+              <option value="6">6 días</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Duración sesión</label>
+            <select class="input-field" id="ai-duration">
+              <option value="30">30 min</option>
+              <option value="45">45 min</option>
+              <option value="60" selected>60 min</option>
+              <option value="75">75 min</option>
+              <option value="90">90 min</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Nivel</label>
+            <select class="input-field" id="ai-level">
+              <option value="principiante">Principiante</option>
+              <option value="intermedio" selected>Intermedio</option>
+              <option value="avanzado">Avanzado</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Equipamiento</label>
+            <select class="input-field" id="ai-equipment">
+              <option value="calistenia y mancuernas" selected>Calistenia + mancuernas</option>
+              <option value="barras y mancuernas">Barras + mancuernas</option>
+              <option value="peso corporal únicamente">Solo peso corporal</option>
+              <option value="gimnasio completo">Gimnasio completo</option>
+              <option value="bandas elásticas y mancuernas">Bandas + mancuernas</option>
+            </select>
+          </div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Enfoque especial (opcional)</label>
+          <input type="text" class="input-field" id="ai-focus"
+            placeholder="ej: priorizar tren superior, evitar impacto en rodillas...">
+        </div>
+
+        <!-- Solo para periodización -->
+        <div id="ai-period-section" style="display:none">
+          <hr class="divider" style="margin:0.5rem 0">
+          <div class="anamnesis-block-title">Periodización</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem">
+            <div class="input-group">
+              <label class="input-label">Duración total</label>
+              <select class="input-field" id="ai-total-weeks">
+                <option value="4">4 semanas</option>
+                <option value="8" selected>8 semanas</option>
+                <option value="12">12 semanas</option>
+                <option value="16">16 semanas</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label class="input-label">Nro de fases</label>
+              <select class="input-field" id="ai-phases">
+                <option value="2">2 fases</option>
+                <option value="3" selected>3 fases</option>
+                <option value="4">4 fases</option>
+              </select>
+            </div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Objetivo de la periodización</label>
+            <select class="input-field" id="ai-period-goal">
+              <option value="recomposición corporal">Recomposición corporal</option>
+              <option value="hipertrofia">Hipertrofia</option>
+              <option value="fuerza">Fuerza</option>
+              <option value="pérdida de grasa + tonificación">Pérdida de grasa + tonificación</option>
+              <option value="resistencia funcional">Resistencia funcional</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:0.8rem;padding-bottom:1rem">
+        <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-ai-generator')">Cancelar</button>
+        <button class="btn btn-primary" style="flex:1" id="ai-gen-btn" onclick="runAIGenerator()">
+          🤖 Generar
+        </button>
+      </div>
+    </div>
+
+    <!-- Estado de generación -->
+    <div id="ai-gen-loading" style="display:none;text-align:center;padding:2rem 1rem">
+      <div style="font-size:2rem;animation:spin 1s linear infinite;display:inline-block">⚙️</div>
+      <div class="text-small text-gray" style="margin-top:0.8rem" id="ai-gen-status">Generando...</div>
+    </div>
+
+    <!-- Resultado -->
+    <div id="ai-gen-result" style="display:none">
+      <div class="anamnesis-block">
+        <div class="anamnesis-block-title" id="ai-result-title">Resultado</div>
+        <div id="ai-result-content" style="font-size:0.85rem;line-height:1.7;max-height:40vh;overflow-y:auto;white-space:pre-wrap;font-family:var(--font-mono);color:var(--white-dim);background:var(--dark3);padding:1rem;border-radius:8px"></div>
+      </div>
+      <div style="display:flex;gap:0.6rem;padding-bottom:1rem;flex-wrap:wrap">
+        <button class="btn btn-secondary btn-sm" onclick="regenerateAI()">🔄 Regenerar</button>
+        <button class="btn btn-primary btn-sm" style="flex:1" id="ai-apply-btn" onclick="applyAIResult()">✅ Usar esta rutina</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
      SCREEN: ESTADÍSTICAS GENERALES
 ═══════════════════════════════════════════ -->
 <div id="screen-stats" class="screen">
@@ -1632,6 +1764,137 @@ ALMUERZO
   </div>
   <div class="content">
     <div id="stats-view"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     MODAL: GENERADOR IA
+═══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-ai-generator">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" style="display:flex;align-items:center;gap:0.6rem">
+      🤖 <span>Generador con IA</span>
+    </div>
+
+    <!-- Selector de modo -->
+    <div style="display:flex;gap:0.5rem;margin-bottom:1.2rem">
+      <button id="ai-mode-routine" class="btn btn-primary btn-sm" style="flex:1"
+        onclick="setAIMode('routine')">📋 Rutina suelta</button>
+      <button id="ai-mode-period" class="btn btn-secondary btn-sm" style="flex:1"
+        onclick="setAIMode('periodization')">📅 Periodización</button>
+    </div>
+
+    <!-- Opciones: Rutina suelta -->
+    <div id="ai-opts-routine">
+      <div class="anamnesis-block">
+        <div class="anamnesis-block-title">Parámetros de la rutina</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem">
+          <div class="input-group">
+            <label class="input-label">Días por semana</label>
+            <select class="input-field" id="ai-days">
+              <option value="2">2 días</option>
+              <option value="3" selected>3 días</option>
+              <option value="4">4 días</option>
+              <option value="5">5 días</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Duración por sesión</label>
+            <select class="input-field" id="ai-duration">
+              <option value="45">45 min</option>
+              <option value="60" selected>60 min</option>
+              <option value="75">75 min</option>
+              <option value="90">90 min</option>
+            </select>
+          </div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Equipamiento disponible</label>
+          <select class="input-field" id="ai-equipment">
+            <option value="calistenia y barras">Calistenia y barras</option>
+            <option value="mancuernas" selected>Mancuernas</option>
+            <option value="mancuernas y barras">Mancuernas y barras</option>
+            <option value="gimnasio completo con máquinas">Gimnasio completo</option>
+            <option value="sin equipamiento">Sin equipamiento</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Enfoque especial (opcional)</label>
+          <input type="text" class="input-field" id="ai-focus"
+            placeholder="ej: enfatizar tren superior, evitar saltos, progresión de fuerza">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Nombre para la rutina</label>
+          <input type="text" class="input-field" id="ai-routine-name"
+            placeholder="ej: Fuerza + Hipertrofia 3 días">
+        </div>
+      </div>
+    </div>
+
+    <!-- Opciones: Periodización -->
+    <div id="ai-opts-period" style="display:none">
+      <div class="anamnesis-block">
+        <div class="anamnesis-block-title">Parámetros del plan</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem">
+          <div class="input-group">
+            <label class="input-label">Número de fases</label>
+            <select class="input-field" id="ai-phases">
+              <option value="2">2 fases</option>
+              <option value="3" selected>3 fases</option>
+              <option value="4">4 fases</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Semanas por fase</label>
+            <select class="input-field" id="ai-weeks-per-phase">
+              <option value="3">3 semanas</option>
+              <option value="4" selected>4 semanas</option>
+              <option value="6">6 semanas</option>
+              <option value="8">8 semanas</option>
+            </select>
+          </div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Tipo de progresión</label>
+          <select class="input-field" id="ai-progression">
+            <option value="lineal (aumentando carga y volumen progresivamente)">Lineal</option>
+            <option value="ondulante (variando intensidad y volumen por semana)">Ondulante</option>
+            <option value="por bloques (fuerza → hipertrofia → potencia)">Por bloques</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Equipamiento disponible</label>
+          <select class="input-field" id="ai-equip-period">
+            <option value="calistenia y barras">Calistenia y barras</option>
+            <option value="mancuernas" selected>Mancuernas</option>
+            <option value="mancuernas y barras">Mancuernas y barras</option>
+            <option value="gimnasio completo con máquinas">Gimnasio completo</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Indicaciones adicionales (opcional)</label>
+          <input type="text" class="input-field" id="ai-period-notes"
+            placeholder="ej: énfasis en fuerza primero, incluir descarga semana 4">
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading state -->
+    <div id="ai-loading" style="display:none;text-align:center;padding:1.5rem 0">
+      <div style="font-size:2rem;margin-bottom:0.5rem;animation:spin 1s linear infinite;display:inline-block">⚙️</div>
+      <div class="text-small text-gray" id="ai-loading-msg">Analizando el perfil del alumno...</div>
+    </div>
+
+    <!-- Error -->
+    <div id="ai-error" style="display:none;color:var(--danger);font-size:0.82rem;margin-bottom:0.8rem;padding:0.6rem;background:rgba(229,57,53,0.1);border-radius:8px"></div>
+
+    <div id="ai-actions" style="display:flex;gap:0.8rem;padding-bottom:1rem">
+      <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-ai-generator')">Cancelar</button>
+      <button class="btn btn-primary" style="flex:1" onclick="generateWithAI()">
+        🤖 Generar
+      </button>
+    </div>
   </div>
 </div>
 
@@ -2740,6 +3003,457 @@ function sendMonthlyReport(s) {
 
   const phone = s.anamnesis?.phone ? s.anamnesis.phone.replace(/\D/g,'') : '';
   window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+// ═══════════════════════════════════════════
+//  GENERADOR DE RUTINAS CON IA
+// ═══════════════════════════════════════════
+let _aiMode = 'routine';
+
+function openAIGenerator(mode) {
+  _aiMode = mode || 'routine';
+  setAIMode(_aiMode);
+  const s = state.students.find(x => x.id === state.currentStudentId);
+  if (s?.anamnesis?.days) {
+    const dSel = document.getElementById('ai-days');
+    if (dSel) dSel.value = s.anamnesis.days;
+  }
+  document.getElementById('ai-loading').style.display = 'none';
+  document.getElementById('ai-error').style.display = 'none';
+  document.getElementById('ai-actions').style.display = 'flex';
+  document.getElementById('modal-ai-generator').classList.add('show');
+}
+
+function setAIMode(mode) {
+  _aiMode = mode;
+  document.getElementById('ai-opts-routine').style.display = mode === 'routine' ? 'block' : 'none';
+  document.getElementById('ai-opts-period').style.display  = mode === 'periodization' ? 'block' : 'none';
+  const rb = document.getElementById('ai-mode-routine');
+  const pb = document.getElementById('ai-mode-period');
+  if (rb) { rb.className = `btn btn-sm ${mode==='routine'?'btn-primary':'btn-secondary'}`; rb.style.flex='1'; }
+  if (pb) { pb.className = `btn btn-sm ${mode==='periodization'?'btn-primary':'btn-secondary'}`; pb.style.flex='1'; }
+}
+
+function buildStudentContext(s) {
+  const a = s.anamnesis || {};
+  const latest = s.metricsLog?.length ? s.metricsLog[s.metricsLog.length - 1] : null;
+  let ctx = `PERFIL DEL ALUMNO:\n`;
+  ctx += `• Nombre: ${s.name}\n`;
+  ctx += `• Edad: ${a.age || 'No especificada'} años\n`;
+  ctx += `• Sexo: ${a.sex || 'No especificado'}\n`;
+  ctx += `• Peso: ${a.weight || (latest?.weight || 'No especificado')} kg\n`;
+  ctx += `• Altura: ${a.height || 'No especificada'} cm\n`;
+  ctx += `• Objetivo: ${a.goal || 'No especificado'}\n`;
+  ctx += `• Peso objetivo: ${a.goalWeight || 'No especificado'} kg\n`;
+  ctx += `• Ocupación: ${a.job || ''} (${a.jobType || ''})\n`;
+  ctx += `• Entrena actualmente: ${a.trainsNow === 'Sí' ? `Sí — ${a.trainType}` : 'No'}\n`;
+  ctx += `• Días disponibles: ${a.days || '3'}/semana\n`;
+  ctx += `• Duración por sesión: ${a.duration || '60 min'}\n`;
+  if (a.injuries) ctx += `• Lesiones/limitaciones: ${a.injuries}\n`;
+  if (a.pain)     ctx += `• Zonas de dolor: ${a.pain}\n`;
+  if (a.medical)  ctx += `• Historial médico: ${a.medical}\n`;
+  if (a.cardio)   ctx += `• Cardio/presión: ${a.cardio}\n`;
+  if (a.extra)    ctx += `• Notas: ${a.extra}\n`;
+  if (latest?.calc) {
+    ctx += `\nMÉTRICAS ACTUALES:\n`;
+    if (latest.calc.fatPct)    ctx += `• % Grasa: ${parseFloat(latest.calc.fatPct).toFixed(1)}%\n`;
+    if (latest.calc.musclePct) ctx += `• % Músculo: ${parseFloat(latest.calc.musclePct).toFixed(1)}%\n`;
+    if (latest.calc.bmr)       ctx += `• BMR: ${Math.round(latest.calc.bmr)} kcal\n`;
+  }
+  return ctx;
+}
+
+async function generateWithAI() {
+  const s = state.students.find(x => x.id === state.currentStudentId);
+  if (!s) { alert('No hay alumno seleccionado.'); return; }
+
+  document.getElementById('ai-loading').style.display = 'block';
+  document.getElementById('ai-error').style.display = 'none';
+  document.getElementById('ai-actions').style.display = 'none';
+  document.getElementById('ai-opts-routine').style.display = 'none';
+  document.getElementById('ai-opts-period').style.display = 'none';
+
+  const msgs = [
+    'Analizando el perfil del alumno...',
+    'Diseñando la estructura...',
+    'Seleccionando ejercicios...',
+    'Ajustando progresión y cargas...',
+    'Finalizando el plan...'
+  ];
+  let mi = 0;
+  const msgEl = document.getElementById('ai-loading-msg');
+  const interval = setInterval(() => { mi=(mi+1)%msgs.length; if(msgEl) msgEl.textContent=msgs[mi]; }, 2500);
+
+  try {
+    const prompt = _aiMode === 'routine' ? buildRoutinePrompt(s) : buildPeriodizationPrompt(s);
+    const result = await callClaudeAPI(prompt, _aiMode === 'periodization' ? 4000 : 2000);
+    if (_aiMode === 'routine') applyRoutineResult(result, s);
+    else applyPeriodizationResult(result, s);
+    closeModal('modal-ai-generator');
+  } catch (err) {
+    const errEl = document.getElementById('ai-error');
+    errEl.style.display = 'block';
+    errEl.textContent = `Error: ${err.message}. Verificá tu conexión e intentá de nuevo.`;
+    document.getElementById('ai-actions').style.display = 'flex';
+    document.getElementById(_aiMode === 'routine' ? 'ai-opts-routine' : 'ai-opts-period').style.display = 'block';
+  } finally {
+    clearInterval(interval);
+    document.getElementById('ai-loading').style.display = 'none';
+  }
+}
+
+async function callClaudeAPI(prompt, maxTokens = 2000) {
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: maxTokens,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error?.message || `HTTP ${response.status}`);
+  }
+  const data = await response.json();
+  return data.content?.[0]?.text || '';
+}
+
+function buildRoutinePrompt(s) {
+  const days     = document.getElementById('ai-days')?.value || s.anamnesis?.days || '3';
+  const duration = document.getElementById('ai-duration')?.value || '60';
+  const equip    = document.getElementById('ai-equipment')?.value || 'mancuernas';
+  const focus    = document.getElementById('ai-focus')?.value?.trim() || '';
+  const rName    = document.getElementById('ai-routine-name')?.value?.trim() || '';
+  const ctx = buildStudentContext(s);
+
+  return `Eres un entrenador personal especializado en fitness funcional y recomposición corporal para adultos.
+
+${ctx}
+
+PARÁMETROS:
+• Días: ${days}/semana
+• Duración: ${duration} min por sesión
+• Equipamiento: ${equip}
+• Nombre de la rutina: ${rName || `Rutina ${days} días`}
+${focus ? `• Énfasis: ${focus}` : ''}
+
+FORMATO DE SALIDA — EXACTO, SIN VARIACIONES:
+Línea 1: nombre de la rutina (solo el nombre, sin prefijos)
+Línea 2: en blanco
+Luego para cada día:
+"DÍA N - NOMBRE DEL DÍA" (en mayúsculas)
+"Nombre ejercicio en español: NxN (Xseg)"
+Línea en blanco entre días.
+Sin explicaciones, sin secciones extra, sin calentamiento.
+
+EJEMPLO:
+Fuerza Funcional 3 Días
+
+DÍA 1 - TREN SUPERIOR
+Press de hombros con mancuernas: 4x10 (90 seg)
+Remo con mancuerna: 4x10 (60 seg)
+Dominadas asistidas: 4x8 (90 seg)
+Curl de bíceps: 3x12 (60 seg)
+
+DÍA 2 - TREN INFERIOR
+Sentadilla búlgara: 4x10 cada pierna (90 seg)
+Peso muerto rumano: 4x12 (90 seg)
+Hip thrust: 4x15 (60 seg)
+Zancadas caminando: 3x12 (60 seg)
+
+Generá la rutina ahora.`;
+}
+
+function buildPeriodizationPrompt(s) {
+  const phases = document.getElementById('ai-phases')?.value || '3';
+  const wpp    = document.getElementById('ai-weeks-per-phase')?.value || '4';
+  const prog   = document.getElementById('ai-progression')?.value || 'lineal';
+  const equip  = document.getElementById('ai-equip-period')?.value || 'mancuernas';
+  const notes  = document.getElementById('ai-period-notes')?.value?.trim() || '';
+  const days   = s.anamnesis?.days || '3';
+  const ctx = buildStudentContext(s);
+
+  return `Eres un entrenador personal especializado en periodización deportiva.
+
+${ctx}
+
+PARÁMETROS DEL PLAN:
+• Fases: ${phases}
+• Semanas por fase: ${wpp}
+• Progresión: ${prog}
+• Días/semana: ${days}
+• Equipamiento: ${equip}
+${notes ? `• Indicaciones: ${notes}` : ''}
+
+FORMATO EXACTO — SEGUIR SIN VARIACIONES:
+Para cada fase:
+"FASE N - NOMBRE DE LA FASE"
+"Semanas: N | Enfoque: descripción breve"
+(línea en blanco)
+"DÍA N - NOMBRE DEL DÍA"
+"Ejercicio en español: NxN (Xseg)"
+(línea en blanco entre días)
+"---" para separar fases.
+Sin texto adicional, sin explicaciones.
+
+EJEMPLO:
+FASE 1 - ADAPTACIÓN
+Semanas: 4 | Enfoque: Técnica y base de fuerza
+
+DÍA 1 - TREN SUPERIOR
+Press con mancuernas: 4x12 (60 seg)
+Remo con mancuerna: 4x12 (60 seg)
+
+DÍA 2 - TREN INFERIOR
+Sentadilla goblet: 4x15 (60 seg)
+Hip thrust: 4x15 (45 seg)
+
+---
+FASE 2 - HIPERTROFIA
+Semanas: 4 | Enfoque: Volumen y tiempo bajo tensión
+
+DÍA 1 - EMPUJE
+Press inclinado: 4x10 (75 seg)
+Aperturas: 3x15 (45 seg)
+
+Generá el plan completo.`;
+}
+
+function applyRoutineResult(text, s) {
+  const lines = text.trim().split('\n');
+  const name = lines[0].trim().replace(/^#+\s*/, '');
+  const content = lines.slice(1).join('\n').trim();
+  const nameEl    = document.getElementById('aw-name');
+  const contentEl = document.getElementById('aw-content');
+  if (nameEl) nameEl.value = name;
+  if (contentEl) contentEl.value = content;
+  const excl = document.querySelector('input[name="aw-save-mode"][value="exclusive"]');
+  if (excl) excl.checked = true;
+  setTimeout(() => contentEl?.scrollIntoView({ behavior:'smooth', block:'center' }), 300);
+  alert(`✅ Rutina "${name}" generada. Revisala y tocá "Guardar y asignar".`);
+}
+
+function applyPeriodizationResult(text, s) {
+  const rawPhases = text.split(/^---\s*$/m).map(p => p.trim()).filter(Boolean);
+  if (!rawPhases.length) throw new Error('No se pudieron parsear las fases. Intentá de nuevo.');
+
+  if (!s.cyclePlan) s.cyclePlan = [];
+  if (!s.cycleStartDate) s.cycleStartDate = new Date().toISOString().split('T')[0];
+
+  let added = 0;
+  for (const raw of rawPhases) {
+    const lines = raw.split('\n').filter(Boolean);
+    if (!lines.length) continue;
+    const headerMatch = lines[0].match(/FASE\s+\d+\s*[-–]\s*(.+)/i);
+    const phaseName = headerMatch ? headerMatch[1].trim() : lines[0].trim();
+    const weekMatch = lines[1]?.match(/semanas?\s*[:=]?\s*(\d+)/i);
+    const weeks = weekMatch ? parseInt(weekMatch[1]) : 4;
+    const routineContent = lines.slice(2).join('\n').trim();
+    if (!routineContent) continue;
+
+    const workout = { id: genId(), name: phaseName, desc: `Fase ${added+1} — ${weeks} semanas`, content: routineContent };
+    state.workouts.push(workout);
+    s.cyclePlan.push({ name: phaseName, weeks, workoutId: workout.id });
+    added++;
+  }
+
+  if (!added) throw new Error('No se encontraron fases válidas. Intentá de nuevo.');
+  saveState();
+  renderCyclePlan(s);
+  renderWorkoutsList();
+  alert(`✅ Plan de ${added} fases generado. Revisá las rutinas y el ciclo.`);
+}
+
+// ═══════════════════════════════════════════
+//  GENERADOR IA — RUTINAS Y PERIODIZACIÓN
+// ═══════════════════════════════════════════
+let _aiGenMode = 'routine';
+let _aiLastResult = null;
+
+function openAIGenerator(mode) {
+  _aiGenMode = mode;
+  _aiLastResult = null;
+  document.getElementById('ai-gen-form').style.display = 'block';
+  document.getElementById('ai-gen-loading').style.display = 'none';
+  document.getElementById('ai-gen-result').style.display = 'none';
+  document.getElementById('ai-period-section').style.display = mode === 'periodization' ? 'block' : 'none';
+  document.getElementById('ai-gen-title').textContent = mode === 'periodization'
+    ? '🤖 Generar periodización con IA' : '🤖 Generar rutina con IA';
+  const s = state.students.find(x => x.id === state.currentStudentId);
+  if (s) {
+    if (s.anamnesis?.days) document.getElementById('ai-days').value = s.anamnesis.days;
+    const lvl = document.getElementById('ai-level');
+    if (s.anamnesis?.trainsNow === 'No' || s.anamnesis?.trainsNow === 'Hace mucho que no') lvl.value = 'principiante';
+    else if (s.anamnesis?.trainsNow === 'Sí') lvl.value = 'intermedio';
+    if (mode === 'periodization' && s.anamnesis?.goal) {
+      const gm = {'Recomposición corporal':'recomposición corporal','Pérdida de grasa':'pérdida de grasa + tonificación','Hipertrofia estética':'hipertrofia','Fuerza pura':'fuerza','Fuerza explosiva':'fuerza','Resistencia cardiovascular':'resistencia funcional'};
+      const pg = gm[s.anamnesis.goal];
+      if (pg) document.getElementById('ai-period-goal').value = pg;
+    }
+  }
+  document.getElementById('modal-ai-generator').classList.add('show');
+}
+
+async function runAIGenerator() {
+  const s = state.students.find(x => x.id === state.currentStudentId);
+  if (!s) return;
+  const days = document.getElementById('ai-days').value;
+  const duration = document.getElementById('ai-duration').value;
+  const level = document.getElementById('ai-level').value;
+  const equipment = document.getElementById('ai-equipment').value;
+  const focus = document.getElementById('ai-focus').value.trim();
+
+  document.getElementById('ai-gen-form').style.display = 'none';
+  document.getElementById('ai-gen-loading').style.display = 'block';
+  document.getElementById('ai-gen-result').style.display = 'none';
+
+  const statuses = ['Analizando el perfil del alumno...','Seleccionando ejercicios...','Estructurando progresiones...','Ajustando volumen e intensidad...','Revisando restricciones...'];
+  let si = 0;
+  const statusEl = document.getElementById('ai-gen-status');
+  const iv = setInterval(() => { si=(si+1)%statuses.length; if(statusEl) statusEl.textContent=statuses[si]; }, 2200);
+
+  try {
+    let prompt = _aiGenMode === 'routine'
+      ? buildRoutinePrompt(s, {days, duration, level, equipment, focus})
+      : buildPeriodizationPrompt(s, {days, duration, level, equipment, focus,
+          totalWeeks: document.getElementById('ai-total-weeks').value,
+          phases: document.getElementById('ai-phases').value,
+          periodGoal: document.getElementById('ai-period-goal').value });
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514', max_tokens: 2000,
+        system: `Sos un entrenador personal funcional especializado en adultos mayores de 40 años. Respondés en español argentino. Nunca usás máquinas — solo calistenia, barras y mancuernas. Nombrás los ejercicios en español primero.`,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    clearInterval(iv);
+    const data = await res.json();
+    const text = data.content?.[0]?.text || '';
+    if (!text) throw new Error('Sin respuesta');
+    _aiLastResult = text;
+    document.getElementById('ai-gen-loading').style.display = 'none';
+    document.getElementById('ai-gen-result').style.display = 'block';
+    document.getElementById('ai-result-title').textContent = _aiGenMode === 'periodization' ? 'Periodización generada' : 'Rutina generada';
+    document.getElementById('ai-result-content').textContent = text;
+    document.getElementById('ai-apply-btn').textContent = _aiGenMode === 'periodization' ? '✅ Aplicar periodización' : '✅ Usar esta rutina';
+  } catch(err) {
+    clearInterval(iv);
+    document.getElementById('ai-gen-loading').style.display = 'none';
+    document.getElementById('ai-gen-form').style.display = 'block';
+    alert('Error al generar: ' + (err.message || 'Intentá de nuevo'));
+  }
+}
+
+function buildRoutinePrompt(s, o) {
+  const a = s.anamnesis||{};
+  const latest = s.metricsLog?.length ? s.metricsLog[s.metricsLog.length-1] : null;
+  return `Generá una rutina de entrenamiento funcional para este alumno.
+
+DATOS:
+- Nombre: ${s.name} | Edad: ${a.age||'?'} años | Sexo: ${a.sex||'?'}
+- Peso: ${latest?.weight||a.weight||'?'} kg | Objetivo: ${a.goal||'recomposición'}
+- Lesiones: ${a.injuries||'ninguna'} | Médico: ${a.medical||'ninguna'}
+- Historial: ${a.trainType||'sin historial'}
+
+PARÁMETROS:
+- ${o.days} días/semana | ${o.duration} min/sesión | Nivel: ${o.level}
+- Equipamiento: ${o.equipment}
+${o.focus?`- Enfoque: ${o.focus}`:''}
+
+FORMATO EXACTO (solo esto, sin texto adicional):
+DÍA 1 - [NOMBRE]
+[Ejercicio en español]: [series]x[reps]
+...
+
+DÍA 2 - [NOMBRE]
+...
+
+5 a 8 ejercicios por día.`;
+}
+
+function buildPeriodizationPrompt(s, o) {
+  const a = s.anamnesis||{};
+  return `Generá un plan de periodización para este alumno.
+
+DATOS:
+- ${s.name} | ${a.age||'?'} años | ${a.sex||'?'} | Objetivo: ${a.goal||o.periodGoal}
+- Lesiones: ${a.injuries||'ninguna'} | Historial: ${a.trainType||'sin historial'}
+
+PARÁMETROS:
+- ${o.totalWeeks} semanas totales | ${o.phases} fases | Objetivo: ${o.periodGoal}
+- ${o.days} días/semana | ${o.duration} min | Nivel: ${o.level} | ${o.equipment}
+${o.focus?`- Notas: ${o.focus}`:''}
+
+FORMATO EXACTO por fase:
+FASE 1 — [NOMBRE] (semanas 1-N)
+Objetivo: [objetivo]
+Volumen: [orientación]
+Intensidad: [descripción]
+---
+DÍA 1 - [NOMBRE]
+[Ejercicio]: [series]x[reps]
+...
+
+FASE 2 — [NOMBRE] (semanas N+1-M)
+...
+
+Cada fase con su rutina completa. Solo el contenido.`;
+}
+
+function regenerateAI() {
+  document.getElementById('ai-gen-result').style.display = 'none';
+  document.getElementById('ai-gen-form').style.display = 'block';
+}
+
+function applyAIResult() {
+  if (!_aiLastResult) return;
+  const s = state.students.find(x => x.id === state.currentStudentId);
+  if (!s) return;
+  if (_aiGenMode === 'routine') {
+    const nameEl = document.getElementById('aw-name');
+    const contentEl = document.getElementById('aw-content');
+    const descEl = document.getElementById('aw-desc');
+    if (nameEl && !nameEl.value) nameEl.value = `${s.anamnesis?.goal||'Funcional'} — ${s.name.split(' ')[0]}`;
+    if (descEl && !descEl.value) descEl.value = `Generado con IA · ${new Date().toLocaleDateString('es-AR')}`;
+    if (contentEl) contentEl.value = _aiLastResult;
+    closeModal('modal-ai-generator');
+    alert('✅ Rutina cargada. Revisá y ajustá antes de guardar.');
+  } else {
+    applyAIPeriodization(_aiLastResult, s);
+    closeModal('modal-ai-generator');
+  }
+}
+
+function applyAIPeriodization(text, s) {
+  const headers = [...text.matchAll(/FASE \d+ — ([^\n(]+)\s*\(semanas? ([^)]+)\)/gi)];
+  if (!headers.length) { alert('No se pudieron parsear las fases. Copiá manualmente.'); return; }
+  if (!s.cyclePlan) s.cyclePlan = [];
+  if (!s.cycleStartDate) s.cycleStartDate = new Date().toISOString().split('T')[0];
+  headers.forEach((m, i) => {
+    const phaseName = m[1].trim();
+    const weeksStr = m[2].trim();
+    const parts = weeksStr.split('-');
+    const weeks = parts.length === 2 ? (parseInt(parts[1]) - parseInt(parts[0]) + 1) : 4;
+    const blockStart = text.indexOf(m[0]);
+    const nextM = headers[i+1];
+    const blockEnd = nextM ? text.indexOf(nextM[0]) : text.length;
+    const block = text.substring(blockStart, blockEnd);
+    const routineLines = block.split('\n')
+      .filter(l => !l.startsWith('FASE') && !l.startsWith('Objetivo:') && !l.startsWith('Volumen:') && !l.startsWith('Intensidad:') && l.trim() !== '---')
+      .join('\n').trim();
+    const workout = { id: genId(), name: `${phaseName} — ${s.name.split(' ')[0]}`, desc: `IA · Fase ${i+1} · ${weeksStr} semanas`, content: routineLines };
+    state.workouts.push(workout);
+    s.cyclePlan.push({ name: `Fase ${i+1} — ${phaseName}`, weeks, workoutId: workout.id });
+  });
+  saveState();
+  renderCyclePlan(s);
+  renderAssignTab(s);
+  alert(`✅ ${headers.length} fases cargadas. Las rutinas se crearon en la lista general.`);
 }
 
 // ═══════════════════════════════════════════
