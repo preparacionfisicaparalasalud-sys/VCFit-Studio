@@ -3971,7 +3971,7 @@ function renderPaymentsTab(s) {
       </select>
     </div>
 
-    <!-- Campos mensualidad / clase individual -->
+    <!-- Campos mensualidad -->
     <div id="pay-fields-mensualidad">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem">
         <div class="input-group">
@@ -3988,6 +3988,25 @@ function renderPaymentsTab(s) {
         <input type="text" class="input-field" id="pay-nota" placeholder="ej: Transferencia, efectivo...">
       </div>
       <button class="btn btn-success btn-sm btn-full" onclick="registrarPago('${s.id}')">✅ Guardar mensualidad</button>
+    </div>
+
+    <!-- Campos clase individual -->
+    <div id="pay-fields-clase" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem">
+        <div class="input-group">
+          <label class="input-label">Fecha de la clase</label>
+          <input type="date" class="input-field" id="pay-fecha-clase" value="${new Date().toISOString().split('T')[0]}">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Monto</label>
+          <input type="number" class="input-field" id="pay-monto-clase" placeholder="ej: 2500" step="100">
+        </div>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Nota (opcional)</label>
+        <input type="text" class="input-field" id="pay-nota-clase" placeholder="ej: Transferencia, efectivo...">
+      </div>
+      <button class="btn btn-success btn-sm btn-full" onclick="registrarClaseIndividual('${s.id}')">✅ Guardar clase</button>
     </div>
 
     <!-- Campos paquete -->
@@ -4033,6 +4052,24 @@ function renderPaymentsTab(s) {
     </div>`;
   }
 
+  // ── HISTORIAL CLASES INDIVIDUALES ──
+  if (s.clasesIndividuales && s.clasesIndividuales.length > 0) {
+    html += `<div class="card" style="margin-bottom:1rem">
+      <div class="card-title">🎯 Clases individuales</div>
+      ${s.clasesIndividuales.slice().sort((a,b) => b.fechaISO.localeCompare(a.fechaISO)).map(c => `
+        <div class="progress-row" style="align-items:flex-start;padding:0.7rem 0">
+          <div style="flex:1">
+            <div class="bold text-small" style="text-transform:capitalize">${c.fecha}</div>
+            ${c.nota ? `<div class="text-small text-gray">${c.nota}</div>` : ''}
+          </div>
+          <div style="display:flex;align-items:center;gap:0.5rem;flex-shrink:0">
+            ${c.monto ? `<span class="text-orange bold text-small">$${c.monto}</span>` : ''}
+            <button class="btn btn-danger btn-sm" style="padding:0.2rem 0.5rem;font-size:0.7rem" onclick="deleteClaseIndividual('${s.id}','${c.id}')">🗑️</button>
+          </div>
+        </div>`).join('')}
+    </div>`;
+  }
+
   // ── HISTORIAL MENSUALIDADES ──
   const pagos = s.payments.filter(p => p.tipo !== 'clase');
   if (pagos.length > 0) {
@@ -4061,8 +4098,44 @@ function renderPaymentsTab(s) {
 
 function togglePaymentType() {
   const tipo = document.getElementById('pay-tipo')?.value;
-  document.getElementById('pay-fields-mensualidad').style.display = tipo === 'paquete' ? 'none' : 'block';
-  document.getElementById('pay-fields-paquete').style.display = tipo === 'paquete' ? 'block' : 'none';
+  document.getElementById('pay-fields-mensualidad').style.display = tipo === 'mensualidad' ? 'block' : 'none';
+  document.getElementById('pay-fields-clase').style.display      = tipo === 'clase'        ? 'block' : 'none';
+  document.getElementById('pay-fields-paquete').style.display    = tipo === 'paquete'      ? 'block' : 'none';
+}
+
+function registrarClaseIndividual(studentId) {
+  const s = state.students.find(x => x.id === studentId);
+  if (!s) return;
+  const fechaVal = document.getElementById('pay-fecha-clase')?.value;
+  if (!fechaVal) { alert('Seleccioná la fecha de la clase.'); return; }
+  const [y, m, d] = fechaVal.split('-');
+  const fechaLabel = new Date(parseInt(y), parseInt(m)-1, parseInt(d)).toLocaleDateString('es-AR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  const mes = `${y}-${m}`;
+  const monto = document.getElementById('pay-monto-clase')?.value || '';
+  const nota  = document.getElementById('pay-nota-clase')?.value.trim() || '';
+
+  if (!s.clasesIndividuales) s.clasesIndividuales = [];
+  s.clasesIndividuales.push({
+    id: Date.now().toString(36),
+    fecha: fechaLabel,
+    fechaISO: fechaVal,
+    mes,
+    monto: monto ? parseFloat(monto) : null,
+    nota
+  });
+  saveState();
+  renderPaymentsTab(s);
+}
+
+function deleteClaseIndividual(studentId, claseId) {
+  const s = state.students.find(x => x.id === studentId);
+  if (!s || !s.clasesIndividuales) return;
+  const c = s.clasesIndividuales.find(x => x.id === claseId);
+  if (!c) return;
+  if (!confirm(`¿Eliminar la clase del ${c.fecha}?\n\nEsta acción no se puede deshacer.`)) return;
+  s.clasesIndividuales = s.clasesIndividuales.filter(x => x.id !== claseId);
+  saveState();
+  renderPaymentsTab(s);
 }
 
 function registrarPaquete(studentId) {
