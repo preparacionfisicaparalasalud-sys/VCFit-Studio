@@ -1042,10 +1042,69 @@
     <button class="btn btn-primary btn-sm" onclick="openNewStudentModal()">+ Nuevo</button>
   </div>
   <div class="content">
+
+    <!-- Buscador -->
+    <div style="position:relative;margin-bottom:0.8rem">
+      <span style="position:absolute;left:0.9rem;top:50%;transform:translateY(-50%);color:var(--gray-light);font-size:1rem;pointer-events:none">🔍</span>
+      <input type="text" class="input-field" id="students-search"
+        placeholder="Buscar por nombre..."
+        style="padding-left:2.4rem"
+        oninput="renderStudentsList()">
+    </div>
+
+    <!-- Orden y filtros -->
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center">
+      <select class="input-field" id="students-sort" onchange="renderStudentsList()"
+        style="flex:1;min-width:140px;font-size:0.82rem;padding:0.5rem 0.7rem">
+        <option value="alpha-asc">🔤 A → Z</option>
+        <option value="alpha-desc">🔤 Z → A</option>
+        <option value="payment">💰 Por pago</option>
+        <option value="last-workout">📅 Último entrenamiento</option>
+        <option value="classes">📦 Clases restantes</option>
+      </select>
+      <select class="input-field" id="students-filter-payment" onchange="renderStudentsList()"
+        style="flex:1;min-width:130px;font-size:0.82rem;padding:0.5rem 0.7rem">
+        <option value="all">💰 Todos</option>
+        <option value="paid">✅ Al día</option>
+        <option value="pending">⚠️ Pendientes</option>
+      </select>
+      <select class="input-field" id="students-filter-routine" onchange="renderStudentsList()"
+        style="flex:1;min-width:130px;font-size:0.82rem;padding:0.5rem 0.7rem">
+        <option value="all">📋 Todas</option>
+        <option value="with">✅ Con rutina</option>
+        <option value="without">❌ Sin rutina</option>
+      </select>
+      <select class="input-field" id="students-filter-goal" onchange="renderStudentsList()"
+        style="flex:1;min-width:150px;font-size:0.82rem;padding:0.5rem 0.7rem">
+        <option value="all">🎯 Todos los objetivos</option>
+        <option value="Recomposición corporal">Recomposición</option>
+        <option value="Pérdida de grasa">Pérdida de grasa</option>
+        <option value="Control de peso">Control de peso</option>
+        <option value="Hipertrofia estética">Hipertrofia estética</option>
+        <option value="Fuerza pura">Fuerza pura</option>
+        <option value="Fuerza explosiva">Fuerza explosiva</option>
+        <option value="Hipertrofia funcional">Hipertrofia funcional</option>
+        <option value="Salud general">Salud general</option>
+        <option value="Longevidad y calidad de vida">Longevidad</option>
+        <option value="Movilidad y flexibilidad">Movilidad</option>
+        <option value="Reducción del estrés y bienestar">Bienestar</option>
+        <option value="Rehabilitación / recuperación">Rehabilitación</option>
+        <option value="Rendimiento deportivo">Rendimiento</option>
+        <option value="Resistencia cardiovascular">Resistencia</option>
+      </select>
+    </div>
+
+    <!-- Contador de resultados -->
+    <div id="students-count" class="text-small text-gray" style="margin-bottom:0.8rem"></div>
+
     <div id="students-list"></div>
     <div id="students-empty" class="empty-state" style="display:none">
       <div class="empty-state-icon">👥</div>
       <div class="empty-state-text">No hay alumnos todavía.<br>Tocá "+ Nuevo" para agregar el primero.</div>
+    </div>
+    <div id="students-no-results" class="empty-state" style="display:none">
+      <div class="empty-state-icon">🔍</div>
+      <div class="empty-state-text">No hay alumnos que coincidan<br>con los filtros seleccionados.</div>
     </div>
   </div>
 </div>
@@ -1234,6 +1293,55 @@ ALMUERZO
     <div id="workouts-empty" class="empty-state" style="display:none">
       <div class="empty-state-icon">📋</div>
       <div class="empty-state-text">No hay rutinas creadas todavía.<br>Tocá "+ Nueva" para crear la primera.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     MODAL: EDITAR SESIÓN COMPLETADA
+═══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-edit-session">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">✏️ Editar sesión</div>
+    <input type="hidden" id="es-idx">
+
+    <div class="anamnesis-block">
+      <div class="anamnesis-block-title">Fecha y datos</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem">
+        <div class="input-group">
+          <label class="input-label">Fecha exacta</label>
+          <input type="date" class="input-field" id="es-date">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Duración (minutos)</label>
+          <input type="number" class="input-field" id="es-duration" placeholder="ej: 45" min="1" max="300">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Peso corporal (kg)</label>
+          <input type="number" class="input-field" id="es-weight" placeholder="ej: 81.5" step="0.1">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Sensación general</label>
+          <select class="input-field" id="es-feeling">
+            <option value="">— Sin registrar —</option>
+            <option value="5">💪 Excelente</option>
+            <option value="4">😊 Bien</option>
+            <option value="3">😐 Regular</option>
+            <option value="2">😓 Difícil</option>
+            <option value="1">😣 Muy difícil</option>
+          </select>
+        </div>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Nota de la sesión</label>
+        <textarea class="input-field" id="es-note" rows="3" placeholder="Cómo te sentiste, qué mejoró, qué te costó..."></textarea>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:0.8rem;padding-bottom:1rem">
+      <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-edit-session')">Cancelar</button>
+      <button class="btn btn-primary" style="flex:1" onclick="saveEditSession()">💾 Guardar</button>
     </div>
   </div>
 </div>
@@ -2754,19 +2862,92 @@ function saveNewStudent() {
 }
 
 function renderStudentsList() {
-  const list = document.getElementById('students-list');
-  const empty = document.getElementById('students-empty');
+  const list    = document.getElementById('students-list');
+  const empty   = document.getElementById('students-empty');
+  const noRes   = document.getElementById('students-no-results');
+  const counter = document.getElementById('students-count');
+
   if (!state.students.length) {
     list.innerHTML = '';
     empty.style.display = 'block';
+    if (noRes) noRes.style.display = 'none';
+    if (counter) counter.textContent = '';
     return;
   }
   empty.style.display = 'none';
-  list.innerHTML = state.students.map(s => {
-    const now = new Date();
-    const mesActual = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-    const pagado = s.payments && s.payments.some(p => p.mes === mesActual);
-    const packActivo = s.classPacks && s.classPacks.find(p => p.restantes > 0);
+
+  const now = new Date();
+  const mesActual = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+
+  // ── VALORES DE FILTROS ──
+  const search        = (document.getElementById('students-search')?.value || '').toLowerCase().trim();
+  const sort          = document.getElementById('students-sort')?.value || 'alpha-asc';
+  const filterPayment = document.getElementById('students-filter-payment')?.value || 'all';
+  const filterRoutine = document.getElementById('students-filter-routine')?.value || 'all';
+  const filterGoal    = document.getElementById('students-filter-goal')?.value || 'all';
+
+  // ── FILTRAR ──
+  let filtered = state.students.filter(s => {
+    // Búsqueda por nombre
+    if (search && !s.name.toLowerCase().includes(search)) return false;
+
+    // Filtro pago
+    if (filterPayment !== 'all') {
+      const pagado = (s.payments && s.payments.some(p => p.mes === mesActual)) ||
+                     (s.classPacks && s.classPacks.some(p => p.restantes > 0));
+      if (filterPayment === 'paid'    && !pagado) return false;
+      if (filterPayment === 'pending' &&  pagado) return false;
+    }
+
+    // Filtro rutina
+    if (filterRoutine === 'with'    && !s.assignedWorkoutId) return false;
+    if (filterRoutine === 'without' &&  s.assignedWorkoutId) return false;
+
+    // Filtro objetivo
+    if (filterGoal !== 'all' && s.anamnesis.goal !== filterGoal) return false;
+
+    return true;
+  });
+
+  // ── ORDENAR ──
+  filtered.sort((a, b) => {
+    switch (sort) {
+      case 'alpha-asc':
+        return a.name.localeCompare(b.name, 'es');
+      case 'alpha-desc':
+        return b.name.localeCompare(a.name, 'es');
+      case 'payment': {
+        const pagA = (a.payments && a.payments.some(p => p.mes === mesActual)) || (a.classPacks && a.classPacks.some(p => p.restantes > 0));
+        const pagB = (b.payments && b.payments.some(p => p.mes === mesActual)) || (b.classPacks && b.classPacks.some(p => p.restantes > 0));
+        return pagA === pagB ? a.name.localeCompare(b.name, 'es') : (pagA ? 1 : -1);
+      }
+      case 'last-workout': {
+        const dateA = a.lastCompleted?.date ? new Date(a.lastCompleted.date.split('/').reverse().join('-')) : new Date(0);
+        const dateB = b.lastCompleted?.date ? new Date(b.lastCompleted.date.split('/').reverse().join('-')) : new Date(0);
+        return dateB - dateA;
+      }
+      case 'classes': {
+        const clA = (a.classPacks && a.classPacks.find(p => p.restantes > 0)?.restantes) || 0;
+        const clB = (b.classPacks && b.classPacks.find(p => p.restantes > 0)?.restantes) || 0;
+        return clB - clA;
+      }
+      default: return 0;
+    }
+  });
+
+  // ── MOSTRAR RESULTADOS ──
+  if (noRes) noRes.style.display = filtered.length === 0 ? 'block' : 'none';
+  if (counter) {
+    counter.textContent = filtered.length === state.students.length
+      ? `${state.students.length} alumno${state.students.length !== 1 ? 's' : ''}`
+      : `${filtered.length} de ${state.students.length} alumnos`;
+  }
+
+  if (!filtered.length) { list.innerHTML = ''; return; }
+
+  list.innerHTML = filtered.map(s => {
+    const pagado    = s.payments && s.payments.some(p => p.mes === mesActual);
+    const packActivo= s.classPacks && s.classPacks.find(p => p.restantes > 0);
     const colorPago = (pagado || packActivo) ? 'var(--success)' : 'var(--danger)';
     const labelPago = pagado ? '💰 Al día' : packActivo ? `📦 ${packActivo.restantes} clases` : '💰 Pendiente';
     return `
@@ -2777,7 +2958,9 @@ function renderStudentsList() {
       <div class="student-info">
         <div class="student-name">${s.name}</div>
         <div class="student-meta">${s.anamnesis.age ? s.anamnesis.age + ' años' : ''}${s.anamnesis.weight ? ' · ' + s.anamnesis.weight + ' kg' : ''}${s.anamnesis.goal ? ' · ' + s.anamnesis.goal : ''}</div>
-        ${s.lastCompleted ? `<div class="student-meta" style="color:var(--success)">✅ Completó: ${s.lastCompleted.workoutName} · ${s.lastCompleted.date}</div>` : '<div class="student-meta" style="color:var(--gray)">⏳ Sin completar aún</div>'}
+        ${s.lastCompleted
+          ? `<div class="student-meta" style="color:var(--success)">✅ ${s.lastCompleted.workoutName} · ${s.lastCompleted.date}</div>`
+          : '<div class="student-meta" style="color:var(--gray)">⏳ Sin completar aún</div>'}
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.4rem;flex-shrink:0;margin-left:0.5rem">
         <span style="font-size:0.7rem;font-family:var(--font-label);letter-spacing:0.5px;color:${colorPago}">${labelPago}</span>
@@ -3311,17 +3494,28 @@ function renderProgressTab(s) {
     el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📈</div><div class="empty-state-text">Todavía no hay registros de progreso.</div></div>';
     return;
   }
-  el.innerHTML = s.progressLog.slice().reverse().map(entry => `
-    <div class="card">
+  const feelingLabel = { '5':'💪 Excelente','4':'😊 Bien','3':'😐 Regular','2':'😓 Difícil','1':'😣 Muy difícil' };
+  el.innerHTML = s.progressLog.slice().reverse().map((entry, revIdx) => {
+    const realIdx = s.progressLog.length - 1 - revIdx;
+    return `
+    <div class="card" style="margin-bottom:0.8rem">
       <div class="flex-between mb-1">
         <span class="tag tag-green">${entry.date}</span>
-        ${entry.weight ? `<span class="text-orange bold">${entry.weight} kg</span>` : ''}
+        <div style="display:flex;gap:0.4rem">
+          <button class="btn btn-secondary btn-sm" style="padding:0.3rem 0.6rem;font-size:0.75rem" onclick="openEditSessionModal(${realIdx})">✏️</button>
+          <button class="btn btn-danger btn-sm" style="padding:0.3rem 0.6rem;font-size:0.75rem" onclick="deleteProgressEntryTrainer(${realIdx})">🗑️</button>
+        </div>
       </div>
-      ${entry.workoutName ? `<div class="text-small text-gray">Rutina: ${entry.workoutName}</div>` : ''}
-      ${entry.note ? `<div class="text-small mt-1">${entry.note}</div>` : ''}
-      ${entry.exercises ? `<div class="text-small text-gray mt-1">Ejercicios completados: ${entry.exercises}</div>` : ''}
-    </div>
-  `).join('');
+      ${entry.workoutName ? `<div class="text-small text-gray">📋 ${entry.workoutName}</div>` : ''}
+      <div style="display:flex;flex-wrap:wrap;gap:0.8rem;margin-top:0.4rem">
+        ${entry.weight ? `<span class="text-small"><span class="text-gray">Peso:</span> <span class="text-orange bold">${entry.weight} kg</span></span>` : ''}
+        ${entry.duration ? `<span class="text-small"><span class="text-gray">Duración:</span> ${entry.duration} min</span>` : ''}
+        ${entry.exercises ? `<span class="text-small"><span class="text-gray">Ejercicios:</span> ${entry.exercises}</span>` : ''}
+        ${entry.feeling ? `<span class="text-small">${feelingLabel[entry.feeling] || ''}</span>` : ''}
+      </div>
+      ${entry.note ? `<div class="text-small mt-1" style="font-style:italic;color:var(--white-dim)">"${entry.note}"</div>` : ''}
+    </div>`;
+  }).join('');
 }
 
 // ═══════════════════════════════════════════
@@ -3639,9 +3833,12 @@ function completeWorkout() {
 
   const entry = {
     date: new Date().toLocaleDateString('es-AR'),
+    dateISO: new Date().toISOString().split('T')[0],
     workoutName: w ? w.name : '',
     weight: s.selfData?.weight || '',
     note: notes,
+    duration: null,
+    feeling: null,
     exercises: checksKey ? Object.values(state.exerciseChecks[checksKey] || {}).filter(c => c.done).length : 0
   };
 
@@ -3731,21 +3928,27 @@ function renderStudentProgress(s) {
     el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📈</div><div class="empty-state-text">Completá tu primera rutina para ver tu progreso aquí.</div></div>';
     return;
   }
+  const feelingLabel = { '5':'💪 Excelente','4':'😊 Bien','3':'😐 Regular','2':'😓 Difícil','1':'😣 Muy difícil' };
   el.innerHTML = `
     <div class="card">
       <div class="card-title">📈 Mis sesiones</div>
       ${s.progressLog.slice().reverse().map((entry, revIdx) => {
         const realIdx = s.progressLog.length - 1 - revIdx;
         return `
-        <div class="progress-row" style="align-items:flex-start;padding:0.8rem 0;gap:0.5rem">
+        <div class="progress-row" style="align-items:flex-start;padding:0.8rem 0;gap:0.5rem;border-bottom:1px solid var(--dark3)">
           <div style="flex:1">
             <div class="bold text-small">${entry.date}</div>
             <div class="text-small text-gray">${entry.workoutName || '—'}</div>
-            ${entry.weight ? `<div class="text-orange bold text-small">${entry.weight} kg</div>` : ''}
+            <div style="display:flex;flex-wrap:wrap;gap:0.6rem;margin-top:0.3rem">
+              ${entry.weight ? `<span class="text-small text-orange bold">${entry.weight} kg</span>` : ''}
+              ${entry.duration ? `<span class="text-small text-gray">⏱ ${entry.duration} min</span>` : ''}
+              ${entry.exercises ? `<span class="text-small text-gray">${entry.exercises} ej.</span>` : ''}
+              ${entry.feeling ? `<span class="text-small">${feelingLabel[entry.feeling] || ''}</span>` : ''}
+            </div>
             ${entry.note ? `<div class="text-small text-gray" style="margin-top:0.2rem;font-style:italic">"${entry.note}"</div>` : ''}
           </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.4rem;flex-shrink:0">
-            <div class="text-small text-gray">${entry.exercises || 0} ej.</div>
+          <div style="display:flex;flex-direction:column;gap:0.4rem;flex-shrink:0">
+            <button class="btn btn-secondary btn-sm" style="padding:0.3rem 0.6rem;font-size:0.75rem" onclick="openEditSessionModal(${realIdx})">✏️</button>
             <button class="btn btn-danger btn-sm" style="padding:0.3rem 0.6rem;font-size:0.75rem" onclick="deleteProgressEntry(${realIdx})">🗑️</button>
           </div>
         </div>`;
@@ -3755,6 +3958,61 @@ function renderStudentProgress(s) {
 
 
 
+
+function openEditSessionModal(idx) {
+  const s = state.students.find(x => x.id === state.currentStudentId);
+  if (!s || !s.progressLog || !s.progressLog[idx]) return;
+  const e = s.progressLog[idx];
+
+  document.getElementById('es-idx').value = idx;
+  document.getElementById('es-date').value = e.dateISO || '';
+  document.getElementById('es-duration').value = e.duration || '';
+  document.getElementById('es-weight').value = e.weight || '';
+  document.getElementById('es-feeling').value = e.feeling || '';
+  document.getElementById('es-note').value = e.note || '';
+
+  document.getElementById('modal-edit-session').classList.add('show');
+}
+
+function saveEditSession() {
+  const s = state.students.find(x => x.id === state.currentStudentId);
+  if (!s || !s.progressLog) return;
+  const idx = parseInt(document.getElementById('es-idx').value);
+  if (isNaN(idx) || idx < 0 || idx >= s.progressLog.length) return;
+
+  const dateISO = document.getElementById('es-date').value;
+  const duration = document.getElementById('es-duration').value;
+  const weight = document.getElementById('es-weight').value;
+  const feeling = document.getElementById('es-feeling').value;
+  const note = document.getElementById('es-note').value.trim();
+
+  if (dateISO) {
+    const [y, m, d] = dateISO.split('-');
+    s.progressLog[idx].date = new Date(parseInt(y), parseInt(m)-1, parseInt(d))
+      .toLocaleDateString('es-AR', { day:'numeric', month:'long', year:'numeric' });
+    s.progressLog[idx].dateISO = dateISO;
+  }
+  s.progressLog[idx].duration = duration ? parseInt(duration) : null;
+  s.progressLog[idx].weight   = weight   ? parseFloat(weight)  : s.progressLog[idx].weight;
+  s.progressLog[idx].feeling  = feeling  || null;
+  s.progressLog[idx].note     = note;
+
+  saveState();
+  closeModal('modal-edit-session');
+  renderStudentProgress(s);
+  renderProgressTab(s);
+}
+
+function deleteProgressEntryTrainer(idx) {
+  const s = state.students.find(x => x.id === state.currentStudentId);
+  if (!s || !s.progressLog) return;
+  const entry = s.progressLog[idx];
+  if (!entry) return;
+  if (!confirm(`¿Eliminar la sesión del ${entry.date}?\n\nEsta acción no se puede deshacer.`)) return;
+  s.progressLog.splice(idx, 1);
+  saveState();
+  renderProgressTab(s);
+}
 
 function deleteProgressEntry(idx) {
   const s = state.students.find(x => x.id === state.currentStudentId);
