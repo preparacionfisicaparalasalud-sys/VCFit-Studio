@@ -2328,7 +2328,10 @@ Abdominales bicicleta: 3x15`
         }
       }
     ],
-    progressPhotos: {}
+    progressPhotos: {},
+    payments: [],
+    classPacks: [],
+    clasesIndividuales: []
   };
 
   const demoStudent2 = {
@@ -2369,7 +2372,10 @@ Abdominales bicicleta: 3x15`
         }
       }
     ],
-    progressPhotos: {}
+    progressPhotos: {},
+    payments: [],
+    classPacks: [],
+    clasesIndividuales: []
   };
 
   const demoStudent3 = {
@@ -2407,7 +2413,10 @@ Abdominales bicicleta: 3x15`
         }
       }
     ],
-    progressPhotos: {}
+    progressPhotos: {},
+    payments: [],
+    classPacks: [],
+    clasesIndividuales: []
   };
 
   state.students = [demoStudent1, demoStudent2, demoStudent3];
@@ -3389,8 +3398,10 @@ function saveAssignBulk() {
     const chk = document.getElementById(`bulk-chk-${s.id}`);
     if (!chk) return;
     if (chk.checked) {
+      const anterior = s.assignedWorkoutId;
       s.assignedWorkoutId = _assignBulkWorkoutId;
-      s.customWorkoutContent = null; // reset personalización anterior
+      s.customWorkoutContent = null;
+      if (_assignBulkWorkoutId !== anterior) s.routineUpdated = true;
       count++;
     } else if (s.assignedWorkoutId === _assignBulkWorkoutId) {
       // Si desmarcaron a alguien que la tenía asignada → desasignar
@@ -3446,23 +3457,27 @@ function saveWorkoutFromStudentTab() {
   const mode = document.querySelector('input[name="aw-save-mode"]:checked')?.value || 'exclusive';
 
   if (mode === 'exclusive') {
-    // Guardar como rutina exclusiva del alumno
     s.exclusiveWorkout = { name, desc, content };
+    const anterior = s.assignedWorkoutId;
     s.assignedWorkoutId = '__exclusive__';
+    if (anterior !== '__exclusive__') s.routineUpdated = true;
     saveState();
     renderAssignTab(s);
     renderTodayWorkout(s);
+    renderTrainerExerciseNotes(s);
     alert('Rutina guardada y asignada a ' + s.name.split(' ')[0] + ' ✅');
   } else {
-    // Guardar en lista general y asignar
     const workout = { id: genId(), name, desc, content };
     state.workouts.push(workout);
+    const anterior = s.assignedWorkoutId;
     s.assignedWorkoutId = workout.id;
+    if (anterior !== workout.id) s.routineUpdated = true;
     saveState();
     renderAssignTab(s);
     renderWorkoutsList();
     refreshTrainerDashboard();
     renderTodayWorkout(s);
+    renderTrainerExerciseNotes(s);
     alert('Rutina guardada en lista general y asignada ✅');
   }
 }
@@ -3507,6 +3522,9 @@ function renderAssignTab(s) {
     if (descEl) descEl.value = currentWorkout.desc || '';
     if (contentEl) contentEl.value = currentWorkout.content || '';
   }
+
+  // Actualizar observaciones del entrenador
+  renderTrainerExerciseNotes(s);
 }
 
 function assignWorkout() {
