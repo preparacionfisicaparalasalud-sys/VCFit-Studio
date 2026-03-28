@@ -930,6 +930,19 @@
       <div class="card-title">👥 Alumnos recientes</div>
       <div id="trainer-recent-students"></div>
     </div>
+
+    <div class="card">
+      <div class="card-title">💾 Backup de datos</div>
+      <div class="text-small text-gray" style="margin-bottom:0.8rem;line-height:1.6">
+        Exportá todos los datos de la app o restauralos desde un backup anterior.
+      </div>
+      <div style="display:flex;gap:0.6rem;flex-wrap:wrap">
+        <button class="btn btn-secondary btn-sm" style="flex:1" onclick="exportBackup()">📥 Exportar backup</button>
+        <button class="btn btn-secondary btn-sm" style="flex:1" onclick="document.getElementById('import-backup-input').click()">📤 Importar backup</button>
+      </div>
+      <input type="file" id="import-backup-input" accept=".json" onchange="importBackup(event)" style="display:none">
+      <div id="backup-msg" style="font-size:0.8rem;min-height:1.2rem;margin-top:0.6rem;text-align:center"></div>
+    </div>
   </div>
 </div>
 
@@ -1133,12 +1146,29 @@
 
     <!-- TAB ANAMNESIS -->
     <div id="tab-anamnesis" class="tab-content">
+      <!-- Foto del alumno editable por entrenador -->
+      <div class="card" style="margin-bottom:1rem">
+        <div style="display:flex;align-items:center;gap:1rem">
+          <div onclick="document.getElementById('trainer-student-photo-input').click()"
+            style="width:64px;height:64px;border-radius:50%;background:var(--dark3);border:2px dashed var(--orange);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;flex-shrink:0">
+            <img id="trainer-student-photo-preview" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:50%">
+            <span id="trainer-student-photo-icon" style="font-size:1.5rem">📷</span>
+          </div>
+          <div>
+            <div class="bold" id="trainer-student-photo-name">—</div>
+            <div class="text-small text-gray">Tocá la foto para cambiarla</div>
+          </div>
+          <input type="file" id="trainer-student-photo-input" accept="image/*" onchange="saveTrainerStudentPhoto(event)" style="display:none">
+        </div>
+      </div>
+
       <div id="anamnesis-view"></div>
       <div class="export-grid mt-2">
         <button class="btn btn-primary btn-sm" onclick="openEditAnamnesisModal()">✏️ Editar</button>
         <button class="btn btn-secondary btn-sm" onclick="exportAnamnesisText()">📄 TXT</button>
         <button class="btn btn-secondary btn-sm" onclick="copyAnamnesis()">📋 Copiar</button>
         <button class="btn btn-whatsapp btn-sm" onclick="sendAnamnesisWhatsApp()">💬 WhatsApp</button>
+        <button class="btn btn-secondary btn-sm" onclick="exportStudentReport()">📊 Reporte PDF</button>
       </div>
     </div>
 
@@ -1217,6 +1247,19 @@ Hip thrust: 4x15"></textarea>
         </select>
       </div>
       <button class="btn btn-secondary btn-sm" onclick="assignWorkout()">Asignar</button>
+
+      <hr class="divider">
+
+      <!-- Observaciones del entrenador por ejercicio -->
+      <div class="card">
+        <div class="card-title">💬 Observaciones por ejercicio</div>
+        <div class="text-small text-gray" style="margin-bottom:0.8rem;line-height:1.6">
+          Agregá notas fijas para el alumno en cada ejercicio. Las ve en naranja debajo del nombre del ejercicio.
+        </div>
+        <div id="trainer-exercise-notes-view">
+          <div class="text-small text-gray">Asigná una rutina primero para ver los ejercicios.</div>
+        </div>
+      </div>
     </div>
 
     <!-- TAB NUTRICIÓN -->
@@ -1398,6 +1441,7 @@ ALMUERZO
     <!-- TAB TODAY -->
     <div id="tab-today" class="tab-content">
       <div id="student-payment-banner"></div>
+      <div id="student-routine-updated-banner"></div>
       <div id="student-welcome-banner"></div>
       <div id="today-workout-content"></div>
     </div>
@@ -3006,6 +3050,16 @@ function openStudentDetail(id) {
   renderNutritionTab(s);
   renderTrainerNotesTab(s);
   renderPaymentsTab(s);
+  renderTrainerExerciseNotes(s);
+
+  // Foto del alumno en tab anamnesis
+  const nameEl = document.getElementById('trainer-student-photo-name');
+  const prev = document.getElementById('trainer-student-photo-preview');
+  const icon = document.getElementById('trainer-student-photo-icon');
+  if (nameEl) nameEl.textContent = s.name;
+  if (s.photo && prev) { prev.src = s.photo; prev.style.display = 'block'; if (icon) icon.style.display = 'none'; }
+  else { if (prev) prev.style.display = 'none'; if (icon) icon.style.display = 'block'; }
+
   switchTab('tab-anamnesis', 'detail');
   showScreen('screen-student-detail');
 }
@@ -3459,10 +3513,13 @@ function assignWorkout() {
   const id = document.getElementById('assign-workout-select').value;
   const s = state.students.find(x => x.id === state.currentStudentId);
   if (!s) return;
+  const anterior = s.assignedWorkoutId;
   s.assignedWorkoutId = id || null;
+  if (id && id !== anterior) s.routineUpdated = true; // flag para banner alumno
   saveState();
   renderAssignTab(s);
   renderTodayWorkout(s);
+  renderTrainerExerciseNotes(s);
   alert(id ? 'Rutina asignada ✅' : 'Rutina removida');
 }
 
@@ -3563,8 +3620,274 @@ function enterAsStudent(studentId) {
   renderStudentNutritionView(s);
   renderStudentWelcomeBanner(s);
   renderStudentPaymentBanner(s);
+  renderRoutineUpdatedBanner(s);
   switchTab('tab-today', 'student');
   showScreen('screen-student-view');
+}
+
+// ═══════════════════════════════════════════
+//  BANNER RUTINA ACTUALIZADA
+// ═══════════════════════════════════════════
+function renderRoutineUpdatedBanner(s) {
+  const el = document.getElementById('student-routine-updated-banner');
+  if (!el) return;
+  if (s.routineUpdated) {
+    el.innerHTML = `<div style="background:rgba(255,107,0,0.12);border:1px solid rgba(255,107,0,0.4);border-radius:12px;padding:0.7rem 1rem;margin-bottom:0.8rem;display:flex;align-items:center;justify-content:space-between;gap:0.6rem">
+      <div style="display:flex;align-items:center;gap:0.6rem">
+        <span style="font-size:1.1rem">🆕</span>
+        <span class="text-small" style="color:var(--orange)">Tu entrenador actualizó tu rutina</span>
+      </div>
+      <button class="btn btn-secondary btn-sm" style="font-size:0.72rem;padding:0.25rem 0.6rem" onclick="dismissRoutineUpdate()">✓ Visto</button>
+    </div>`;
+  } else {
+    el.innerHTML = '';
+  }
+}
+
+function dismissRoutineUpdate() {
+  const s = state.students.find(x => x.id === state.currentStudentId);
+  if (!s) return;
+  s.routineUpdated = false;
+  saveState();
+  renderRoutineUpdatedBanner(s);
+}
+
+// ═══════════════════════════════════════════
+//  OBSERVACIONES DEL ENTRENADOR POR EJERCICIO
+// ═══════════════════════════════════════════
+function renderTrainerExerciseNotes(s) {
+  const el = document.getElementById('trainer-exercise-notes-view');
+  if (!el) return;
+  if (!s.assignedWorkoutId) {
+    el.innerHTML = '<div class="text-small text-gray">Asigná una rutina primero para ver los ejercicios.</div>';
+    return;
+  }
+  const w = s.assignedWorkoutId === '__exclusive__'
+    ? s.exclusiveWorkout
+    : state.workouts.find(x => x.id === s.assignedWorkoutId);
+  if (!w) { el.innerHTML = '<div class="text-small text-gray">Rutina no encontrada.</div>'; return; }
+
+  const exercises = [];
+  (w.content || '').split('\n').forEach((line, idx) => {
+    const t = line.trim();
+    if (t.match(/^.+:\s*.+/)) {
+      const [name, sets] = t.split(':').map(x => x.trim());
+      exercises.push({ idx, name, sets });
+    }
+  });
+
+  if (!exercises.length) {
+    el.innerHTML = '<div class="text-small text-gray">No se encontraron ejercicios en la rutina.</div>';
+    return;
+  }
+
+  if (!w.exerciseNotes) w.exerciseNotes = {};
+
+  el.innerHTML = exercises.map(ex => `
+    <div style="margin-bottom:0.8rem">
+      <div style="font-family:var(--font-label);font-weight:700;font-size:0.88rem;color:var(--white);margin-bottom:0.3rem">${ex.name} <span style="color:var(--orange);font-weight:400">${ex.sets}</span></div>
+      <input type="text" class="input-field" style="font-size:0.82rem;padding:0.5rem 0.8rem"
+        placeholder="Observación para el alumno (opcional)"
+        value="${w.exerciseNotes[ex.idx] || ''}"
+        onchange="saveExerciseObservation('${s.id}','${w.id || '__exclusive__'}',${ex.idx},this.value)">
+    </div>`).join('');
+}
+
+function saveExerciseObservation(studentId, workoutId, exIdx, value) {
+  let w;
+  if (workoutId === '__exclusive__') {
+    const s = state.students.find(x => x.id === studentId);
+    w = s?.exclusiveWorkout;
+  } else {
+    w = state.workouts.find(x => x.id === workoutId);
+  }
+  if (!w) return;
+  if (!w.exerciseNotes) w.exerciseNotes = {};
+  w.exerciseNotes[exIdx] = value.trim();
+  saveState();
+}
+
+// ═══════════════════════════════════════════
+//  FOTO DEL ALUMNO DESDE EL ENTRENADOR
+// ═══════════════════════════════════════════
+function saveTrainerStudentPhoto(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const s = state.students.find(x => x.id === state.currentStudentId);
+  if (!s) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    s.photo = e.target.result;
+    savePhotosLocal();
+    // Actualizar preview
+    const prev = document.getElementById('trainer-student-photo-preview');
+    const icon = document.getElementById('trainer-student-photo-icon');
+    if (prev) { prev.src = e.target.result; prev.style.display = 'block'; }
+    if (icon) icon.style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+// ═══════════════════════════════════════════
+//  BACKUP Y EXPORTACIÓN
+// ═══════════════════════════════════════════
+function exportBackup() {
+  const backup = {
+    version: '3.0',
+    date: new Date().toISOString(),
+    app: 'VC Fit Studio',
+    state: {
+      students: state.students,
+      workouts: state.workouts,
+      trainerProfile: state.trainerProfile,
+      trainerPassword: state.trainerPassword,
+    }
+  };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `vcfit-backup-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  const msg = document.getElementById('backup-msg');
+  if (msg) { msg.style.color = 'var(--success)'; msg.textContent = '✅ Backup exportado'; setTimeout(() => msg.textContent = '', 3000); }
+}
+
+function importBackup(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const backup = JSON.parse(e.target.result);
+      if (!backup.state || !backup.app) throw new Error('Archivo inválido');
+      if (!confirm(`¿Restaurar backup del ${backup.date?.split('T')[0] || 'fecha desconocida'}?\n\nEsto reemplazará TODOS los datos actuales. Esta acción no se puede deshacer.`)) return;
+      if (backup.state.students) state.students = backup.state.students;
+      if (backup.state.workouts) state.workouts = backup.state.workouts;
+      if (backup.state.trainerProfile) state.trainerProfile = backup.state.trainerProfile;
+      if (backup.state.trainerPassword) state.trainerPassword = backup.state.trainerPassword;
+      saveState();
+      refreshTrainerDashboard();
+      renderStudentsList();
+      renderWorkoutsList();
+      updateTrainerTopbar();
+      const msg = document.getElementById('backup-msg');
+      if (msg) { msg.style.color = 'var(--success)'; msg.textContent = '✅ Backup restaurado correctamente'; }
+    } catch (err) {
+      const msg = document.getElementById('backup-msg');
+      if (msg) { msg.style.color = 'var(--danger)'; msg.textContent = '❌ Archivo inválido o corrupto'; }
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+// ═══════════════════════════════════════════
+//  REPORTE PDF DEL ALUMNO
+// ═══════════════════════════════════════════
+function exportStudentReport() {
+  const s = state.students.find(x => x.id === state.currentStudentId);
+  if (!s) return;
+
+  const now = new Date().toLocaleDateString('es-AR', { day:'numeric', month:'long', year:'numeric' });
+  const latest = s.metricsLog && s.metricsLog.length ? s.metricsLog[s.metricsLog.length - 1] : null;
+  const fmt = v => v !== null && v !== undefined ? parseFloat(v).toFixed(1) : '—';
+  const fmtInt = v => v !== null && v !== undefined ? Math.round(v) : '—';
+
+  const mesActual = `${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`;
+  const pagado = s.payments && s.payments.some(p => p.mes === mesActual);
+  const packActivo = s.classPacks && s.classPacks.find(p => p.restantes > 0);
+
+  const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Reporte ${s.name} — VC Fit</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: Arial, sans-serif; color:#1a1a1a; padding:40px; font-size:13px; }
+  h1 { font-size:22px; color:#FF6B00; margin-bottom:4px; }
+  h2 { font-size:14px; color:#FF6B00; margin:20px 0 8px; border-bottom:2px solid #FF6B00; padding-bottom:4px; }
+  .meta { color:#666; font-size:12px; margin-bottom:24px; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .row { display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #eee; }
+  .label { color:#666; }
+  .val { font-weight:bold; }
+  .metric-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:8px; }
+  .metric-box { background:#f5f5f5; border-radius:8px; padding:10px; text-align:center; }
+  .metric-num { font-size:20px; font-weight:bold; color:#FF6B00; }
+  .metric-lbl { font-size:10px; color:#666; margin-top:2px; }
+  .session-row { display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #eee; }
+  .badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:bold; }
+  .badge-green { background:#e8f5e9; color:#2e7d32; }
+  .badge-red { background:#ffebee; color:#c62828; }
+  .badge-orange { background:#fff3e0; color:#e65100; }
+  @media print { body { padding:20px; } }
+</style>
+</head>
+<body>
+  <h1>VC FIT STUDIO</h1>
+  <div style="font-size:18px;font-weight:bold;margin-bottom:2px">${s.name}</div>
+  <div class="meta">Reporte generado el ${now}</div>
+
+  <h2>👤 Datos personales</h2>
+  <div class="grid">
+    <div class="row"><span class="label">Edad</span><span class="val">${s.anamnesis.age || '—'} años</span></div>
+    <div class="row"><span class="label">Sexo</span><span class="val">${s.anamnesis.sex || '—'}</span></div>
+    <div class="row"><span class="label">Peso inicial</span><span class="val">${s.anamnesis.weight || '—'} kg</span></div>
+    <div class="row"><span class="label">Talla</span><span class="val">${s.anamnesis.height || '—'} cm</span></div>
+    <div class="row"><span class="label">Objetivo</span><span class="val">${s.anamnesis.goal || '—'}</span></div>
+    <div class="row"><span class="label">Peso objetivo</span><span class="val">${s.anamnesis.goalWeight || '—'} kg</span></div>
+    <div class="row"><span class="label">Ocupación</span><span class="val">${s.anamnesis.job || '—'}</span></div>
+    <div class="row"><span class="label">Teléfono</span><span class="val">${s.anamnesis.phone || '—'}</span></div>
+  </div>
+  ${s.anamnesis.medical ? `<div class="row" style="margin-top:8px"><span class="label">Historial médico</span><span class="val">${s.anamnesis.medical}</span></div>` : ''}
+  ${s.anamnesis.injuries ? `<div class="row"><span class="label">Lesiones</span><span class="val">${s.anamnesis.injuries}</span></div>` : ''}
+
+  ${latest ? `
+  <h2>📊 Últimas métricas — ${latest.date}</h2>
+  <div class="metric-grid">
+    <div class="metric-box"><div class="metric-num">${latest.weight}</div><div class="metric-lbl">Peso (kg)</div></div>
+    ${latest.calc?.bmi ? `<div class="metric-box"><div class="metric-num">${fmt(latest.calc.bmi)}</div><div class="metric-lbl">BMI</div></div>` : ''}
+    ${latest.calc?.fatPct ? `<div class="metric-box"><div class="metric-num">${fmt(latest.calc.fatPct)}%</div><div class="metric-lbl">% Grasa</div></div>` : ''}
+    ${latest.calc?.musclePct ? `<div class="metric-box"><div class="metric-num">${fmt(latest.calc.musclePct)}%</div><div class="metric-lbl">% Músculo</div></div>` : ''}
+    ${latest.calc?.visceralEst ? `<div class="metric-box"><div class="metric-num">${latest.calc.visceralEst}</div><div class="metric-lbl">Grasa visceral</div></div>` : ''}
+    ${latest.calc?.bmr ? `<div class="metric-box"><div class="metric-num">${fmtInt(latest.calc.bmr)}</div><div class="metric-lbl">BMR (kcal)</div></div>` : ''}
+    ${latest.calc?.tdee ? `<div class="metric-box"><div class="metric-num">${fmtInt(latest.calc.tdee)}</div><div class="metric-lbl">TDEE (kcal)</div></div>` : ''}
+    ${latest.waist ? `<div class="metric-box"><div class="metric-num">${latest.waist}</div><div class="metric-lbl">Cintura (cm)</div></div>` : ''}
+    ${latest.bone ? `<div class="metric-box"><div class="metric-num">${latest.bone}</div><div class="metric-lbl">Masa ósea (kg)</div></div>` : ''}
+  </div>` : '<div class="meta" style="margin-top:8px">Sin métricas registradas.</div>'}
+
+  <h2>📈 Historial de sesiones</h2>
+  ${s.progressLog && s.progressLog.length ? s.progressLog.slice().reverse().slice(0, 10).map(p => `
+    <div class="session-row">
+      <span>${p.date} — ${p.workoutName || '—'}</span>
+      <span>${p.duration ? p.duration + ' min · ' : ''}${p.exercises || 0} ej.${p.weight ? ' · ' + p.weight + ' kg' : ''}</span>
+    </div>`).join('') : '<div class="meta">Sin sesiones registradas.</div>'}
+
+  <h2>💰 Estado de pagos</h2>
+  <div style="margin-bottom:8px">
+    <span class="badge ${pagado || packActivo ? 'badge-green' : 'badge-red'}">
+      ${pagado ? '✅ Al día' : packActivo ? `📦 ${packActivo.restantes} clases restantes` : '⚠️ Pago pendiente'}
+    </span>
+  </div>
+  ${s.payments && s.payments.length ? s.payments.slice().sort((a,b) => b.mes.localeCompare(a.mes)).slice(0,6).map(p => {
+    const [y,m] = p.mes.split('-');
+    const label = new Date(parseInt(y),parseInt(m)-1,1).toLocaleDateString('es-AR',{month:'long',year:'numeric'});
+    return `<div class="session-row"><span style="text-transform:capitalize">${label}</span><span>${p.fecha}${p.monto ? ' · $' + p.monto : ''}</span></div>`;
+  }).join('') : '<div class="meta">Sin pagos registrados.</div>'}
+
+  <div style="margin-top:40px;padding-top:16px;border-top:1px solid #eee;color:#999;font-size:11px;text-align:center">
+    VC FIT STUDIO · ${state.trainerProfile?.name || 'Entrenador'} · ${state.trainerProfile?.specialty || ''} · Generado el ${now}
+  </div>
+</body>
+</html>`;
+
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+  setTimeout(() => win.print(), 500);
 }
 
 function renderStudentWelcomeBanner(s) {
@@ -3689,6 +4012,8 @@ function renderTodayWorkout(s) {
       if (day) html += `<div class="card-title mt-2" style="padding-left:0.2rem;margin-bottom:0.5rem">${day}</div>`;
       days[day].forEach(ex => {
         const check = state.exerciseChecks[checksKey][ex.idx] || {};
+        // Observación del entrenador para este ejercicio
+        const trainerObs = (w.exerciseNotes && w.exerciseNotes[ex.idx]) || '';
         html += `
           <div class="exercise-item ${check.done ? 'done' : ''}" id="ex-item-${checksKey}-${ex.idx}">
             <button class="exercise-check ${check.done ? 'checked' : ''}" onclick="toggleExercise('${checksKey}','${ex.idx}')">
@@ -3697,7 +4022,8 @@ function renderTodayWorkout(s) {
             <div class="exercise-details">
               <div class="exercise-name">${ex.name}</div>
               <div class="exercise-sets">${ex.sets}</div>
-              <input type="text" class="exercise-note-input" placeholder="Nota: peso usado, sensaciones..."
+              ${trainerObs ? `<div style="font-size:0.78rem;color:var(--orange);margin-top:0.2rem;font-style:italic">💬 ${trainerObs}</div>` : ''}
+              <input type="text" class="exercise-note-input" placeholder="Mi nota: peso usado, sensaciones..."
                 value="${check.note || ''}"
                 onchange="saveExerciseNote('${checksKey}','${ex.idx}',this.value)">
             </div>
@@ -4177,11 +4503,18 @@ function renderChart(studentId, role) {
   if (!chartFilters[filterKey]) chartFilters[filterKey] = ['weight'];
   const active = chartFilters[filterKey];
 
-  const labels = s.metricsLog.map(e => e.date);
+  // Ordenar por fecha ISO para que el gráfico sea cronológico
+  const sortedLog = s.metricsLog.slice().sort((a, b) => {
+    const da = a.dateISO || a.date.split('/').reverse().join('-');
+    const db = b.dateISO || b.date.split('/').reverse().join('-');
+    return da.localeCompare(db);
+  });
+
+  const labels = sortedLog.map(e => e.date);
 
   const datasets = active.map(varKey => {
     const v = CHART_VARS[varKey];
-    const data = s.metricsLog.map(e => getChartValue(e, varKey));
+    const data = sortedLog.map(e => getChartValue(e, varKey));
     return {
       label: `${v.label}${v.unit ? ' (' + v.unit + ')' : ''}`,
       data,
