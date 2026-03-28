@@ -84,6 +84,20 @@
     --orange-dim: rgba(255,107,0,0.18);
   }
 
+  /* TOPO — gris oscuro neutro */
+  [data-theme="topo"] {
+    --black: #2A2A2E;
+    --dark: #323236;
+    --dark2: #3A3A3F;
+    --dark3: #454549;
+    --dark4: #525258;
+    --white: #F0EEF0;
+    --white-dim: #C8C6C8;
+    --gray: #8A888E;
+    --gray-light: #6E6C72;
+    --orange-dim: rgba(255,107,0,0.16);
+  }
+
   /* GRIS PIEDRA — light */
   [data-theme="gris"] {
     --black: #EEEEF3;
@@ -2315,6 +2329,10 @@ Plancha: 3x45seg"></textarea>
       style="background:linear-gradient(135deg,#0A1F18,#1E3D30)">
       <span class="theme-swatch-label">Verde</span>
     </div>
+    <div class="theme-swatch" data-theme="topo" onclick="selectTheme('topo')"
+      style="background:linear-gradient(135deg,#2A2A2E,#454549)">
+      <span class="theme-swatch-label">Topo</span>
+    </div>
     <div class="theme-swatch" data-theme="gris" onclick="selectTheme('gris')"
       style="background:linear-gradient(135deg,#EEEEF3,#D8D8E2)">
       <span class="theme-swatch-label" style="background:rgba(0,0,0,0.15);color:#333">Gris</span>
@@ -2357,6 +2375,7 @@ const THEME_ICONS = {
   azul:    `<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
   burdeos: `<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
   verde:   `<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
+  topo:    `<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
   gris:    `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>`,
   blanco:  `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>`,
 };
