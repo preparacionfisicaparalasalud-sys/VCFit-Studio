@@ -1239,6 +1239,34 @@ ALMUERZO
 </div>
 
 <!-- ═══════════════════════════════════════════
+     MODAL: ASIGNAR RUTINA A VARIOS ALUMNOS
+═══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-assign-bulk">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">👥 Asignar a alumnos</div>
+    <div class="text-small text-gray" style="margin-bottom:1rem" id="assign-bulk-workout-name"></div>
+
+    <!-- Seleccionar todos -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.8rem">
+      <span class="input-label" style="margin:0">Seleccioná los alumnos:</span>
+      <div style="display:flex;gap:0.5rem">
+        <button class="btn btn-secondary btn-sm" style="font-size:0.75rem" onclick="selectAllStudents(true)">Todos</button>
+        <button class="btn btn-secondary btn-sm" style="font-size:0.75rem" onclick="selectAllStudents(false)">Ninguno</button>
+      </div>
+    </div>
+
+    <!-- Lista de alumnos con checkboxes -->
+    <div id="assign-bulk-list" style="max-height:320px;overflow-y:auto;margin-bottom:1rem"></div>
+
+    <div style="display:flex;gap:0.8rem;padding-bottom:1rem">
+      <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-assign-bulk')">Cancelar</button>
+      <button class="btn btn-primary" style="flex:1" onclick="saveAssignBulk()">💾 Asignar seleccionados</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
      SCREEN: STUDENT VIEW (alumno)
 ═══════════════════════════════════════════ -->
 <div id="screen-student-view" class="screen">
@@ -3044,25 +3072,99 @@ function renderWorkoutsList() {
     return;
   }
   empty.style.display = 'none';
-  list.innerHTML = state.workouts.map(w => `
+  list.innerHTML = state.workouts.map(w => {
+    // Contar alumnos asignados a esta rutina
+    const asignados = state.students.filter(s => s.assignedWorkoutId === w.id).length;
+    return `
     <div class="card" style="cursor:default">
       <div class="flex-between mb-1">
         <div>
           <div style="font-family:var(--font-label);font-weight:700;font-size:1.1rem;letter-spacing:1px">${w.name}</div>
           ${w.desc ? `<div class="text-small text-gray">${w.desc}</div>` : ''}
+          ${asignados ? `<div class="text-small" style="color:var(--orange);margin-top:0.2rem">👥 ${asignados} alumno${asignados > 1 ? 's' : ''} asignado${asignados > 1 ? 's' : ''}</div>` : '<div class="text-small text-gray" style="margin-top:0.2rem">Sin alumnos asignados</div>'}
         </div>
         <div style="display:flex;gap:0.5rem">
-          <button class="btn btn-secondary btn-sm" onclick="openEditWorkoutModal('${w.id}')">✏️ Editar</button>
+          <button class="btn btn-secondary btn-sm" onclick="openEditWorkoutModal('${w.id}')">✏️</button>
           <button class="btn btn-danger btn-sm" onclick="deleteWorkout('${w.id}')">✕</button>
         </div>
       </div>
       <pre style="background:var(--dark3);padding:0.8rem;border-radius:8px;font-size:0.82rem;line-height:1.7;white-space:pre-wrap;color:var(--white-dim);font-family:var(--font-body)">${w.content || '(sin contenido)'}</pre>
       <div class="export-grid mt-2">
+        <button class="btn btn-primary btn-sm" onclick="openAssignBulkModal('${w.id}')">👥 Asignar a alumnos</button>
         <button class="btn btn-secondary btn-sm" onclick="copyWorkout('${w.id}')">📋 Copiar</button>
         <button class="btn btn-secondary btn-sm" onclick="exportWorkoutTxt('${w.id}')">📄 TXT</button>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════
+//  ASIGNACIÓN MASIVA DE RUTINAS
+// ═══════════════════════════════════════════
+let _assignBulkWorkoutId = null;
+
+function openAssignBulkModal(workoutId) {
+  const w = state.workouts.find(x => x.id === workoutId);
+  if (!w) return;
+  _assignBulkWorkoutId = workoutId;
+
+  document.getElementById('assign-bulk-workout-name').textContent = `Rutina: "${w.name}"`;
+
+  if (!state.students.length) {
+    document.getElementById('assign-bulk-list').innerHTML =
+      '<div class="text-small text-gray">No hay alumnos creados todavía.</div>';
+    document.getElementById('modal-assign-bulk').classList.add('show');
+    return;
+  }
+
+  document.getElementById('assign-bulk-list').innerHTML = state.students.map(s => {
+    const yaAsignado = s.assignedWorkoutId === workoutId;
+    return `
+    <label style="display:flex;align-items:center;gap:0.8rem;padding:0.7rem 0;border-bottom:1px solid var(--dark3);cursor:pointer">
+      <input type="checkbox" id="bulk-chk-${s.id}" ${yaAsignado ? 'checked' : ''}
+        style="width:18px;height:18px;accent-color:var(--orange);flex-shrink:0">
+      <div style="display:flex;align-items:center;gap:0.6rem;flex:1">
+        <div class="student-avatar" style="width:34px;height:34px;font-size:0.8rem;flex-shrink:0">
+          ${s.photo ? `<img src="${s.photo}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">` : getInitials(s.name)}
+        </div>
+        <div>
+          <div class="bold text-small">${s.name}</div>
+          <div class="text-small text-gray">${s.anamnesis.goal || '—'}${yaAsignado ? ' · <span style="color:var(--orange)">ya asignada</span>' : ''}</div>
+        </div>
+      </div>
+    </label>`;
+  }).join('');
+
+  document.getElementById('modal-assign-bulk').classList.add('show');
+}
+
+function selectAllStudents(checked) {
+  state.students.forEach(s => {
+    const chk = document.getElementById(`bulk-chk-${s.id}`);
+    if (chk) chk.checked = checked;
+  });
+}
+
+function saveAssignBulk() {
+  if (!_assignBulkWorkoutId) return;
+  let count = 0;
+  state.students.forEach(s => {
+    const chk = document.getElementById(`bulk-chk-${s.id}`);
+    if (!chk) return;
+    if (chk.checked) {
+      s.assignedWorkoutId = _assignBulkWorkoutId;
+      s.customWorkoutContent = null; // reset personalización anterior
+      count++;
+    } else if (s.assignedWorkoutId === _assignBulkWorkoutId) {
+      // Si desmarcaron a alguien que la tenía asignada → desasignar
+      s.assignedWorkoutId = null;
+    }
+  });
+  saveState();
+  closeModal('modal-assign-bulk');
+  renderWorkoutsList();
+  renderStudentsList();
+  alert(`✅ Rutina asignada a ${count} alumno${count !== 1 ? 's' : ''}`);
 }
 
 function deleteWorkout(id) {
