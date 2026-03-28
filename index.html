@@ -1168,13 +1168,17 @@
         <button class="btn btn-secondary btn-sm" onclick="exportAnamnesisText()">📄 TXT</button>
         <button class="btn btn-secondary btn-sm" onclick="copyAnamnesis()">📋 Copiar</button>
         <button class="btn btn-whatsapp btn-sm" onclick="sendAnamnesisWhatsApp()">💬 WhatsApp</button>
-        <button class="btn btn-secondary btn-sm" onclick="exportStudentReport()">📊 Reporte PDF</button>
+        <button class="btn btn-secondary btn-sm" onclick="exportStudentReport()">📊 Reporte general</button>
+        <button class="btn btn-secondary btn-sm" onclick="exportMetricsReport()">📈 Reporte métricas</button>
       </div>
     </div>
 
     <!-- TAB METRICS (trainer) -->
     <div id="tab-metrics" class="tab-content" style="display:none">
       <div id="trainer-metrics-view"></div>
+      <div class="export-grid mt-2">
+        <button class="btn btn-secondary btn-sm" onclick="exportMetricsReport()">📊 Reporte métricas PDF</button>
+      </div>
     </div>
 
     <!-- TAB ASSIGN WORKOUT -->
@@ -3802,7 +3806,287 @@ function importBackup(event) {
 }
 
 // ═══════════════════════════════════════════
-//  REPORTE PDF DEL ALUMNO
+//  REPORTE DE MÉTRICAS CON GRÁFICOS
+// ═══════════════════════════════════════════
+function exportMetricsReport() {
+  const s = state.students.find(x => x.id === state.currentStudentId);
+  if (!s) return;
+  if (!s.metricsLog || !s.metricsLog.length) {
+    alert('Este alumno no tiene métricas registradas todavía.');
+    return;
+  }
+
+  const p = state.trainerProfile || {};
+  const now = new Date().toLocaleDateString('es-AR', { day:'numeric', month:'long', year:'numeric' });
+  const fmt = v => (v !== null && v !== undefined) ? parseFloat(v).toFixed(1) : '—';
+  const fmtInt = v => (v !== null && v !== undefined) ? Math.round(v) : '—';
+
+  // Ordenar log por fecha
+  const log = s.metricsLog.slice().sort((a,b) => {
+    const da = a.dateISO || a.date.split('/').reverse().join('-');
+    const db = b.dateISO || b.date.split('/').reverse().join('-');
+    return da.localeCompare(db);
+  });
+
+  const first = log[0];
+  const last  = log[log.length - 1];
+
+  // ── Generar SVG de línea ──
+  function makeSVG(values, labels, color, unit) {
+    const W = 560, H = 160, padL = 48, padR = 16, padT = 16, padB = 32;
+    const gW = W - padL - padR;
+    const gH = H - padT - padB;
+
+    const nums = values.map(v => parseFloat(v)).filter(v => !isNaN(v));
+    if (nums.length < 2) return '<div style="color:#aaa;font-size:12px;padding:8px">No hay suficientes datos para graficar.</div>';
+
+    const mn = Math.min(...nums) * 0.97;
+    const mx = Math.max(...nums) * 1.03;
+    const range = mx - mn || 1;
+
+    const pts = values.map((v, i) => {
+      const x = padL + (i / (values.length - 1)) * gW;
+      const y = padT + gH - ((parseFloat(v) - mn) / range) * gH;
+      return { x, y, v, label: labels[i] };
+    });
+
+    const polyline = pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+
+    // Area fill
+    const areaPoints = `${pts[0].x.toFixed(1)},${(padT+gH).toFixed(1)} ` +
+      pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ') +
+      ` ${pts[pts.length-1].x.toFixed(1)},${(padT+gH).toFixed(1)}`;
+
+    // Eje Y labels (3 niveles)
+    const yLabels = [mn, (mn+mx)/2, mx].map((v,i) => {
+      const y = padT + gH - (i * gH / 2);
+      return `<text x="${padL-6}" y="${y+4}" text-anchor="end" font-size="10" fill="#888">${v.toFixed(1)}</text>`;
+    }).join('');
+
+    // X labels (solo primero, último y medio)
+    const xIdxs = [0, Math.floor(pts.length/2), pts.length-1].filter((v,i,a) => a.indexOf(v)===i);
+    const xLabels = xIdxs.map(i => {
+      const lbl = labels[i].length > 8 ? labels[i].substring(0,8)+'…' : labels[i];
+      return `<text x="${pts[i].x.toFixed(1)}" y="${H-4}" text-anchor="middle" font-size="9" fill="#888">${lbl}</text>`;
+    }).join('');
+
+    // Puntos con valor
+    const dots = pts.map(p => `
+      <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4" fill="${color}" stroke="white" stroke-width="1.5"/>
+      <text x="${p.x.toFixed(1)}" y="${(p.y-8).toFixed(1)}" text-anchor="middle" font-size="9" fill="${color}" font-weight="bold">${parseFloat(p.v).toFixed(1)}</text>
+    `).join('');
+
+    return `<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:${W}px">
+      <!-- Grid lines -->
+      <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT+gH}" stroke="#e0e0e0" stroke-width="1"/>
+      <line x1="${padL}" y1="${padT+gH}" x2="${W-padR}" y2="${padT+gH}" stroke="#e0e0e0" stroke-width="1"/>
+      <line x1="${padL}" y1="${padT+gH/2}" x2="${W-padR}" y2="${padT+gH/2}" stroke="#f0f0f0" stroke-width="1" stroke-dasharray="3,3"/>
+      <!-- Area -->
+      <polygon points="${areaPoints}" fill="${color}" opacity="0.08"/>
+      <!-- Línea -->
+      <polyline points="${polyline}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+      ${dots}
+      ${yLabels}
+      ${xLabels}
+    </svg>`;
+  }
+
+  const labels = log.map(e => e.date);
+
+  // Series a graficar
+  const series = [
+    { key: 'weight',     label: 'Peso corporal',    unit: 'kg',   color: '#FF6B00', vals: log.map(e => e.weight) },
+    { key: 'fatPct',     label: '% Grasa corporal', unit: '%',    color: '#e74c3c', vals: log.map(e => e.calc?.fatPct) },
+    { key: 'musclePct',  label: '% Masa muscular',  unit: '%',    color: '#2ecc71', vals: log.map(e => e.calc?.musclePct) },
+    { key: 'bmi',        label: 'BMI',              unit: '',     color: '#9b59b6', vals: log.map(e => e.calc?.bmi) },
+    { key: 'visceral',   label: 'Grasa visceral',   unit: 'niv.', color: '#e67e22', vals: log.map(e => e.calc?.visceralEst) },
+    { key: 'bmr',        label: 'Metabolismo basal','unit': 'kcal',color: '#3498db', vals: log.map(e => e.calc?.bmr) },
+  ].filter(s => s.vals.some(v => v !== null && v !== undefined));
+
+  // ── Comparativa primera vs última ──
+  function delta(a, b) {
+    if (a === null || a === undefined || b === null || b === undefined) return '';
+    const d = (parseFloat(b) - parseFloat(a));
+    const sign = d > 0 ? '+' : '';
+    const color = d < 0 ? '#2e7d32' : d > 0 ? '#c62828' : '#555';
+    // Para músculo: subir es bueno
+    return `<span style="color:${color};font-weight:bold">${sign}${d.toFixed(1)}</span>`;
+  }
+  function deltaMusc(a, b) {
+    if (a === null || a === undefined || b === null || b === undefined) return '';
+    const d = (parseFloat(b) - parseFloat(a));
+    const sign = d > 0 ? '+' : '';
+    const color = d > 0 ? '#2e7d32' : d < 0 ? '#c62828' : '#555';
+    return `<span style="color:${color};font-weight:bold">${sign}${d.toFixed(1)}</span>`;
+  }
+
+  // ── Tabla historial ──
+  const tableRows = log.slice().reverse().map(e => `
+    <tr>
+      <td>${e.date}</td>
+      <td>${e.weight} kg</td>
+      <td>${e.calc ? fmt(e.calc.bmi) : '—'}</td>
+      <td>${e.calc ? fmt(e.calc.fatPct) + '%' : '—'}${e.fatManual ? ' ●' : ''}</td>
+      <td>${e.calc ? fmt(e.calc.musclePct) + '%' : '—'}${e.muscleManual ? ' ●' : ''}</td>
+      <td>${e.calc?.visceralEst !== null && e.calc?.visceralEst !== undefined ? e.calc.visceralEst : '—'}</td>
+      <td>${e.calc ? fmtInt(e.calc.bmr) + ' kcal' : '—'}</td>
+      <td>${e.waist ? e.waist + ' cm' : '—'}</td>
+    </tr>`).join('');
+
+  const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Reporte Métricas — ${s.name}</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: Arial, sans-serif; color: #1a1a1a; background: #fff; padding: 32px; font-size: 13px; }
+  h1 { font-size: 24px; color: #FF6B00; margin-bottom: 2px; }
+  h2 { font-size: 13px; color: #FF6B00; margin: 24px 0 10px; border-bottom: 2px solid #FF6B00; padding-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
+  .meta { color: #888; font-size: 11px; margin-bottom: 20px; }
+  .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; border-bottom: 3px solid #FF6B00; padding-bottom: 16px; }
+  .trainer-info { text-align: right; font-size: 11px; color: #666; }
+  .trainer-info strong { color: #FF6B00; font-size: 13px; display: block; margin-bottom: 2px; }
+
+  /* Comparativa */
+  .compare-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 8px; }
+  .compare-box { background: #f9f9f9; border: 1px solid #eee; border-radius: 8px; padding: 10px; text-align: center; }
+  .compare-box .lbl { font-size: 10px; color: #888; margin-bottom: 4px; }
+  .compare-box .vals { font-size: 12px; }
+  .compare-box .delta { font-size: 13px; margin-top: 4px; }
+
+  /* Gráficos */
+  .chart-section { margin-bottom: 28px; page-break-inside: avoid; }
+  .chart-title { font-size: 12px; font-weight: bold; color: #333; margin-bottom: 6px; }
+  .chart-wrap { border: 1px solid #f0f0f0; border-radius: 8px; padding: 10px; background: #fafafa; }
+
+  /* Tabla */
+  table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 8px; }
+  th { background: #FF6B00; color: white; padding: 7px 8px; text-align: left; font-size: 10px; }
+  td { padding: 6px 8px; border-bottom: 1px solid #f0f0f0; }
+  tr:hover td { background: #fff8f5; }
+  .note-small { font-size: 9px; color: #aaa; }
+
+  /* Footer */
+  .footer { margin-top: 36px; padding-top: 12px; border-top: 1px solid #eee; font-size: 10px; color: #aaa; display: flex; justify-content: space-between; }
+
+  @media print {
+    body { padding: 16px; }
+    .chart-section { page-break-inside: avoid; }
+    @page { margin: 1.5cm; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>Reporte de métricas</h1>
+    <div style="font-size:18px;font-weight:bold;margin:2px 0">${s.name}</div>
+    <div class="meta">
+      ${s.anamnesis.age ? s.anamnesis.age + ' años' : ''}
+      ${s.anamnesis.sex ? ' · ' + s.anamnesis.sex : ''}
+      ${s.anamnesis.goal ? ' · Objetivo: ' + s.anamnesis.goal : ''}
+      <br>Período: ${first.date} → ${last.date} · ${log.length} medición${log.length !== 1 ? 'es' : ''}
+    </div>
+  </div>
+  <div class="trainer-info">
+    <strong>${p.name || 'VC Fit Studio'}</strong>
+    ${p.specialty ? p.specialty + '<br>' : ''}
+    ${p.certs ? p.certs + '<br>' : ''}
+    ${p.phone ? '📱 ' + p.phone + '<br>' : ''}
+    ${p.instagram ? '📷 ' + p.instagram : ''}
+  </div>
+</div>
+
+<h2>📊 Comparativa: primera vs última medición</h2>
+<div class="compare-grid">
+  <div class="compare-box">
+    <div class="lbl">Peso corporal</div>
+    <div class="vals">${first.weight} kg → ${last.weight} kg</div>
+    <div class="delta">${delta(first.weight, last.weight)} kg</div>
+  </div>
+  <div class="compare-box">
+    <div class="lbl">% Grasa</div>
+    <div class="vals">${fmt(first.calc?.fatPct)}% → ${fmt(last.calc?.fatPct)}%</div>
+    <div class="delta">${delta(first.calc?.fatPct, last.calc?.fatPct)}%</div>
+  </div>
+  <div class="compare-box">
+    <div class="lbl">% Músculo</div>
+    <div class="vals">${fmt(first.calc?.musclePct)}% → ${fmt(last.calc?.musclePct)}%</div>
+    <div class="delta">${deltaMusc(first.calc?.musclePct, last.calc?.musclePct)}%</div>
+  </div>
+  <div class="compare-box">
+    <div class="lbl">BMI</div>
+    <div class="vals">${fmt(first.calc?.bmi)} → ${fmt(last.calc?.bmi)}</div>
+    <div class="delta">${delta(first.calc?.bmi, last.calc?.bmi)}</div>
+  </div>
+  <div class="compare-box">
+    <div class="lbl">Grasa visceral</div>
+    <div class="vals">${first.calc?.visceralEst ?? '—'} → ${last.calc?.visceralEst ?? '—'}</div>
+    <div class="delta">${delta(first.calc?.visceralEst, last.calc?.visceralEst)}</div>
+  </div>
+  <div class="compare-box">
+    <div class="lbl">BMR (kcal)</div>
+    <div class="vals">${fmtInt(first.calc?.bmr)} → ${fmtInt(last.calc?.bmr)}</div>
+    <div class="delta">${delta(first.calc?.bmr, last.calc?.bmr)}</div>
+  </div>
+  ${first.waist && last.waist ? `
+  <div class="compare-box">
+    <div class="lbl">Cintura</div>
+    <div class="vals">${first.waist} cm → ${last.waist} cm</div>
+    <div class="delta">${delta(first.waist, last.waist)} cm</div>
+  </div>` : ''}
+  ${log.length > 1 ? `
+  <div class="compare-box">
+    <div class="lbl">Sesiones</div>
+    <div class="vals" style="font-size:18px;font-weight:bold;color:#FF6B00">${log.length}</div>
+    <div class="delta" style="font-size:10px;color:#888">mediciones totales</div>
+  </div>` : ''}
+</div>
+
+<h2>📈 Evolución gráfica</h2>
+${series.map(ser => `
+<div class="chart-section">
+  <div class="chart-title">${ser.label}${ser.unit ? ' (' + ser.unit + ')' : ''}</div>
+  <div class="chart-wrap">
+    ${makeSVG(ser.vals, labels, ser.color, ser.unit)}
+  </div>
+</div>`).join('')}
+
+<h2>📋 Historial completo de mediciones</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Fecha</th>
+      <th>Peso</th>
+      <th>BMI</th>
+      <th>% Grasa</th>
+      <th>% Músculo</th>
+      <th>Visceral</th>
+      <th>BMR</th>
+      <th>Cintura</th>
+    </tr>
+  </thead>
+  <tbody>${tableRows}</tbody>
+</table>
+<div class="note-small" style="margin-top:6px">● = valor medido directamente por báscula de bioimpedancia. Sin ● = calculado.</div>
+
+<div class="footer">
+  <span>VC Fit Studio · ${p.name || ''} ${p.specialty ? '· ' + p.specialty : ''}</span>
+  <span>Generado el ${now}</span>
+</div>
+
+</body>
+</html>`;
+
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+  setTimeout(() => win.print(), 600);
+}
+
+// ─── FIN REPORTE MÉTRICAS ───────────────────
 // ═══════════════════════════════════════════
 function exportStudentReport() {
   const s = state.students.find(x => x.id === state.currentStudentId);
