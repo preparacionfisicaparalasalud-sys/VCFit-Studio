@@ -2738,6 +2738,9 @@ function renderStudentsList() {
     const now = new Date();
     const mesActual = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
     const pagado = s.payments && s.payments.some(p => p.mes === mesActual);
+    const packActivo = s.classPacks && s.classPacks.find(p => p.restantes > 0);
+    const colorPago = (pagado || packActivo) ? 'var(--success)' : 'var(--danger)';
+    const labelPago = pagado ? '💰 Al día' : packActivo ? `📦 ${packActivo.restantes} clases` : '💰 Pendiente';
     return `
     <div class="student-item" onclick="openStudentDetail('${s.id}')">
       <div class="student-avatar">
@@ -2749,7 +2752,7 @@ function renderStudentsList() {
         ${s.lastCompleted ? `<div class="student-meta" style="color:var(--success)">✅ Completó: ${s.lastCompleted.workoutName} · ${s.lastCompleted.date}</div>` : '<div class="student-meta" style="color:var(--gray)">⏳ Sin completar aún</div>'}
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.4rem;flex-shrink:0;margin-left:0.5rem">
-        <span style="font-size:0.7rem;font-family:var(--font-label);letter-spacing:0.5px;color:${pagado ? 'var(--success)' : 'var(--danger)'}">${pagado ? '💰 Al día' : '💰 Pendiente'}</span>
+        <span style="font-size:0.7rem;font-family:var(--font-label);letter-spacing:0.5px;color:${colorPago}">${labelPago}</span>
         ${s.assignedWorkoutId ? '<span class="student-badge">Rutina</span>' : ''}
         <button class="btn btn-danger btn-sm" style="padding:0.2rem 0.5rem;font-size:0.75rem" onclick="event.stopPropagation(); deleteStudent('${s.id}')">✕</button>
       </div>
@@ -3919,137 +3922,217 @@ function renderPaymentsTab(s) {
   const el = document.getElementById('payments-view');
   if (!el) return;
   if (!s.payments) s.payments = [];
+  if (!s.classPacks) s.classPacks = [];
 
   const now = new Date();
   const mesActual = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
   const mesLabel = now.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
   const pagoActual = s.payments.find(p => p.mes === mesActual);
 
-  html = `
-    <!-- Estado mes actual -->
-    <div class="card" style="border-color:${pagoActual ? 'var(--success)' : 'var(--danger)'};margin-bottom:1rem">
-      <div class="card-title" style="color:${pagoActual ? 'var(--success)' : 'var(--danger)'}">
-        ${pagoActual ? '✅ Pagado' : '⏳ Pendiente'} — ${mesLabel}
+  // Pack activo — el más reciente con clases restantes
+  const packActivo = s.classPacks.find(p => p.restantes > 0);
+
+  let html = '';
+
+  // ── ESTADO GENERAL ──
+  html += `<div class="card" style="border-color:${pagoActual || packActivo ? 'var(--success)' : 'var(--danger)'};margin-bottom:1rem">
+    <div class="card-title" style="color:${pagoActual || packActivo ? 'var(--success)' : 'var(--danger)'}">
+      ${pagoActual || packActivo ? '✅ Al día' : '⏳ Sin pago activo'} — ${mesLabel}
+    </div>
+    ${pagoActual ? `
+      <div class="progress-row"><span class="progress-label">Tipo</span><span class="progress-value">📅 Mensualidad</span></div>
+      <div class="progress-row"><span class="progress-label">Fecha de pago</span><span class="progress-value">${pagoActual.fecha}</span></div>
+      ${pagoActual.monto ? `<div class="progress-row"><span class="progress-label">Monto</span><span class="progress-value text-orange">$${pagoActual.monto}</span></div>` : ''}
+      ${pagoActual.nota ? `<div class="text-small text-gray mt-1" style="font-style:italic">"${pagoActual.nota}"</div>` : ''}
+    ` : ''}
+    ${packActivo ? `
+      <div class="progress-row"><span class="progress-label">Tipo</span><span class="progress-value">📦 Paquete de clases</span></div>
+      <div class="progress-row"><span class="progress-label">Clases restantes</span>
+        <span class="progress-value text-orange" style="font-size:1.3rem;font-family:var(--font-title)">${packActivo.restantes} / ${packActivo.total}</span>
       </div>
-      ${pagoActual ? `
-        <div class="progress-row">
-          <span class="progress-label">Fecha de pago</span>
-          <span class="progress-value">${pagoActual.fecha}</span>
-        </div>
-        ${pagoActual.monto ? `<div class="progress-row">
-          <span class="progress-label">Monto</span>
-          <span class="progress-value text-orange">$${pagoActual.monto}</span>
-        </div>` : ''}
-        ${pagoActual.nota ? `<div class="text-small text-gray mt-1" style="font-style:italic">"${pagoActual.nota}"</div>` : ''}
-        <button class="btn btn-danger btn-sm mt-2" onclick="deletePayment('${s.id}','${mesActual}')">🗑️ Eliminar pago</button>
-      ` : `
-        <div class="text-small text-gray" style="margin-bottom:1rem;line-height:1.6">
-          Registrá el pago del mes actual para actualizar el estado del alumno.
-        </div>
-        <div class="input-group">
-          <label class="input-label">Monto (opcional)</label>
-          <input type="number" class="input-field" id="pay-monto" placeholder="ej: 15000" step="100">
-        </div>
-        <div class="input-group">
-          <label class="input-label">Nota (opcional)</label>
-          <input type="text" class="input-field" id="pay-nota" placeholder="ej: Transferencia, efectivo...">
-        </div>
-        <button class="btn btn-success btn-full" onclick="registrarPago('${s.id}')" style="margin-top:0.5rem">
-          ✅ Marcar como pagado
-        </button>
-      `}
+      <div style="height:6px;background:var(--dark3);border-radius:3px;margin:0.5rem 0;overflow:hidden">
+        <div style="height:100%;background:linear-gradient(90deg,var(--orange),var(--orange-light));border-radius:3px;width:${Math.round(packActivo.restantes/packActivo.total*100)}%;transition:width 0.3s"></div>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="usarClase('${s.id}','${packActivo.id}')">▶️ Descontar 1 clase</button>
+    ` : ''}
+  </div>`;
+
+  // ── REGISTRAR NUEVO PAGO ──
+  html += `<div class="card" style="margin-bottom:1rem">
+    <div class="card-title">💰 Registrar pago</div>
+
+    <!-- Selector de modalidad -->
+    <div class="input-group">
+      <label class="input-label">Modalidad</label>
+      <select class="input-field" id="pay-tipo" onchange="togglePaymentType()">
+        <option value="mensualidad">📅 Mensualidad fija</option>
+        <option value="clase">🎯 Clase individual</option>
+        <option value="paquete">📦 Paquete de clases</option>
+      </select>
     </div>
 
-    <!-- Registrar mes anterior -->
-    <div class="card" style="margin-bottom:1rem">
-      <div class="card-title">📅 Registrar pago de otro mes</div>
+    <!-- Campos mensualidad / clase individual -->
+    <div id="pay-fields-mensualidad">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem">
         <div class="input-group">
-          <label class="input-label">Mes (YYYY-MM)</label>
-          <input type="month" class="input-field" id="pay-mes-custom" value="${mesActual}">
+          <label class="input-label">Mes</label>
+          <input type="month" class="input-field" id="pay-mes" value="${mesActual}">
         </div>
         <div class="input-group">
           <label class="input-label">Monto</label>
-          <input type="number" class="input-field" id="pay-monto-custom" placeholder="ej: 15000" step="100">
+          <input type="number" class="input-field" id="pay-monto" placeholder="ej: 15000" step="100">
         </div>
       </div>
       <div class="input-group">
         <label class="input-label">Nota (opcional)</label>
-        <input type="text" class="input-field" id="pay-nota-custom" placeholder="ej: Pago atrasado, cuota doble...">
+        <input type="text" class="input-field" id="pay-nota" placeholder="ej: Transferencia, efectivo...">
       </div>
-      <button class="btn btn-primary btn-sm btn-full" onclick="registrarPagoCustom('${s.id}')">
-        💾 Guardar pago
-      </button>
+      <button class="btn btn-success btn-sm btn-full" onclick="registrarPago('${s.id}')">✅ Guardar mensualidad</button>
     </div>
 
-    <!-- Historial -->
-    <div class="card">
-      <div class="card-title">📋 Historial de pagos</div>
-      ${s.payments.length === 0 ? `<div class="text-small text-gray">Sin pagos registrados aún.</div>` :
-        s.payments.slice().sort((a,b) => b.mes.localeCompare(a.mes)).map(p => {
-          const [y, m] = p.mes.split('-');
-          const label = new Date(parseInt(y), parseInt(m)-1, 1).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
-          return `
-          <div class="progress-row" style="align-items:flex-start;padding:0.7rem 0">
-            <div style="flex:1">
-              <div class="bold text-small" style="text-transform:capitalize">${label}</div>
-              <div class="text-small text-gray">${p.fecha}${p.nota ? ` · ${p.nota}` : ''}</div>
+    <!-- Campos paquete -->
+    <div id="pay-fields-paquete" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem">
+        <div class="input-group">
+          <label class="input-label">Cantidad de clases</label>
+          <input type="number" class="input-field" id="pay-clases" placeholder="ej: 8" min="1" max="100" step="1">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Monto total</label>
+          <input type="number" class="input-field" id="pay-monto-pack" placeholder="ej: 12000" step="100">
+        </div>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Nota (opcional)</label>
+        <input type="text" class="input-field" id="pay-nota-pack" placeholder="ej: Pack 8 clases abril">
+      </div>
+      <button class="btn btn-success btn-sm btn-full" onclick="registrarPaquete('${s.id}')">📦 Guardar paquete</button>
+    </div>
+  </div>`;
+
+  // ── PAQUETES ACTIVOS / VENCIDOS ──
+  if (s.classPacks.length > 0) {
+    html += `<div class="card" style="margin-bottom:1rem">
+      <div class="card-title">📦 Paquetes de clases</div>
+      ${s.classPacks.slice().reverse().map(p => {
+        const agotado = p.restantes <= 0;
+        return `<div class="progress-row" style="align-items:flex-start;padding:0.7rem 0">
+          <div style="flex:1">
+            <div class="bold text-small">${p.fecha} ${p.nota ? `· ${p.nota}` : ''}</div>
+            <div class="text-small" style="color:${agotado ? 'var(--gray)' : 'var(--orange)'}">
+              ${agotado ? '✓ Agotado' : `${p.restantes} de ${p.total} clases restantes`}
             </div>
-            <div style="display:flex;align-items:center;gap:0.6rem;flex-shrink:0">
-              ${p.monto ? `<span class="text-orange bold text-small">$${p.monto}</span>` : ''}
-              <span class="tag tag-green" style="font-size:0.65rem">✅</span>
-              <button class="btn btn-danger btn-sm" style="padding:0.2rem 0.5rem;font-size:0.7rem" onclick="deletePayment('${s.id}','${p.mes}')">🗑️</button>
-            </div>
-          </div>`;
-        }).join('')}
+            ${p.monto ? `<div class="text-small text-gray">$${p.monto}</div>` : ''}
+          </div>
+          <div style="display:flex;gap:0.4rem;flex-shrink:0">
+            ${!agotado ? `<button class="btn btn-secondary btn-sm" style="padding:0.2rem 0.5rem;font-size:0.7rem" onclick="usarClase('${s.id}','${p.id}')">▶️</button>` : ''}
+            <button class="btn btn-danger btn-sm" style="padding:0.2rem 0.5rem;font-size:0.7rem" onclick="deleteClassPack('${s.id}','${p.id}')">🗑️</button>
+          </div>
+        </div>`;
+      }).join('')}
     </div>`;
+  }
+
+  // ── HISTORIAL MENSUALIDADES ──
+  const pagos = s.payments.filter(p => p.tipo !== 'clase');
+  if (pagos.length > 0) {
+    html += `<div class="card">
+      <div class="card-title">📋 Historial de mensualidades</div>
+      ${pagos.slice().sort((a,b) => b.mes.localeCompare(a.mes)).map(p => {
+        const [y, m] = p.mes.split('-');
+        const label = new Date(parseInt(y), parseInt(m)-1, 1).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
+        return `<div class="progress-row" style="align-items:flex-start;padding:0.7rem 0">
+          <div style="flex:1">
+            <div class="bold text-small" style="text-transform:capitalize">${label}</div>
+            <div class="text-small text-gray">${p.fecha}${p.nota ? ` · ${p.nota}` : ''}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.5rem;flex-shrink:0">
+            ${p.monto ? `<span class="text-orange bold text-small">$${p.monto}</span>` : ''}
+            <span class="tag tag-green" style="font-size:0.65rem">✅</span>
+            <button class="btn btn-danger btn-sm" style="padding:0.2rem 0.5rem;font-size:0.7rem" onclick="deletePayment('${s.id}','${p.mes}')">🗑️</button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
 
   el.innerHTML = html;
 }
 
-function registrarPago(studentId) {
+function togglePaymentType() {
+  const tipo = document.getElementById('pay-tipo')?.value;
+  document.getElementById('pay-fields-mensualidad').style.display = tipo === 'paquete' ? 'none' : 'block';
+  document.getElementById('pay-fields-paquete').style.display = tipo === 'paquete' ? 'block' : 'none';
+}
+
+function registrarPaquete(studentId) {
   const s = state.students.find(x => x.id === studentId);
   if (!s) return;
-  const now = new Date();
-  const mes = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-  const monto = document.getElementById('pay-monto')?.value || '';
-  const nota = document.getElementById('pay-nota')?.value.trim() || '';
+  const total = parseInt(document.getElementById('pay-clases')?.value);
+  if (!total || total < 1) { alert('Ingresá la cantidad de clases.'); return; }
+  const monto = document.getElementById('pay-monto-pack')?.value || '';
+  const nota  = document.getElementById('pay-nota-pack')?.value.trim() || '';
 
-  if (!s.payments) s.payments = [];
-  // Eliminar si ya existe para reemplazar
-  s.payments = s.payments.filter(p => p.mes !== mes);
-  s.payments.push({
-    mes,
-    fecha: now.toLocaleDateString('es-AR'),
+  if (!s.classPacks) s.classPacks = [];
+  s.classPacks.push({
+    id: Date.now().toString(36),
+    total,
+    restantes: total,
     monto: monto ? parseFloat(monto) : null,
-    nota
+    nota,
+    fecha: new Date().toLocaleDateString('es-AR')
   });
+  saveState();
+  renderPaymentsTab(s);
+  renderStudentPaymentBanner(s);
+  alert(`✅ Paquete de ${total} clases registrado`);
+}
+
+function usarClase(studentId, packId) {
+  const s = state.students.find(x => x.id === studentId);
+  if (!s || !s.classPacks) return;
+  const pack = s.classPacks.find(p => p.id === packId);
+  if (!pack || pack.restantes <= 0) return;
+  if (!confirm(`¿Descontar 1 clase del paquete? Quedarán ${pack.restantes - 1} clases.`)) return;
+  pack.restantes--;
   saveState();
   renderPaymentsTab(s);
   renderStudentPaymentBanner(s);
 }
 
-function registrarPagoCustom(studentId) {
+function deleteClassPack(studentId, packId) {
+  const s = state.students.find(x => x.id === studentId);
+  if (!s || !s.classPacks) return;
+  const pack = s.classPacks.find(p => p.id === packId);
+  if (!pack) return;
+  if (!confirm(`¿Eliminar este paquete de ${pack.total} clases?\n\nEsta acción no se puede deshacer.`)) return;
+  s.classPacks = s.classPacks.filter(p => p.id !== packId);
+  saveState();
+  renderPaymentsTab(s);
+  renderStudentPaymentBanner(s);
+}
+
+function registrarPago(studentId) {
   const s = state.students.find(x => x.id === studentId);
   if (!s) return;
-  const mes = document.getElementById('pay-mes-custom')?.value;
+  const tipo = document.getElementById('pay-tipo')?.value || 'mensualidad';
+  const mes = document.getElementById('pay-mes')?.value;
   if (!mes) { alert('Seleccioná un mes.'); return; }
-  const monto = document.getElementById('pay-monto-custom')?.value || '';
-  const nota = document.getElementById('pay-nota-custom')?.value.trim() || '';
-  const [y, m] = mes.split('-');
-  const fecha = new Date(parseInt(y), parseInt(m)-1, 1).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
+  const monto = document.getElementById('pay-monto')?.value || '';
+  const nota  = document.getElementById('pay-nota')?.value.trim() || '';
 
   if (!s.payments) s.payments = [];
   s.payments = s.payments.filter(p => p.mes !== mes);
   s.payments.push({
     mes,
+    tipo,
     fecha: new Date().toLocaleDateString('es-AR'),
     monto: monto ? parseFloat(monto) : null,
     nota
   });
   saveState();
   renderPaymentsTab(s);
-  alert(`✅ Pago de ${fecha} registrado`);
+  renderStudentPaymentBanner(s);
 }
 
 function deletePayment(studentId, mes) {
@@ -4070,15 +4153,22 @@ function renderStudentPaymentBanner(s) {
   const el = document.getElementById('student-payment-banner');
   if (!el) return;
   if (!s.payments) s.payments = [];
+  if (!s.classPacks) s.classPacks = [];
 
   const now = new Date();
   const mesActual = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
   const pagado = s.payments.some(p => p.mes === mesActual);
+  const packActivo = s.classPacks.find(p => p.restantes > 0);
 
   if (pagado) {
     el.innerHTML = `<div style="background:rgba(61,184,90,0.1);border:1px solid rgba(61,184,90,0.3);border-radius:12px;padding:0.6rem 1rem;margin-bottom:0.8rem;display:flex;align-items:center;gap:0.6rem">
       <span style="color:var(--success);font-size:1.1rem">✅</span>
       <span class="text-small" style="color:var(--success)">Estás al día con tu cuota del mes</span>
+    </div>`;
+  } else if (packActivo) {
+    el.innerHTML = `<div style="background:rgba(255,107,0,0.1);border:1px solid rgba(255,107,0,0.3);border-radius:12px;padding:0.6rem 1rem;margin-bottom:0.8rem;display:flex;align-items:center;gap:0.6rem">
+      <span style="color:var(--orange);font-size:1.1rem">📦</span>
+      <span class="text-small" style="color:var(--orange)">Paquete activo — te quedan <strong>${packActivo.restantes}</strong> clases</span>
     </div>`;
   } else {
     el.innerHTML = `<div style="background:rgba(229,57,53,0.1);border:1px solid rgba(229,57,53,0.3);border-radius:12px;padding:0.6rem 1rem;margin-bottom:0.8rem;display:flex;align-items:center;gap:0.6rem">
