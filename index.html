@@ -1513,6 +1513,34 @@ Hip thrust: 4x15"></textarea>
           <div class="text-small text-gray">Asigná una rutina primero para ver los ejercicios.</div>
         </div>
       </div>
+
+      <hr class="divider">
+
+      <!-- Periodización / Plan de ciclos -->
+      <div class="card">
+        <div class="card-title">📅 Plan de ciclos (periodización)</div>
+        <div class="text-small text-gray" style="margin-bottom:0.8rem;line-height:1.6">
+          Planificá la progresión de rutinas semana a semana. El alumno ve en qué fase está.
+        </div>
+        <div id="cycle-plan-view"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin-top:0.8rem">
+          <div class="input-group" style="margin-bottom:0">
+            <label class="input-label">Nombre de la fase</label>
+            <input type="text" class="input-field" id="cp-name" placeholder="ej: Fase 1 — Fuerza base">
+          </div>
+          <div class="input-group" style="margin-bottom:0">
+            <label class="input-label">Duración (semanas)</label>
+            <input type="number" class="input-field" id="cp-weeks" placeholder="4" min="1" max="52">
+          </div>
+        </div>
+        <div class="input-group" style="margin-top:0.6rem">
+          <label class="input-label">Rutina asignada</label>
+          <select class="input-field" id="cp-workout">
+            <option value="">— Seleccioná una rutina —</option>
+          </select>
+        </div>
+        <button class="btn btn-secondary btn-sm btn-full" onclick="addCyclePhase()">+ Agregar fase</button>
+      </div>
     </div>
 
     <!-- TAB NUTRICIÓN -->
@@ -1590,6 +1618,20 @@ ALMUERZO
       <div class="empty-state-icon">📋</div>
       <div class="empty-state-text">No hay rutinas creadas todavía.<br>Tocá "+ Nueva" para crear la primera.</div>
     </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: ESTADÍSTICAS GENERALES
+═══════════════════════════════════════════ -->
+<div id="screen-stats" class="screen">
+  <div class="topbar">
+    <button class="btn-back" onclick="showScreen('screen-trainer')">←</button>
+    <div style="flex:1"><div class="topbar-title">Estadísticas</div></div>
+    <button class="btn btn-secondary btn-sm" onclick="exportStatsReport()">📄 Exportar</button>
+  </div>
+  <div class="content">
+    <div id="stats-view"></div>
   </div>
 </div>
 
@@ -1696,6 +1738,7 @@ ALMUERZO
     <div id="tab-today" class="tab-content">
       <div id="student-payment-banner"></div>
       <div id="student-routine-updated-banner"></div>
+      <div id="student-cycle-banner"></div>
       <div id="student-welcome-banner"></div>
       <div id="today-workout-content"></div>
     </div>
@@ -2368,7 +2411,341 @@ const SVG = {
 };
 
 // ═══════════════════════════════════════════
-//  SISTEMA DE TEMAS
+//  ADHERENCIA
+// ═══════════════════════════════════════════
+function calcAdherence(s) {
+  if (!s.progressLog || !s.progressLog.length) return 0;
+  const expected = (parseInt(s.anamnesis?.days) || 3) * 4; // 4 semanas
+  const hace28 = new Date(Date.now() - 28*24*60*60*1000);
+  const done = s.progressLog.filter(e => {
+    const d = e.dateISO ? new Date(e.dateISO) : new Date(e.date?.split('/').reverse().join('-'));
+    return d >= hace28;
+  }).length;
+  return Math.min(100, Math.round((done / expected) * 100));
+}
+
+// ═══════════════════════════════════════════
+//  ESTADÍSTICAS GENERALES
+// ═══════════════════════════════════════════
+function openStatsScreen() {
+  renderStatsScreen();
+  showScreen('screen-stats');
+}
+
+function renderStatsScreen() {
+  const el = document.getElementById('stats-view');
+  if (!el) return;
+  const now = new Date();
+  const mesActual = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const mesLabel = now.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
+  const hace7 = new Date(now - 7*24*60*60*1000);
+  const hace30 = new Date(now - 30*24*60*60*1000);
+
+  const totalSesiones = state.students.reduce((a, s) => a + (s.progressLog?.length || 0), 0);
+  const sesiones30 = state.students.reduce((a, s) => {
+    if (!s.progressLog) return a;
+    return a + s.progressLog.filter(e => {
+      const d = e.dateISO ? new Date(e.dateISO) : new Date(e.date?.split('/').reverse().join('-'));
+      return d >= hace30;
+    }).length;
+  }, 0);
+  const sesiones7 = state.students.reduce((a, s) => {
+    if (!s.progressLog) return a;
+    return a + s.progressLog.filter(e => {
+      const d = e.dateISO ? new Date(e.dateISO) : new Date(e.date?.split('/').reverse().join('-'));
+      return d >= hace7;
+    }).length;
+  }, 0);
+  const activos30 = state.students.filter(s =>
+    s.progressLog?.some(e => {
+      const d = e.dateISO ? new Date(e.dateISO) : new Date(e.date?.split('/').reverse().join('-'));
+      return d >= hace30;
+    })
+  ).length;
+  const alDia = state.students.filter(s => {
+    const p = s.payments?.some(x => x.mes === mesActual);
+    const pk = s.classPacks?.some(x => x.restantes > 0);
+    return p || pk;
+  }).length;
+  const recaudacion = state.students.reduce((a, s) => {
+    return a + (s.payments || []).filter(p => p.mes === mesActual && p.monto).reduce((x, p) => x + p.monto, 0);
+  }, 0);
+  const recaudacionTotal = state.students.reduce((a, s) => {
+    return a + (s.payments || []).filter(p => p.monto).reduce((x, p) => x + p.monto, 0);
+  }, 0);
+  const avgAdh = state.students.length > 0
+    ? Math.round(state.students.reduce((a, s) => a + calcAdherence(s), 0) / state.students.length) : 0;
+
+  // Ranking de adherencia
+  const ranking = state.students.map(s => ({
+    name: s.name, adh: calcAdherence(s),
+    goal: s.anamnesis?.goal || '—',
+    sessions: s.progressLog?.length || 0
+  })).sort((a, b) => b.adh - a.adh);
+
+  const adhColor = a => a >= 75 ? 'var(--success)' : a >= 40 ? 'var(--orange)' : 'var(--danger)';
+
+  el.innerHTML = `
+    <div class="card-title" style="padding:0 0 0.5rem;border:none">📅 ${mesLabel}</div>
+
+    <div class="metrics-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:0.5rem">
+      <div class="metric-card highlight">
+        <div class="metric-label">Alumnos activos</div>
+        <div class="metric-value">${activos30}</div>
+        <div class="metric-unit">últimos 30 días</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Inactivos</div>
+        <div class="metric-value" style="color:${(state.students.length-activos30)>0?'var(--danger)':'var(--success)'}">${state.students.length - activos30}</div>
+        <div class="metric-unit">sin entrenar 30d</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Adherencia</div>
+        <div class="metric-value" style="color:${adhColor(avgAdh)}">${avgAdh}%</div>
+        <div class="metric-unit">promedio</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Sesiones 7d</div>
+        <div class="metric-value">${sesiones7}</div>
+        <div class="metric-unit">esta semana</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Sesiones mes</div>
+        <div class="metric-value">${sesiones30}</div>
+        <div class="metric-unit">últimos 30d</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Total histórico</div>
+        <div class="metric-value">${totalSesiones}</div>
+        <div class="metric-unit">sesiones</div>
+      </div>
+    </div>
+
+    <div class="metrics-grid" style="grid-template-columns:1fr 1fr;margin-bottom:1rem">
+      <div class="metric-card highlight">
+        <div class="metric-label">Recaudación mes</div>
+        <div class="metric-value" style="font-size:1.4rem">$${recaudacion > 0 ? recaudacion.toLocaleString('es-AR') : '—'}</div>
+        <div class="metric-unit">${alDia} de ${state.students.length} al día</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Recaudación total</div>
+        <div class="metric-value" style="font-size:1.4rem">$${recaudacionTotal > 0 ? recaudacionTotal.toLocaleString('es-AR') : '—'}</div>
+        <div class="metric-unit">histórico</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📊 Ranking de adherencia</div>
+      ${ranking.map(r => `
+        <div class="progress-row" style="padding:0.6rem 0;border-bottom:1px solid var(--dark3)">
+          <div style="flex:1">
+            <div class="bold text-small">${r.name}</div>
+            <div class="text-small text-gray">${r.goal} · ${r.sessions} sesiones totales</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-family:var(--font-title);font-size:1.4rem;color:${adhColor(r.adh)}">${r.adh}%</div>
+            <div class="text-small" style="color:${adhColor(r.adh)}">${r.adh>=75?'Excelente':r.adh>=40?'Regular':'Bajo'}</div>
+          </div>
+        </div>`).join('')}
+    </div>
+
+    <div class="card">
+      <div class="card-title">💰 Pagos pendientes este mes</div>
+      ${state.students.filter(s => {
+        const p = s.payments?.some(x => x.mes === mesActual);
+        const pk = s.classPacks?.some(x => x.restantes > 0);
+        return !p && !pk;
+      }).map(s => `
+        <div class="progress-row" style="padding:0.5rem 0;border-bottom:1px solid var(--dark3)">
+          <div style="flex:1">
+            <div class="bold text-small">${s.name}</div>
+            <div class="text-small text-gray">${s.anamnesis?.phone || 'Sin teléfono'}</div>
+          </div>
+          <button class="btn btn-secondary btn-sm" style="font-size:0.75rem"
+            onclick="sendPaymentReminderById('${s.id}')">💬 Recordar</button>
+        </div>`).join('') || '<div class="text-small text-gray">¡Todos al día! ✅</div>'}
+    </div>`;
+}
+
+function exportStatsReport() {
+  renderStatsScreen();
+  const now = new Date().toLocaleDateString('es-AR', { day:'numeric', month:'long', year:'numeric' });
+  const p = state.trainerProfile || {};
+  const el = document.getElementById('stats-view');
+  if (!el) return;
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Estadísticas VC Fit</title>
+  <style>body{font-family:Arial,sans-serif;padding:32px;color:#111;font-size:13px}
+  h1{color:#FF6B00;font-size:22px}h2{font-size:14px;color:#FF6B00;border-bottom:2px solid #FF6B00;padding-bottom:4px;margin:20px 0 10px}
+  .footer{margin-top:32px;padding-top:12px;border-top:1px solid #eee;font-size:10px;color:#aaa;display:flex;justify-content:space-between}
+  </style></head><body>
+  <h1>VC FIT STUDIO — Estadísticas</h1>
+  <div style="color:#888;font-size:11px;margin-bottom:20px">${p.name || ''} · ${now}</div>
+  ${el.innerHTML}
+  <div class="footer"><span>${p.name || 'VC Fit Studio'}</span><span>${now}</span></div>
+  </body></html>`);
+  win.document.close();
+  setTimeout(() => win.print(), 500);
+}
+
+// ═══════════════════════════════════════════
+//  DUPLICAR RUTINA
+// ═══════════════════════════════════════════
+function duplicateWorkout(id) {
+  const w = state.workouts.find(x => x.id === id);
+  if (!w) return;
+  const copy = { id: genId(), name: `Copia de ${w.name}`, desc: w.desc || '', content: w.content || '' };
+  state.workouts.push(copy);
+  saveState();
+  renderWorkoutsList();
+  alert(`✅ "${copy.name}" creada`);
+}
+
+// ═══════════════════════════════════════════
+//  PERIODIZACIÓN
+// ═══════════════════════════════════════════
+function renderCyclePlan(s) {
+  const el = document.getElementById('cycle-plan-view');
+  if (!el) return;
+  if (!s.cyclePlan || !s.cyclePlan.length) {
+    el.innerHTML = '<div class="text-small text-gray" style="margin-bottom:0.8rem">No hay fases cargadas. Agregalas abajo.</div>';
+  } else {
+    let weekStart = 1;
+    el.innerHTML = s.cyclePlan.map((ph, i) => {
+      const w = state.workouts.find(x => x.id === ph.workoutId);
+      const wName = ph.workoutId === '__exclusive__' ? (s.exclusiveWorkout?.name || 'Rutina exclusiva') : (w?.name || 'Sin rutina');
+      const label = `Semanas ${weekStart}–${weekStart + ph.weeks - 1}`;
+      weekStart += ph.weeks;
+      const currentWeek = calcCurrentCycleWeek(s);
+      const isActive = s.cyclePlan && currentWeek !== null &&
+        (() => { let ws = 1; for (let j = 0; j < i; j++) ws += s.cyclePlan[j].weeks; return currentWeek >= ws && currentWeek < ws + ph.weeks; })();
+      return `
+        <div style="display:flex;align-items:center;gap:0.6rem;padding:0.5rem 0;border-bottom:1px solid var(--dark3)">
+          ${isActive ? '<span style="width:8px;height:8px;border-radius:50%;background:var(--orange);flex-shrink:0"></span>' : '<span style="width:8px;height:8px;border-radius:50%;background:var(--dark4);flex-shrink:0"></span>'}
+          <div style="flex:1">
+            <div class="text-small bold">${ph.name || label}</div>
+            <div class="text-small text-gray">${label} · ${wName}</div>
+          </div>
+          <button class="btn btn-danger btn-sm" style="padding:0.2rem 0.5rem;font-size:0.7rem" onclick="deleteCyclePhase(${i})">🗑️</button>
+        </div>`;
+    }).join('');
+  }
+
+  // Llenar select de rutinas
+  const sel = document.getElementById('cp-workout');
+  if (sel) {
+    sel.innerHTML = '<option value="">— Seleccioná una rutina —</option>' +
+      (s.assignedWorkoutId === '__exclusive__' ? `<option value="__exclusive__">${s.exclusiveWorkout?.name || 'Rutina exclusiva'}</option>` : '') +
+      state.workouts.map(w => `<option value="${w.id}">${w.name}</option>`).join('');
+  }
+}
+
+function addCyclePhase() {
+  const s = state.students.find(x => x.id === state.currentStudentId);
+  if (!s) return;
+  const name = document.getElementById('cp-name')?.value.trim() || '';
+  const weeks = parseInt(document.getElementById('cp-weeks')?.value) || 0;
+  const workoutId = document.getElementById('cp-workout')?.value || '';
+  if (!weeks || weeks < 1) { alert('Ingresá la duración en semanas.'); return; }
+  if (!s.cyclePlan) s.cyclePlan = [];
+  if (!s.cycleStartDate) s.cycleStartDate = new Date().toISOString().split('T')[0];
+  s.cyclePlan.push({ name, weeks, workoutId });
+  saveState();
+  renderCyclePlan(s);
+  document.getElementById('cp-name').value = '';
+  document.getElementById('cp-weeks').value = '';
+}
+
+function deleteCyclePhase(idx) {
+  const s = state.students.find(x => x.id === state.currentStudentId);
+  if (!s || !s.cyclePlan) return;
+  if (!confirm('¿Eliminar esta fase del ciclo?')) return;
+  s.cyclePlan.splice(idx, 1);
+  if (!s.cyclePlan.length) s.cycleStartDate = null;
+  saveState();
+  renderCyclePlan(s);
+}
+
+function calcCurrentCycleWeek(s) {
+  if (!s.cycleStartDate || !s.cyclePlan?.length) return null;
+  const start = new Date(s.cycleStartDate);
+  const diff = Math.floor((Date.now() - start) / (7*24*60*60*1000));
+  return diff + 1;
+}
+
+function renderStudentCycleBanner(s) {
+  const el = document.getElementById('student-cycle-banner');
+  if (!el) return;
+  if (!s.cyclePlan?.length || !s.cycleStartDate) { el.innerHTML = ''; return; }
+  const currentWeek = calcCurrentCycleWeek(s);
+  let weekStart = 1, activePhase = null;
+  for (const ph of s.cyclePlan) {
+    if (currentWeek >= weekStart && currentWeek < weekStart + ph.weeks) { activePhase = ph; break; }
+    weekStart += ph.weeks;
+  }
+  if (!activePhase) { el.innerHTML = ''; return; }
+  el.innerHTML = `<div style="background:var(--orange-dim);border:1px solid var(--orange-border);border-radius:12px;padding:0.6rem 1rem;margin-bottom:0.8rem">
+    <div class="text-small" style="color:var(--orange)">📅 <strong>${activePhase.name || 'Ciclo activo'}</strong> — Semana ${currentWeek}</div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════
+//  RECORDATORIO DE PAGO WHATSAPP
+// ═══════════════════════════════════════════
+function sendPaymentReminderById(studentId) {
+  const s = state.students.find(x => x.id === studentId);
+  if (s) sendPaymentReminder(s);
+}
+
+function sendPaymentReminder(s) {
+  const p = state.trainerProfile || {};
+  const mes = new Date().toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
+  const nombre = s.name.split(' ')[0];
+  const text = encodeURIComponent(
+    `¡Hola ${nombre}! 👋\n\nTe recuerdo que tu cuota de *${mes}* está pendiente.\n\n` +
+    `Cualquier consulta sobre medios de pago, escribime.\n\n` +
+    `¡Seguimos entrenando! 💪\n\n— ${p.name || 'Tu entrenador'} · VC FIT`
+  );
+  const phone = s.anamnesis?.phone ? s.anamnesis.phone.replace(/\D/g,'') : '';
+  window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
+}
+
+// ═══════════════════════════════════════════
+//  RESUMEN MENSUAL WHATSAPP
+// ═══════════════════════════════════════════
+function sendMonthlyReport(s) {
+  const p = state.trainerProfile || {};
+  const mes = new Date().toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
+  const nombre = s.name.split(' ')[0];
+  const hace30 = new Date(Date.now() - 30*24*60*60*1000);
+  const sesiones = (s.progressLog || []).filter(e => {
+    const d = e.dateISO ? new Date(e.dateISO) : new Date(e.date?.split('/').reverse().join('-'));
+    return d >= hace30;
+  }).length;
+  const adh = calcAdherence(s);
+  const latest = s.metricsLog?.length ? s.metricsLog[s.metricsLog.length - 1] : null;
+  const pesoActual = latest?.weight ? `${latest.weight} kg` : '—';
+  const grasa = latest?.calc?.fatPct ? `${parseFloat(latest.calc.fatPct).toFixed(1)}%` : '—';
+
+  let msg = `📊 *Resumen de ${mes}*\n`;
+  msg += `👤 *${s.name}*\n\n`;
+  msg += `💪 *Entrenamientos:* ${sesiones} sesiones\n`;
+  msg += `📈 *Adherencia:* ${adh}% (${adh>=75?'¡Excelente!':adh>=40?'Bien, podemos mejorar':'Necesitamos más constancia'})\n`;
+  if (latest) {
+    msg += `\n⚖️ *Métricas actuales (${latest.date}):*\n`;
+    msg += `• Peso: ${pesoActual}\n`;
+    msg += `• % Grasa: ${grasa}\n`;
+  }
+  msg += `\n¡Seguimos el próximo mes con todo! 🔥\n\n— ${p.name || 'Tu entrenador'} · VC FIT`;
+
+  const phone = s.anamnesis?.phone ? s.anamnesis.phone.replace(/\D/g,'') : '';
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+// ═══════════════════════════════════════════
+//  FIN FUNCIONES NUEVAS
+// ═══════════════════════════════════════════
+
 // ═══════════════════════════════════════════
 const THEME_ICONS = {
   carbono: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>`,
@@ -2832,7 +3209,7 @@ applyLogo();
 // Pantallas exclusivas del entrenador
 const TRAINER_SCREENS = [
   'screen-trainer','screen-trainer-profile','screen-students','screen-student-detail',
-  'screen-workouts'
+  'screen-workouts','screen-stats'
 ];
 
 function showScreen(id) {
@@ -3712,7 +4089,8 @@ function renderWorkoutsList() {
       </div>
       <pre style="background:var(--dark3);padding:0.8rem;border-radius:8px;font-size:0.82rem;line-height:1.7;white-space:pre-wrap;color:var(--white-dim);font-family:var(--font-body)">${w.content || '(sin contenido)'}</pre>
       <div class="export-grid mt-2">
-        <button class="btn btn-primary btn-sm" onclick="openAssignBulkModal('${w.id}')">👥 Asignar a alumnos</button>
+        <button class="btn btn-primary btn-sm" onclick="openAssignBulkModal('${w.id}')">👥 Asignar</button>
+        <button class="btn btn-secondary btn-sm" onclick="duplicateWorkout('${w.id}')">⧉ Duplicar</button>
         <button class="btn btn-secondary btn-sm" onclick="copyWorkout('${w.id}')">📋 Copiar</button>
         <button class="btn btn-secondary btn-sm" onclick="exportWorkoutTxt('${w.id}')">📄 TXT</button>
       </div>
@@ -3901,6 +4279,8 @@ function renderAssignTab(s) {
 
   // Actualizar observaciones del entrenador
   renderTrainerExerciseNotes(s);
+  // Actualizar plan de ciclos
+  renderCyclePlan(s);
 }
 
 function assignWorkout() {
@@ -3975,7 +4355,6 @@ function renderProgressTab(s) {
 function refreshTrainerDashboard() {
   updateTrainerTopbar();
 
-  // Renderizar nav-grid con SVG
   const navGrid = document.getElementById('trainer-nav-grid');
   if (navGrid) {
     navGrid.innerHTML = `
@@ -3989,9 +4368,9 @@ function refreshTrainerDashboard() {
         <div class="nav-card-label">Rutinas</div>
         <div class="nav-card-count" id="count-workouts">${state.workouts.length}</div>
       </div>
-      <div class="nav-card" onclick="showScreen('screen-students')">
+      <div class="nav-card" onclick="openStatsScreen()">
         <div class="nav-card-icon">${SVG.chart}</div>
-        <div class="nav-card-label">Progreso</div>
+        <div class="nav-card-label">Estadísticas</div>
         <div class="nav-card-count">→</div>
       </div>
       <div class="nav-card" onclick="openTrainerProfile()">
@@ -4001,21 +4380,105 @@ function refreshTrainerDashboard() {
       </div>`;
   }
 
-  const recent = document.getElementById('trainer-recent-students');
   if (!state.students.length) {
-    recent.innerHTML = '<div class="text-small text-gray">No hay alumnos aún.</div>';
+    const recent = document.getElementById('trainer-recent-students');
+    if (recent) recent.innerHTML = '<div class="text-small text-gray">No hay alumnos aún.</div>';
     return;
   }
-  recent.innerHTML = state.students.slice(-3).reverse().map(s => `
-    <div class="student-item" onclick="openStudentDetail('${s.id}')" style="margin-bottom:0.5rem">
-      <div class="student-avatar">${s.photo ? `<img src="${s.photo}" alt="">` : getInitials(s.name)}</div>
-      <div class="student-info">
-        <div class="student-name">${s.name}</div>
-        <div class="student-meta">${s.anamnesis.goal || '—'}</div>
-        ${s.lastCompleted ? `<div class="student-meta" style="color:var(--success)">✅ ${s.lastCompleted.date}</div>` : '<div class="student-meta" style="color:var(--gray)">⏳ Sin completar</div>'}
+
+  // Stats del negocio
+  const now = new Date();
+  const mesActual = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const hace7 = new Date(now - 7*24*60*60*1000);
+  const hace30 = new Date(now - 30*24*60*60*1000);
+
+  const activos30 = state.students.filter(s =>
+    s.progressLog && s.progressLog.some(e => {
+      const d = e.dateISO ? new Date(e.dateISO) : new Date(e.date.split('/').reverse().join('-'));
+      return d >= hace30;
+    })
+  ).length;
+
+  const sesiones7 = state.students.reduce((acc, s) => {
+    if (!s.progressLog) return acc;
+    return acc + s.progressLog.filter(e => {
+      const d = e.dateISO ? new Date(e.dateISO) : new Date(e.date.split('/').reverse().join('-'));
+      return d >= hace7;
+    }).length;
+  }, 0);
+
+  const alDia = state.students.filter(s => {
+    const pagado = s.payments && s.payments.some(p => p.mes === mesActual);
+    const packActivo = s.classPacks && s.classPacks.some(p => p.restantes > 0);
+    return pagado || packActivo;
+  }).length;
+
+  const recaudacion = state.students.reduce((acc, s) => {
+    if (!s.payments) return acc;
+    return acc + s.payments
+      .filter(p => p.mes === mesActual && p.monto)
+      .reduce((a, p) => a + p.monto, 0);
+  }, 0);
+
+  const avgAdherencia = state.students.length > 0
+    ? Math.round(state.students.reduce((acc, s) => acc + calcAdherence(s), 0) / state.students.length)
+    : 0;
+
+  const recent = document.getElementById('trainer-recent-students');
+  if (recent) {
+    recent.innerHTML = `
+      <div class="metrics-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:1rem">
+        <div class="metric-card">
+          <div class="metric-label">Activos 30d</div>
+          <div class="metric-value">${activos30}</div>
+          <div class="metric-unit">de ${state.students.length}</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Sesiones 7d</div>
+          <div class="metric-value">${sesiones7}</div>
+          <div class="metric-unit">entrenamientos</div>
+        </div>
+        <div class="metric-card highlight">
+          <div class="metric-label">Adherencia</div>
+          <div class="metric-value">${avgAdherencia}%</div>
+          <div class="metric-unit">promedio</div>
+        </div>
+        <div class="metric-card ${alDia === state.students.length ? 'highlight' : ''}">
+          <div class="metric-label">Al día</div>
+          <div class="metric-value" style="color:${alDia===state.students.length?'var(--success)':'var(--orange)'}">${alDia}</div>
+          <div class="metric-unit">de ${state.students.length}</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Pendientes</div>
+          <div class="metric-value" style="color:${(state.students.length-alDia)>0?'var(--danger)':'var(--success)'}">${state.students.length - alDia}</div>
+          <div class="metric-unit">este mes</div>
+        </div>
+        <div class="metric-card highlight">
+          <div class="metric-label">Recaudación</div>
+          <div class="metric-value" style="font-size:1.3rem">$${recaudacion > 0 ? recaudacion.toLocaleString('es-AR') : '—'}</div>
+          <div class="metric-unit">este mes</div>
+        </div>
       </div>
-    </div>
-  `).join('');
+
+      <div class="card-title" style="margin-bottom:0.8rem;border:none;padding:0">Últimos alumnos</div>
+      ${state.students.slice(-3).reverse().map(s => {
+        const adh = calcAdherence(s);
+        const adhColor = adh >= 75 ? 'var(--success)' : adh >= 40 ? 'var(--orange)' : 'var(--danger)';
+        return `
+        <div class="student-item" onclick="openStudentDetail('${s.id}')" style="margin-bottom:0.5rem">
+          <div class="student-avatar">${s.photo ? `<img src="${s.photo}" alt="">` : getInitials(s.name)}</div>
+          <div class="student-info">
+            <div class="student-name">${s.name}</div>
+            <div class="student-meta">${s.anamnesis.goal || '—'}</div>
+            ${s.lastCompleted ? `<div class="student-meta" style="color:var(--success)">✅ ${s.lastCompleted.date}</div>` : ''}
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-family:var(--font-title);font-size:1.2rem;color:${adhColor}">${adh}%</div>
+            <div class="text-small" style="color:${adhColor}">adherencia</div>
+          </div>
+        </div>`;
+      }).join('')}`;
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -4040,6 +4503,7 @@ function enterAsStudent(studentId) {
   renderStudentWelcomeBanner(s);
   renderStudentPaymentBanner(s);
   renderRoutineUpdatedBanner(s);
+  renderStudentCycleBanner(s);
   switchTab('tab-today', 'student');
   showScreen('screen-student-view');
 }
@@ -5325,6 +5789,19 @@ function renderPaymentsTab(s) {
   const packActivo = s.classPacks.find(p => p.restantes > 0);
 
   let html = '';
+
+  // ── ACCIONES RÁPIDAS ──
+  html += `<div class="card" style="margin-bottom:1rem">
+    <div class="card-title">⚡ Acciones rápidas</div>
+    <div style="display:flex;gap:0.6rem;flex-wrap:wrap">
+      <button class="btn btn-secondary btn-sm" style="flex:1" onclick="sendPaymentReminder(state.students.find(x=>x.id==='${s.id}'))">
+        💬 Recordatorio de pago
+      </button>
+      <button class="btn btn-secondary btn-sm" style="flex:1" onclick="sendMonthlyReport(state.students.find(x=>x.id==='${s.id}'))">
+        📊 Resumen mensual
+      </button>
+    </div>
+  </div>`;
 
   // ── ESTADO GENERAL ──
   html += `<div class="card" style="border-color:${pagoActual || packActivo ? 'var(--success)' : 'var(--danger)'};margin-bottom:1rem">
