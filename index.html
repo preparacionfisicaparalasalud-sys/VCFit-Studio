@@ -35,6 +35,50 @@
     --font-mono: 'Share Tech Mono', monospace;
   }
 
+  /* ── TEMA CLARO ── */
+  body.theme-light {
+    --black: #F2F2F5;
+    --dark: #FFFFFF;
+    --dark2: #FFFFFF;
+    --dark3: #F0F0F4;
+    --dark4: #E4E4EA;
+    --gray: #9A9AAF;
+    --gray-light: #6B6B80;
+    --white: #111118;
+    --white-dim: #333344;
+    --orange-dim: rgba(255,107,0,0.10);
+    --orange-border: rgba(255,107,0,0.30);
+  }
+  body.theme-light .card { box-shadow: 0 1px 6px rgba(0,0,0,0.07); }
+  body.theme-light .student-item { box-shadow: 0 1px 6px rgba(0,0,0,0.06); }
+  body.theme-light .topbar { background: #ffffff; border-bottom: 1px solid #e8e8ee; box-shadow: 0 1px 8px rgba(0,0,0,0.06); }
+  body.theme-light .modal { background: #ffffff; box-shadow: 0 8px 40px rgba(0,0,0,0.18); }
+  body.theme-light .nav-card { box-shadow: 0 1px 6px rgba(0,0,0,0.07); }
+  body.theme-light .btn-secondary { background: #F0F0F4; color: #333344; border: 1px solid #D8D8E4; }
+  body.theme-light .btn-secondary:hover { background: #E4E4EA; }
+  body.theme-light .exercise-item { background: #F8F8FB; border-color: #E4E4EA; }
+  body.theme-light .exercise-item.done { background: #F0FAF2; border-color: #C8EACF; }
+  body.theme-light .complete-btn-wrapper { background: linear-gradient(to top, var(--black) 70%, transparent); }
+  body.theme-light .tabs { background: var(--black); border-bottom: 1px solid #E4E4EA; }
+  body.theme-light .tab { color: var(--gray-light); }
+  body.theme-light .tab.active { color: var(--orange); border-bottom-color: var(--orange); }
+  body.theme-light pre { background: #F0F0F4 !important; color: #333344 !important; }
+
+  /* ── BOTÓN TEMA ── */
+  .theme-toggle-btn {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    border: 1.5px solid var(--dark4);
+    background: var(--dark3);
+    color: var(--white-dim);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+    font-size: 1rem;
+  }
+  .theme-toggle-btn:hover { border-color: var(--orange); color: var(--orange); }
+
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
   body {
@@ -320,7 +364,15 @@
   }
   .nav-card:hover { border-color: var(--orange); transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
   .nav-card:hover::before { opacity: 1; }
-  .nav-card-icon { font-size: 1.8rem; }
+  .nav-card-icon {
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--orange-dim);
+    border-radius: 10px;
+    color: var(--orange);
+    margin-bottom: 0.4rem;
+  }
+  .nav-card-icon svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
   .nav-card-label {
     font-family: var(--font-label);
     font-size: 0.85rem;
@@ -897,34 +949,14 @@
       <div class="topbar-sub" style="font-size:0.65rem;letter-spacing:1.5px">Víctor A. Corrales · Entrenador Personal Funcional</div>
     </div>
     <span id="sync-status" style="font-size:0.65rem;font-family:var(--font-label);letter-spacing:1px;color:var(--gray-light);margin-right:0.3rem">🟡 ...</span>
+    <button class="theme-toggle-btn" id="theme-btn-trainer" onclick="toggleTheme('trainer')" title="Cambiar tema"></button>
     <button class="btn-logout" onclick="logoutTrainer()">Salir</button>
   </div>
   <div class="content">
     <div class="section-title">Dashboard</div>
     <div class="section-sub">Gestión de alumnos y rutinas</div>
 
-    <div class="nav-grid">
-      <div class="nav-card" onclick="showScreen('screen-students')">
-        <div class="nav-card-icon">👥</div>
-        <div class="nav-card-label">Alumnos</div>
-        <div class="nav-card-count" id="count-students">0</div>
-      </div>
-      <div class="nav-card" onclick="showScreen('screen-workouts')">
-        <div class="nav-card-icon">📋</div>
-        <div class="nav-card-label">Rutinas</div>
-        <div class="nav-card-count" id="count-workouts">0</div>
-      </div>
-      <div class="nav-card" onclick="showScreen('screen-students')">
-        <div class="nav-card-icon">📊</div>
-        <div class="nav-card-label">Progreso</div>
-        <div class="nav-card-count">→</div>
-      </div>
-      <div class="nav-card" onclick="openTrainerProfile()">
-        <div class="nav-card-icon">⚙️</div>
-        <div class="nav-card-label">Mi perfil</div>
-        <div class="nav-card-count">→</div>
-      </div>
-    </div>
+    <div id="trainer-nav-grid" class="nav-grid"></div>
 
     <div class="card">
       <div class="card-title">👥 Alumnos recientes</div>
@@ -1431,6 +1463,7 @@ ALMUERZO
       <div class="topbar-title" id="student-view-name">—</div>
       <div class="topbar-sub">Mi entrenamiento</div>
     </div>
+    <button class="theme-toggle-btn" id="theme-btn-student" onclick="toggleTheme('student')" title="Cambiar tema"></button>
     <button class="btn-logout" onclick="logoutStudent()">Salir</button>
   </div>
   <div class="content" style="padding-bottom: 0;">
@@ -2067,6 +2100,48 @@ Plancha: 3x45seg"></textarea>
 </div>
 
 <script>
+// ═══════════════════════════════════════════
+//  ICONOS SVG PROFESIONALES
+// ═══════════════════════════════════════════
+const SVG = {
+  users: `<svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+  clipboard: `<svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>`,
+  chart: `<svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`,
+  settings: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
+  dumbbell: `<svg viewBox="0 0 24 24"><path d="M6.5 6.5h11"/><path d="M6.5 17.5h11"/><path d="M3 9.5h18"/><path d="M3 14.5h18"/><rect x="2" y="9" width="2" height="6" rx="1"/><rect x="20" y="9" width="2" height="6" rx="1"/><rect x="5" y="7" width="2" height="10" rx="1"/><rect x="17" y="7" width="2" height="10" rx="1"/></svg>`,
+  moon: `<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
+  sun: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`,
+};
+
+// ═══════════════════════════════════════════
+//  SISTEMA DE TEMAS (CLARO / OSCURO)
+// ═══════════════════════════════════════════
+function applyTheme(theme) {
+  if (theme === 'light') {
+    document.body.classList.add('theme-light');
+  } else {
+    document.body.classList.remove('theme-light');
+  }
+  // Actualizar iconos de los botones de tema
+  const isDark = theme !== 'light';
+  ['trainer','student'].forEach(role => {
+    const btn = document.getElementById(`theme-btn-${role}`);
+    if (btn) btn.innerHTML = isDark ? SVG.moon : SVG.sun;
+  });
+}
+
+function toggleTheme(role) {
+  const current = localStorage.getItem('vcfit-theme') || 'dark';
+  const next = current === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('vcfit-theme', next);
+  applyTheme(next);
+}
+
+function initTheme() {
+  const saved = localStorage.getItem('vcfit-theme') || 'dark';
+  applyTheme(saved);
+}
+
 // ═══════════════════════════════════════════
 //  FIREBASE CONFIG & INIT
 // ═══════════════════════════════════════════
@@ -3601,9 +3676,33 @@ function renderProgressTab(s) {
 //  TRAINER DASHBOARD REFRESH
 // ═══════════════════════════════════════════
 function refreshTrainerDashboard() {
-  document.getElementById('count-students').textContent = state.students.length;
-  document.getElementById('count-workouts').textContent = state.workouts.length;
   updateTrainerTopbar();
+
+  // Renderizar nav-grid con SVG
+  const navGrid = document.getElementById('trainer-nav-grid');
+  if (navGrid) {
+    navGrid.innerHTML = `
+      <div class="nav-card" onclick="showScreen('screen-students')">
+        <div class="nav-card-icon">${SVG.users}</div>
+        <div class="nav-card-label">Alumnos</div>
+        <div class="nav-card-count" id="count-students">${state.students.length}</div>
+      </div>
+      <div class="nav-card" onclick="showScreen('screen-workouts')">
+        <div class="nav-card-icon">${SVG.clipboard}</div>
+        <div class="nav-card-label">Rutinas</div>
+        <div class="nav-card-count" id="count-workouts">${state.workouts.length}</div>
+      </div>
+      <div class="nav-card" onclick="showScreen('screen-students')">
+        <div class="nav-card-icon">${SVG.chart}</div>
+        <div class="nav-card-label">Progreso</div>
+        <div class="nav-card-count">→</div>
+      </div>
+      <div class="nav-card" onclick="openTrainerProfile()">
+        <div class="nav-card-icon">${SVG.settings}</div>
+        <div class="nav-card-label">Mi perfil</div>
+        <div class="nav-card-count">→</div>
+      </div>`;
+  }
 
   const recent = document.getElementById('trainer-recent-students');
   if (!state.students.length) {
@@ -5758,6 +5857,7 @@ function saveProgressPhoto(studentId, view, event) {
 //  INIT — async para esperar Firebase
 // ═══════════════════════════════════════════
 (async function init() {
+  initTheme();
   await loadState();
   loadDemoData();
   refreshTrainerDashboard();
