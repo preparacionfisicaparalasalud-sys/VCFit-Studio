@@ -2646,16 +2646,29 @@ ALMUERZO
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title">Cargar Métricas</div>
-    <div class="text-small text-gray mb-1" style="margin-bottom:1rem">Fecha: <span id="metrics-date-label"></span></div>
+
+    <!-- Fecha editable -->
+    <div class="input-group" style="margin-bottom:1rem">
+      <label class="input-label">Fecha de la medición</label>
+      <input type="date" class="input-field" id="metrics-date-input">
+    </div>
 
     <!-- PEGAR DESDE TEXTO -->
     <div class="card" style="margin-bottom:1.2rem;background:var(--dark3)">
       <div class="card-title">📋 Pegar desde texto</div>
-      <div class="text-small text-gray" style="margin-bottom:0.8rem;line-height:1.6">
-        Pegá el reporte de tu báscula o app en cualquier formato:<br>
-        <span style="color:var(--orange);font-family:monospace;font-size:0.82rem">Peso: 84kg · Grasa: 23% · Músculo: 38% · Visceral: 8 · BMR: 1750 · BMI: 27.4</span>
+      <div class="text-small text-gray" style="margin-bottom:0.8rem;line-height:1.7">
+        Pegá tus datos en este orden recomendado (uno por línea):<br>
+        <code style="color:var(--orange);font-size:0.8rem;line-height:2;display:block;margin-top:0.4rem">
+          Peso: 85.5 kg<br>
+          Grasa: 24.1%<br>
+          Músculo: 58.3%<br>
+          Visceral: 7<br>
+          BMR: 1804 kcal<br>
+          Cintura: 91 cm<br>
+          Cadera: 98 cm
+        </code>
       </div>
-      <textarea class="input-field" id="m-paste-text" rows="3"
+      <textarea class="input-field" id="m-paste-text" rows="5"
         placeholder="Pegá aquí el texto con los datos..."></textarea>
       <button class="btn btn-secondary btn-sm btn-full mt-2" onclick="parseMetricsFromText()" style="margin-top:0.6rem">
         🔍 Leer datos del texto
@@ -8345,8 +8358,13 @@ function deleteMetricEntry(idx) {
 
 function openMetricsModal(studentId) {
   state.currentStudentId = studentId || state.currentStudentId;
-  document.getElementById('metrics-date-label').textContent = new Date().toLocaleDateString('es-AR');
-  // Pre-fill weight from anamnesis if no metrics yet
+
+  // Fecha de hoy como default en el campo date
+  const todayISO = new Date().toISOString().split('T')[0];
+  const dateInput = document.getElementById('metrics-date-input');
+  if (dateInput) dateInput.value = todayISO;
+
+  // Pre-fill weight
   const s = state.students.find(x => x.id === state.currentStudentId);
   if (s) {
     document.getElementById('m-weight').value = s.selfData?.weight || s.anamnesis.weight || '';
@@ -8499,20 +8517,33 @@ function saveMetrics() {
   const s = state.students.find(x => x.id === state.currentStudentId);
   if (!s) return;
 
-  const weight      = document.getElementById('m-weight').value;
-  const fatManual   = document.getElementById('m-fat-manual').value;
-  const muscleManual= document.getElementById('m-muscle-manual').value;
-  const bone        = document.getElementById('m-bone').value;
-  const waist       = document.getElementById('m-waist').value;
-  const hip         = document.getElementById('m-hip').value;
-  const chest       = document.getElementById('m-chest').value;
-  const thigh       = document.getElementById('m-thigh').value;
-  const activity    = document.getElementById('m-activity').value;
+  const weight       = document.getElementById('m-weight').value;
+  const fatManual    = document.getElementById('m-fat-manual').value;
+  const muscleManual = document.getElementById('m-muscle-manual').value;
+  const bone         = document.getElementById('m-bone').value;
+  const waist        = document.getElementById('m-waist').value;
+  const hip          = document.getElementById('m-hip').value;
+  const chest        = document.getElementById('m-chest').value;
+  const thigh        = document.getElementById('m-thigh').value;
+  const activity     = document.getElementById('m-activity').value;
   const visceralManual = document.getElementById('m-visceral').value;
-  const bmrManual   = document.getElementById('m-bmr-manual').value;
-  const bmiManual   = document.getElementById('m-bmi-manual').value;
+  const bmrManual    = document.getElementById('m-bmr-manual').value;
+  const bmiManual    = document.getElementById('m-bmi-manual').value;
 
   if (!weight) { alert('El peso es obligatorio para calcular las métricas.'); return; }
+
+  // Fecha desde el campo — fallback a hoy
+  const dateInputVal = document.getElementById('metrics-date-input')?.value;
+  let dateISO, dateLabel;
+  if (dateInputVal) {
+    dateISO = dateInputVal;
+    const [y,m,d] = dateInputVal.split('-');
+    dateLabel = new Date(parseInt(y), parseInt(m)-1, parseInt(d))
+      .toLocaleDateString('es-AR', { day:'numeric', month:'long', year:'numeric' });
+  } else {
+    dateISO = new Date().toISOString().split('T')[0];
+    dateLabel = new Date().toLocaleDateString('es-AR', { day:'numeric', month:'long', year:'numeric' });
+  }
 
   const calc = calcMetrics(
     weight, s.anamnesis.height, s.anamnesis.age,
@@ -8521,34 +8552,40 @@ function saveMetrics() {
   );
 
   const entry = {
-    date: new Date().toLocaleDateString('es-AR'),
-    dateISO: new Date().toISOString(),
+    date: dateLabel,
+    dateISO,
     weight: parseFloat(weight),
-    fatManual:    fatManual    ? parseFloat(fatManual)    : null,
-    muscleManual: muscleManual ? parseFloat(muscleManual) : null,
-    bone:         bone         ? parseFloat(bone)         : null,
-    waist:        waist        ? parseFloat(waist)        : null,
-    hip:          hip          ? parseFloat(hip)          : null,
-    chest:        chest        ? parseFloat(chest)        : null,
-    thigh:        thigh        ? parseFloat(thigh)        : null,
+    fatManual:     fatManual     ? parseFloat(fatManual)     : null,
+    muscleManual:  muscleManual  ? parseFloat(muscleManual)  : null,
+    bone:          bone          ? parseFloat(bone)          : null,
+    waist:         waist         ? parseFloat(waist)         : null,
+    hip:           hip           ? parseFloat(hip)           : null,
+    chest:         chest         ? parseFloat(chest)         : null,
+    thigh:         thigh         ? parseFloat(thigh)         : null,
     visceralManual: visceralManual ? parseFloat(visceralManual) : null,
-    bmrManual:    bmrManual    ? parseFloat(bmrManual)    : null,
-    bmiManual:    bmiManual    ? parseFloat(bmiManual)    : null,
+    bmrManual:     bmrManual     ? parseFloat(bmrManual)     : null,
+    bmiManual:     bmiManual     ? parseFloat(bmiManual)     : null,
     activity: parseFloat(activity),
     calc
   };
 
   if (!s.metricsLog) s.metricsLog = [];
-  s.metricsLog.push(entry);
 
-  // Update selfData weight
+  // Verificar duplicado por fecha
+  const dupIdx = s.metricsLog.findIndex(x => x.dateISO === dateISO);
+  if (dupIdx >= 0) {
+    if (!confirm(`Ya hay una medición para el ${dateLabel}. ¿Sobreescribir?`)) return;
+    s.metricsLog.splice(dupIdx, 1);
+  }
+
+  s.metricsLog.push(entry);
+  s.metricsLog.sort((a,b) => (a.dateISO||'').localeCompare(b.dateISO||''));
+
   if (!s.selfData) s.selfData = {};
   s.selfData.weight = weight;
 
   saveState();
   closeModal('modal-metrics');
-
-  // Re-render
   renderMetricsView(s, 'trainer');
   renderMetricsView(s, 'student');
 }
