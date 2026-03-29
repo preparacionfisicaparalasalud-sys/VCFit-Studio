@@ -4127,7 +4127,222 @@ function showImportResult(msg,type){const el=document.getElementById('import-res
 // ═══════════════════════════════════════════
 
 // ═══════════════════════════════════════════
-//  RECUPERACIÓN DE CONTRASEÑA
+//  PEGAR TEXTO DE MÉTRICAS
+// ═══════════════════════════════════════════
+
+// Estado temporal del parser por role+alumno
+const _pasteMetricsParsed = {};
+
+function togglePasteMetricsCard(studentId, role) {
+  const body = document.getElementById(`paste-metrics-body-${role}-${studentId}`);
+  if (!body) return;
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+}
+
+function previewPasteMetrics(studentId, role) {
+  const textarea = document.getElementById(`paste-metrics-text-${role}-${studentId}`);
+  const previewEl = document.getElementById(`paste-metrics-preview-${role}-${studentId}`);
+  const saveBtn = document.getElementById(`paste-metrics-save-${role}-${studentId}`);
+  if (!textarea || !previewEl) return;
+
+  const text = textarea.value.trim();
+  if (!text) { previewEl.innerHTML = '<span style="color:var(--danger)">Pegá algún texto primero.</span>'; return; }
+
+  const parsed = parseMetricsText(text);
+  const key = `${role}-${studentId}`;
+  _pasteMetricsParsed[key] = null;
+
+  if (!parsed.weight) {
+    previewEl.innerHTML = '<span style="color:var(--danger)">❌ No se pudo detectar el peso. Asegurate de incluirlo (ej: "Peso: 85.5 kg").</span>';
+    if (saveBtn) saveBtn.disabled = true;
+    return;
+  }
+
+  const rows = [
+    parsed.date    ? `📅 Fecha detectada: <strong>${parsed.date}</strong>` : `📅 Fecha: <strong>hoy (${new Date().toLocaleDateString('es-AR')})</strong>`,
+    `⚖️ Peso: <strong>${parsed.weight} kg</strong>`,
+    parsed.fat     ? `🔴 % Grasa: <strong>${parsed.fat}%</strong>` : null,
+    parsed.muscle  ? `🟢 % Músculo: <strong>${parsed.muscle}%</strong>` : null,
+    parsed.waist   ? `📏 Cintura: <strong>${parsed.waist} cm</strong>` : null,
+    parsed.hip     ? `📏 Cadera: <strong>${parsed.hip} cm</strong>` : null,
+    parsed.chest   ? `📏 Pecho: <strong>${parsed.chest} cm</strong>` : null,
+    parsed.thigh   ? `📏 Muslo: <strong>${parsed.thigh} cm</strong>` : null,
+    parsed.visceral? `🫀 Grasa visceral: <strong>${parsed.visceral}</strong>` : null,
+    parsed.bmr     ? `🔥 BMR: <strong>${parsed.bmr} kcal</strong>` : null,
+    parsed.bone    ? `🦴 Masa ósea: <strong>${parsed.bone} kg</strong>` : null,
+  ].filter(Boolean);
+
+  previewEl.innerHTML = `
+    <div style="background:var(--dark3);border-radius:8px;padding:0.8rem;line-height:2">
+      ${rows.map(r => `<div class="text-small">${r}</div>`).join('')}
+    </div>
+    <div class="text-small" style="color:var(--success);margin-top:0.5rem">✅ Listo para guardar.</div>`;
+
+  _pasteMetricsParsed[key] = parsed;
+  if (saveBtn) saveBtn.disabled = false;
+}
+
+function savePasteMetrics(studentId, role) {
+  const key = `${role}-${studentId}`;
+  const parsed = _pasteMetricsParsed[key];
+  if (!parsed || !parsed.weight) { alert('Primero presualizá el texto.'); return; }
+
+  const s = state.students.find(x => x.id === studentId);
+  if (!s) return;
+
+  // Armar fecha
+  let dateLabel, dateISO;
+  if (parsed.date) {
+    dateISO = parsed.date;
+    const [y,m,d] = dateISO.split('-');
+    dateLabel = new Date(parseInt(y), parseInt(m)-1, parseInt(d))
+      .toLocaleDateString('es-AR', { day:'numeric', month:'long', year:'numeric' });
+  } else {
+    dateISO = new Date().toISOString().split('T')[0];
+    dateLabel = new Date().toLocaleDateString('es-AR', { day:'numeric', month:'long', year:'numeric' });
+  }
+
+  // Verificar duplicado
+  if (!s.metricsLog) s.metricsLog = [];
+  if (s.metricsLog.some(x => x.dateISO === dateISO)) {
+    if (!confirm(`Ya existe una medición para el ${dateLabel}. ¿Sobreescribir?`)) return;
+    s.metricsLog = s.metricsLog.filter(x => x.dateISO !== dateISO);
+  }
+
+  const entry = {
+    date: dateLabel,
+    dateISO,
+    weight: parsed.weight,
+    fatManual: parsed.fat || null,
+    muscleManual: parsed.muscle || null,
+    waist: parsed.waist || null,
+    hip: parsed.hip || null,
+    chest: parsed.chest || null,
+    thigh: parsed.thigh || null,
+    bone: parsed.bone || null,
+    activity: 1.375,
+  };
+
+  if (parsed.bmr) { if (!entry.calc) entry.calc = {}; entry.calc.bmr = parsed.bmr; }
+
+  try { entry.calc = { ...(entry.calc || {}), ...calcMetrics(entry, s.anamnesis) }; } catch(_) {}
+  if (parsed.visceral && entry.calc) entry.calc.visceralEst = parsed.visceral;
+
+  s.metricsLog.push(entry);
+  s.metricsLog.sort((a,b) => (a.dateISO||'').localeCompare(b.dateISO||''));
+
+  saveState();
+  renderMetricsView(s, role);
+  alert(`✅ Medición del ${dateLabel} guardada correctamente.`);
+}
+
+// Parser de texto libre — regex sin IA
+function parseMetricsText(text) {
+  const t = text.toLowerCase();
+  const result = {};
+
+  // Fecha — múltiples formatos
+  const datePatterns = [
+    /fecha[:\s]+(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})/,
+    /(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})/,
+    /(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})/,
+    /(\d{1,2})\s+de\s+(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\s+(?:de\s+)?(\d{4})/i,
+  ];
+  const meses = {enero:1,febrero:2,marzo:3,abril:4,mayo:5,junio:6,julio:7,agosto:8,septiembre:9,octubre:10,noviembre:11,diciembre:12};
+
+  for (const pat of datePatterns) {
+    const m = text.match(pat);
+    if (m) {
+      if (pat.source.includes('enero|febrero')) {
+        const d = m[1].padStart(2,'0');
+        const mo = String(meses[m[2].toLowerCase()]).padStart(2,'0');
+        result.date = `${m[3]}-${mo}-${d}`;
+      } else if (pat.source.startsWith('(\\d{4})')) {
+        result.date = `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+      } else {
+        result.date = `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+      }
+      break;
+    }
+  }
+
+  // Extractor numérico genérico
+  const extract = (patterns) => {
+    for (const p of patterns) {
+      const m = t.match(p);
+      if (m) {
+        const val = parseFloat(m[1].replace(',', '.'));
+        if (!isNaN(val) && val > 0) return val;
+      }
+    }
+    return null;
+  };
+
+  result.weight = extract([
+    /peso(?:\s*corporal)?[:\s]+(\d+[.,]?\d*)\s*kg/,
+    /weight[:\s]+(\d+[.,]?\d*)\s*kg/,
+    /^(\d{2,3}[.,]?\d*)\s*kg/m,
+    /(\d{2,3}[.,]?\d*)\s*kg(?:\s|$)/,
+  ]);
+
+  result.fat = extract([
+    /gras[ao](?:\s*corporal)?[:\s]+(\d+[.,]?\d*)\s*%/,
+    /fat(?:\s*mass)?[:\s]+(\d+[.,]?\d*)\s*%/,
+    /body\s*fat[:\s]+(\d+[.,]?\d*)/,
+    /%\s*gras[ao][:\s]+(\d+[.,]?\d*)/,
+    /gras[ao][:\s]+(\d+[.,]?\d*)/,
+  ]);
+
+  result.muscle = extract([
+    /m[uú]sculo(?:\s*esquelético)?[:\s]+(\d+[.,]?\d*)\s*%/,
+    /masa\s*muscular[:\s]+(\d+[.,]?\d*)\s*%/,
+    /muscle[:\s]+(\d+[.,]?\d*)/,
+    /%\s*m[uú]sc[uo]lo[:\s]+(\d+[.,]?\d*)/,
+    /m[uú]sc[uo]lo[:\s]+(\d+[.,]?\d*)/,
+  ]);
+
+  result.visceral = extract([
+    /(?:grasa\s*)?visceral[:\s]+(\d+[.,]?\d*)/,
+    /visceral\s*fat[:\s]+(\d+[.,]?\d*)/,
+  ]);
+
+  result.bmr = extract([
+    /(?:metabolismo|bmr|tmb)[:\s]+(\d{3,4})\s*kcal/,
+    /(?:basal|bmr)[:\s]+(\d{3,4})/,
+  ]);
+
+  result.waist = extract([
+    /cintura[:\s]+(\d+[.,]?\d*)\s*cm/,
+    /waist[:\s]+(\d+[.,]?\d*)/,
+    /cintura[:\s]+(\d+[.,]?\d*)/,
+  ]);
+
+  result.hip = extract([
+    /cadera[:\s]+(\d+[.,]?\d*)\s*cm/,
+    /hip[:\s]+(\d+[.,]?\d*)/,
+    /cadera[:\s]+(\d+[.,]?\d*)/,
+  ]);
+
+  result.chest = extract([
+    /pecho[:\s]+(\d+[.,]?\d*)\s*cm/,
+    /chest[:\s]+(\d+[.,]?\d*)/,
+  ]);
+
+  result.thigh = extract([
+    /muslo[:\s]+(\d+[.,]?\d*)\s*cm/,
+    /thigh[:\s]+(\d+[.,]?\d*)/,
+  ]);
+
+  result.bone = extract([
+    /(?:masa\s*)?[oó]sea[:\s]+(\d+[.,]?\d*)\s*kg/,
+    /bone[:\s]+(\d+[.,]?\d*)/,
+  ]);
+
+  return result;
+}
+
+// ─── FIN PARSER TEXTO ───────────────────────
 // ═══════════════════════════════════════════
 const DEFAULT_RECOVERY_PIN = '0000';
 
@@ -7540,12 +7755,13 @@ function confirmResetPin() {
 const chartInstances = {};
 
 const CHART_VARS = {
-  weight:  { label: 'Peso',     unit: 'kg',  color: '#FF6B00', key: 'weight' },
-  fat:     { label: '% Grasa',  unit: '%',   color: '#e53935', key: (e) => e.calc?.fatPct },
-  muscle:  { label: '% Músculo',unit: '%',   color: '#3DB85A', key: (e) => e.calc?.musclePct },
-  bmi:     { label: 'BMI',      unit: '',    color: '#FFC107', key: (e) => e.calc?.bmi },
-  waist:   { label: 'Cintura',  unit: 'cm',  color: '#29B6F6', key: 'waist' },
-  hip:     { label: 'Cadera',   unit: 'cm',  color: '#AB47BC', key: 'hip' }
+  weight:   { label: 'Peso',          unit: 'kg',  color: '#FF6B00', key: 'weight' },
+  fat:      { label: '% Grasa',       unit: '%',   color: '#e53935', key: (e) => e.calc?.fatPct },
+  muscle:   { label: '% Músculo',     unit: '%',   color: '#3DB85A', key: (e) => e.calc?.musclePct },
+  bmi:      { label: 'BMI',           unit: '',    color: '#FFC107', key: (e) => e.calc?.bmi },
+  waist:    { label: 'Cintura',       unit: 'cm',  color: '#29B6F6', key: 'waist' },
+  hip:      { label: 'Cadera',        unit: 'cm',  color: '#AB47BC', key: 'hip' },
+  visceral: { label: 'Grasa visceral',unit: 'niv', color: '#FF8C00', key: (e) => e.calc?.visceralEst }
 };
 
 // Estado de filtros activos por alumno
@@ -8489,6 +8705,38 @@ function renderMetricsView(s, role) {
     const role = targetEl.id.startsWith('trainer') ? 'trainer' : 'student';
     html += buildChartHTML(s.id, role);
   }
+
+  // ── Card pegar texto de métricas ──
+  html += `
+  <div class="card mt-2">
+    <div class="card-title" style="justify-content:space-between">
+      <span>📋 Pegar texto de métricas</span>
+      <button class="btn btn-secondary btn-sm" style="font-size:0.72rem;padding:0.25rem 0.6rem"
+        onclick="togglePasteMetricsCard('${s.id}','${role}')">▼</button>
+    </div>
+    <div id="paste-metrics-body-${role}-${s.id}" style="display:none">
+      <div class="text-small text-gray" style="margin-bottom:0.8rem;line-height:1.6">
+        Pegá texto con las métricas (notas, reporte de báscula, cualquier formato). La app detecta los valores automáticamente.
+      </div>
+      <textarea class="input-field" id="paste-metrics-text-${role}-${s.id}"
+        rows="6" style="font-size:0.85rem;line-height:1.6;font-family:var(--font-mono)"
+        placeholder="Ej:
+Fecha: 15/03/2024
+Peso: 85.5 kg
+Grasa corporal: 24.1%
+Músculo: 58.3%
+Cintura: 91 cm
+Grasa visceral: 7
+BMR: 1804 kcal"></textarea>
+      <div id="paste-metrics-preview-${role}-${s.id}" style="margin-top:0.6rem;font-size:0.82rem"></div>
+      <div style="display:flex;gap:0.6rem;margin-top:0.8rem">
+        <button class="btn btn-secondary btn-sm" style="flex:1"
+          onclick="previewPasteMetrics('${s.id}','${role}')">🔍 Previsualizar</button>
+        <button class="btn btn-primary btn-sm" style="flex:1" id="paste-metrics-save-${role}-${s.id}"
+          onclick="savePasteMetrics('${s.id}','${role}')" disabled>✅ Guardar medición</button>
+      </div>
+    </div>
+  </div>`;
 
   // Historial de mediciones
   if (s.metricsLog && s.metricsLog.length > 0) {
