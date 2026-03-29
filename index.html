@@ -1217,7 +1217,56 @@
       <div id="trainer-pwd-error" style="font-size:0.8rem;min-height:1.2rem;margin-bottom:0.8rem;color:var(--danger)"></div>
       <button class="btn btn-primary btn-full" onclick="checkTrainerPassword()">Entrar</button>
     </div>
-    <button class="btn btn-secondary btn-sm btn-full mt-2" onclick="showScreen('screen-login')">← Volver</button>
+    <button class="btn btn-secondary btn-sm btn-full mt-2" onclick="openForgotPassword()">🔑 Olvidé mi contraseña</button>
+    <button class="btn btn-secondary btn-sm btn-full mt-2" style="margin-top:0.5rem" onclick="showScreen('screen-login')">← Volver</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     MODAL: RECUPERAR CONTRASEÑA
+═══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-forgot-password">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🔑 Recuperar contraseña</div>
+
+    <!-- Paso 1: ingresar PIN de recuperación -->
+    <div id="forgot-step-1">
+      <div class="text-small text-gray" style="margin-bottom:1rem;line-height:1.6">
+        Ingresá tu PIN de recuperación (4 dígitos). Lo configuraste en Mi Perfil → Seguridad.<br>
+        <span style="color:var(--orange)">Si nunca lo cambiaste, el PIN default es <strong>0000</strong>.</span>
+      </div>
+      <div class="input-group">
+        <label class="input-label">PIN de recuperación</label>
+        <input type="password" class="input-field" id="recovery-pin-input"
+          placeholder="4 dígitos" maxlength="4" inputmode="numeric"
+          onkeydown="if(event.key==='Enter') verifyRecoveryPin()">
+      </div>
+      <div id="recovery-pin-error" style="font-size:0.8rem;min-height:1.2rem;margin-bottom:0.8rem;color:var(--danger)"></div>
+      <div style="display:flex;gap:0.8rem;padding-bottom:1rem">
+        <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-forgot-password')">Cancelar</button>
+        <button class="btn btn-primary btn-sm" style="flex:1" onclick="verifyRecoveryPin()">Verificar PIN</button>
+      </div>
+    </div>
+
+    <!-- Paso 2: nueva contraseña -->
+    <div id="forgot-step-2" style="display:none">
+      <div class="text-small" style="margin-bottom:1rem;color:var(--success)">✅ PIN correcto. Elegí tu nueva contraseña.</div>
+      <div class="input-group">
+        <label class="input-label">Nueva contraseña</label>
+        <input type="password" class="input-field" id="new-pwd-input" placeholder="Mínimo 4 caracteres">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Repetir contraseña</label>
+        <input type="password" class="input-field" id="new-pwd-confirm" placeholder="Repetí la contraseña"
+          onkeydown="if(event.key==='Enter') saveNewPassword()">
+      </div>
+      <div id="new-pwd-error" style="font-size:0.8rem;min-height:1.2rem;margin-bottom:0.8rem;color:var(--danger)"></div>
+      <div style="display:flex;gap:0.8rem;padding-bottom:1rem">
+        <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-forgot-password')">Cancelar</button>
+        <button class="btn btn-primary btn-sm" style="flex:1" onclick="saveNewPassword()">💾 Guardar contraseña</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1390,7 +1439,23 @@
       <button class="btn btn-primary btn-sm btn-full" onclick="saveTrainerPassword()">Cambiar contraseña</button>
     </div>
 
-    <!-- API Key para funciones IA -->
+    <!-- PIN de recuperación -->
+    <div class="card">
+      <div class="card-title">🔑 PIN de recuperación</div>
+      <div class="text-small text-gray" style="margin-bottom:0.8rem;line-height:1.6">
+        PIN de 4 dígitos para recuperar el acceso si olvidás la contraseña. Default: <strong>0000</strong>.
+      </div>
+      <div class="input-group">
+        <label class="input-label">PIN actual</label>
+        <input type="password" class="input-field" id="recovery-current" placeholder="0000" maxlength="4" inputmode="numeric">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Nuevo PIN (4 dígitos)</label>
+        <input type="password" class="input-field" id="recovery-new" placeholder="••••" maxlength="4" inputmode="numeric">
+      </div>
+      <div id="recovery-pin-msg" style="font-size:0.8rem;min-height:1.2rem;margin-bottom:0.8rem"></div>
+      <button class="btn btn-secondary btn-sm btn-full" onclick="saveRecoveryPin()">💾 Guardar PIN de recuperación</button>
+    </div>
     <div class="card">
       <div class="card-title">🤖 Configuración IA</div>
       <div class="text-small text-gray" style="margin-bottom:0.8rem;line-height:1.6">
@@ -2925,10 +2990,18 @@ function checkRateLimit() {
 // Headers seguros para Anthropic API
 function getAnthropicHeaders() {
   const key = getApiKey();
-  if (!key) return null;
+  // Si hay key en localStorage, usarla (GitHub Pages)
+  if (key) {
+    return {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    };
+  }
+  // Sin key → modo Claude.ai (la plataforma inyecta la auth automáticamente)
   return {
     'Content-Type': 'application/json',
-    'x-api-key': key,
     'anthropic-version': '2023-06-01',
     'anthropic-dangerous-direct-browser-access': 'true'
   };
@@ -2936,9 +3009,8 @@ function getAnthropicHeaders() {
 
 // Fetch seguro a la API de Anthropic
 async function anthropicFetch(body) {
-  if (!checkRateLimit()) throw new Error('Rate limit');
+  if (!checkRateLimit()) throw new Error('Rate limit — esperá unos segundos');
   const headers = getAnthropicHeaders();
-  if (!headers) throw new Error('API key no configurada. Ingresala en Mi Perfil → Configuración IA.');
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers,
@@ -2946,7 +3018,12 @@ async function anthropicFetch(body) {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error?.message || `Error ${res.status}`);
+    const msg = err.error?.message || `Error ${res.status}`;
+    // Si el error es de auth y no hay key configurada, dar instrucción clara
+    if (res.status === 401 && !getApiKey()) {
+      throw new Error('Autenticación fallida. Si estás en GitHub Pages, ingresá tu API key en Mi Perfil → Configuración IA.');
+    }
+    throw new Error(msg);
   }
   return res.json();
 }
@@ -3392,7 +3469,7 @@ async function generateWithAI() {
 
 async function callClaudeAPI(prompt, maxTokens = 2000) {
   const response = await anthropicFetch({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: maxTokens,
       messages: [{ role: 'user', content: prompt }]
     });
@@ -3752,7 +3829,7 @@ async function sendAIMessage() {
 
   try {
     const res = await anthropicFetch({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 1000,
         system: buildChatSystemPrompt(_chatStudentId),
         messages: _chatHistory
@@ -4050,7 +4127,81 @@ function showImportResult(msg,type){const el=document.getElementById('import-res
 // ═══════════════════════════════════════════
 
 // ═══════════════════════════════════════════
-//  API KEY — UI Y GESTIÓN
+//  RECUPERACIÓN DE CONTRASEÑA
+// ═══════════════════════════════════════════
+const DEFAULT_RECOVERY_PIN = '0000';
+
+function getRecoveryPin() {
+  return localStorage.getItem('vcfit-recovery-pin') || DEFAULT_RECOVERY_PIN;
+}
+
+function openForgotPassword() {
+  // Resetear el modal al paso 1
+  document.getElementById('forgot-step-1').style.display = 'block';
+  document.getElementById('forgot-step-2').style.display = 'none';
+  document.getElementById('recovery-pin-input').value = '';
+  document.getElementById('recovery-pin-error').textContent = '';
+  const newPwd = document.getElementById('new-pwd-input');
+  const confirm = document.getElementById('new-pwd-confirm');
+  const err = document.getElementById('new-pwd-error');
+  if (newPwd) newPwd.value = '';
+  if (confirm) confirm.value = '';
+  if (err) err.textContent = '';
+  document.getElementById('modal-forgot-password').classList.add('show');
+  setTimeout(() => document.getElementById('recovery-pin-input')?.focus(), 300);
+}
+
+function verifyRecoveryPin() {
+  const pin = document.getElementById('recovery-pin-input')?.value.trim();
+  const err = document.getElementById('recovery-pin-error');
+  if (!pin) { if(err) err.textContent = 'Ingresá el PIN'; return; }
+  if (pin !== getRecoveryPin()) {
+    if (err) err.textContent = '❌ PIN incorrecto';
+    document.getElementById('recovery-pin-input').value = '';
+    return;
+  }
+  // PIN correcto → mostrar paso 2
+  document.getElementById('forgot-step-1').style.display = 'none';
+  document.getElementById('forgot-step-2').style.display = 'block';
+  setTimeout(() => document.getElementById('new-pwd-input')?.focus(), 100);
+}
+
+function saveNewPassword() {
+  const newPwd  = document.getElementById('new-pwd-input')?.value.trim();
+  const confirm = document.getElementById('new-pwd-confirm')?.value.trim();
+  const err     = document.getElementById('new-pwd-error');
+  if (!newPwd || newPwd.length < 4) { if(err) err.textContent = '❌ Mínimo 4 caracteres'; return; }
+  if (newPwd !== confirm) { if(err) err.textContent = '❌ Las contraseñas no coinciden'; return; }
+  // Guardar nueva contraseña
+  state.trainerPassword = newPwd;
+  saveState();
+  closeModal('modal-forgot-password');
+  // Limpiar el campo de login y mostrar éxito
+  const pwdInput = document.getElementById('trainer-pwd-input');
+  if (pwdInput) pwdInput.value = '';
+  const pwdErr = document.getElementById('trainer-pwd-error');
+  if (pwdErr) { pwdErr.style.color = 'var(--success)'; pwdErr.textContent = '✅ Contraseña actualizada. Ya podés ingresar.'; }
+}
+
+function saveRecoveryPin() {
+  const current = document.getElementById('recovery-current')?.value.trim();
+  const newPin  = document.getElementById('recovery-new')?.value.trim();
+  const msg     = document.getElementById('recovery-pin-msg');
+  if (current !== getRecoveryPin()) {
+    if (msg) { msg.style.color = 'var(--danger)'; msg.textContent = '❌ PIN actual incorrecto'; }
+    return;
+  }
+  if (!newPin || newPin.length !== 4 || !/^\d{4}$/.test(newPin)) {
+    if (msg) { msg.style.color = 'var(--danger)'; msg.textContent = '❌ El PIN debe ser exactamente 4 dígitos'; }
+    return;
+  }
+  localStorage.setItem('vcfit-recovery-pin', newPin);
+  if (msg) { msg.style.color = 'var(--success)'; msg.textContent = '✅ PIN de recuperación guardado'; }
+  document.getElementById('recovery-current').value = '';
+  document.getElementById('recovery-new').value = '';
+}
+
+// ─── FIN RECUPERACIÓN ───────────────────────
 // ═══════════════════════════════════════════
 function validateApiKeyInput() {
   const val = document.getElementById('api-key-input')?.value || '';
@@ -4121,7 +4272,7 @@ async function parseTextMetrics() {
   if (btn) { btn.disabled=true; btn.textContent='⏳ Procesando...'; }
   try {
     const data = await anthropicFetch({
-      model: 'claude-sonnet-4-20250514', max_tokens: 1500,
+      model: 'claude-haiku-4-5-20251001', max_tokens: 1500,
       system: 'Extraé datos de métricas corporales y devolvé SOLO un JSON array válido sin texto adicional ni markdown. Formato exacto: [{"fecha":"YYYY-MM-DD","peso":null,"grasa":null,"musculo":null,"cintura":null,"cadera":null,"pecho":null,"muslo":null,"visceral":null}]. null para valores no encontrados. fecha siempre en ISO YYYY-MM-DD.',
       messages: [{ role:'user', content: text }]
     });
@@ -4352,7 +4503,7 @@ async function runAIGenerator() {
           periodGoal: document.getElementById('ai-period-goal').value });
 
     const res = await anthropicFetch({
-        model: 'claude-sonnet-4-20250514', max_tokens: 2000,
+        model: 'claude-haiku-4-5-20251001', max_tokens: 2000,
         system: `Sos un entrenador personal funcional especializado en adultos mayores de 40 años. Respondés en español argentino. Nunca usás máquinas — solo calistenia, barras y mancuernas. Nombrás los ejercicios en español primero.`,
         messages: [{ role: 'user', content: prompt }]
       });
@@ -4565,12 +4716,24 @@ const firebaseConfig = {
   messagingSenderId: "738858575495",
   appId: "1:738858575495:web:691f1fe29a4bbc0e2a7a22"
 };
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const STATE_DOC = db.collection('vcfit').doc('state');
-
+// ── Firebase init con fallback a localStorage ──
+let db = null;
+let STATE_DOC = null;
 let syncEnabled = false;
 let syncUnsubscribe = null;
+let _firebaseAvailable = false;
+
+try {
+  if (typeof firebase !== 'undefined') {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+    STATE_DOC = db.collection('vcfit').doc('state');
+    _firebaseAvailable = true;
+  }
+} catch(e) {
+  console.warn('Firebase no disponible:', e.message);
+  _firebaseAvailable = false;
+}
 
 // ═══════════════════════════════════════════
 //  DATA STORE
@@ -4627,13 +4790,18 @@ function mergePhotosFromLocal(fsState) {
 
 // ── loadState: Firestore primero, localStorage como fallback ──
 async function loadState() {
-  // 1. Carga rápida desde localStorage (evita pantalla en blanco)
+  // 1. Carga rápida desde localStorage
   try {
     const saved = localStorage.getItem('vcfit_state');
     if (saved) state = JSON.parse(saved);
   } catch(e) {}
 
-  // 2. Intentar Firestore
+  // 2. Intentar Firestore solo si está disponible
+  if (!_firebaseAvailable || !STATE_DOC) {
+    setSyncStatus('offline');
+    return;
+  }
+
   try {
     setLoadingMsg('Conectando con Firebase...');
     const doc = await STATE_DOC.get();
@@ -4642,7 +4810,6 @@ async function loadState() {
       state = { ...merged, currentRole: null, currentStudentId: null };
       localStorage.setItem('vcfit_state', JSON.stringify(state));
     } else {
-      // Primera vez: subir el estado actual (puede tener demo data)
       setLoadingMsg('Primer inicio: creando base de datos...');
       await STATE_DOC.set(stateForFirestore());
     }
@@ -4664,7 +4831,7 @@ function saveState() {
 
   savePhotosLocal();
 
-  if (syncEnabled) {
+  if (syncEnabled && STATE_DOC) {
     STATE_DOC.set(stateForFirestore()).then(() => {
       setSyncStatus('ok');
     }).catch(e => {
@@ -4676,6 +4843,7 @@ function saveState() {
 
 // ── onSnapshot: sincronización en tiempo real ──
 function initSync() {
+  if (!_firebaseAvailable || !STATE_DOC) return;
   if (syncUnsubscribe) syncUnsubscribe();
   syncUnsubscribe = STATE_DOC.onSnapshot(doc => {
     if (!doc.exists || !doc.metadata.hasPendingWrites === false) return;
