@@ -1607,6 +1607,39 @@
       </div>
 
       <div id="anamnesis-view"></div>
+
+      <!-- Card pegar texto para completar anamnesis -->
+      <div class="card mt-2" style="background:var(--dark3)">
+        <div class="card-title" style="justify-content:space-between">
+          <span>📋 Completar desde texto</span>
+          <button class="btn btn-secondary btn-sm" style="font-size:0.72rem;padding:0.25rem 0.6rem"
+            onclick="toggleAnamnesisTextCard()">▼</button>
+        </div>
+        <div id="anamnesis-paste-body" style="display:none">
+          <div class="text-small text-gray" style="margin-bottom:0.8rem;line-height:1.6">
+            Pegá notas o texto con los datos del alumno. Se completan solo los campos vacíos — no se toca lo que ya está cargado.
+          </div>
+          <textarea class="input-field" id="anamnesis-paste-text" rows="6"
+            style="font-size:0.85rem;line-height:1.6"
+            placeholder="Ej:
+Nombre: Carlos Méndez
+Edad: 47 años
+Sexo: Masculino
+Peso: 84 kg
+Altura: 175 cm
+Objetivo: Recomposición corporal
+Lesiones: Lumbalgia leve
+Trabaja en oficina, muy sedentario
+Duerme 6-7 hs
+Estrés 7/10"></textarea>
+          <div id="anamnesis-paste-result" style="font-size:0.8rem;min-height:1rem;margin-top:0.5rem"></div>
+          <div style="display:flex;gap:0.6rem;margin-top:0.8rem">
+            <button class="btn btn-primary btn-sm btn-full"
+              onclick="applyAnamnesisText()">✅ Aplicar al formulario de edición</button>
+          </div>
+        </div>
+      </div>
+
       <div class="export-grid mt-2">
         <button class="btn btn-primary btn-sm" onclick="openEditAnamnesisModal()">✏️ Editar</button>
         <button class="btn btn-secondary btn-sm" onclick="exportAnamnesisText()">📄 TXT</button>
@@ -2389,6 +2422,21 @@ ALMUERZO
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title">Nuevo Alumno</div>
+
+    <!-- Card pegar texto de anamnesis -->
+    <div class="card" style="margin-bottom:1rem;background:var(--dark3)">
+      <div class="card-title">📋 Cargar desde texto</div>
+      <div class="text-small text-gray" style="margin-bottom:0.8rem;line-height:1.6">
+        Pegá notas del alumno y se completan los campos automáticamente.
+      </div>
+      <textarea class="input-field" id="ns-paste-text" rows="4"
+        style="font-size:0.85rem;line-height:1.6"
+        placeholder="Edad: 47 años, Sexo: Masculino, Peso: 84 kg, Altura: 175 cm&#10;Objetivo: Recomposición corporal&#10;Lesiones: Lumbalgia leve, trabaja en oficina"></textarea>
+      <div id="ns-paste-result" style="font-size:0.8rem;min-height:1rem;margin-top:0.4rem"></div>
+      <button class="btn btn-secondary btn-sm btn-full" onclick="applyNsPasteText()" style="margin-top:0.6rem">
+        🔍 Completar campos
+      </button>
+    </div>
 
     <div class="photo-upload-area" onclick="document.getElementById('new-student-photo').click()" id="new-student-photo-area">
       <img id="new-student-photo-preview" src="" alt="" style="display:none">
@@ -4344,7 +4392,201 @@ function parseEmPasteText() {
   }
 }
 
-// ─── FIN EDITAR MÉTRICAS ────────────────────
+// ═══════════════════════════════════════════
+//  PEGAR TEXTO DE ANAMNESIS
+// ═══════════════════════════════════════════
+
+function parseAnamnesisText(text) {
+  const t = text;
+  const tl = text.toLowerCase();
+  const result = {};
+
+  const extract = (patterns) => {
+    for (const p of patterns) {
+      const m = tl.match(p);
+      if (m) return m[1].trim();
+    }
+    return null;
+  };
+
+  const extractNum = (patterns) => {
+    for (const p of patterns) {
+      const m = tl.match(p);
+      if (m) { const v = parseFloat(m[1].replace(',','.')); if (!isNaN(v)) return String(v); }
+    }
+    return null;
+  };
+
+  // Nombre — buscar en texto original (mayúsculas)
+  const nameM = t.match(/(?:nombre[:\s]+)([A-ZÁÉÍÓÚÑÜ][a-záéíóúñü]+(?:\s+[A-ZÁÉÍÓÚÑÜ][a-záéíóúñü]+)+)/);
+  if (nameM) result.name = nameM[1].trim();
+
+  result.age    = extractNum([/edad[:\s]+(\d{1,3})\s*(?:años|a)/,/(\d{2,3})\s+años/]);
+  result.weight = extractNum([/peso[:\s]+(\d{2,3}[.,]?\d*)\s*kg/,/(\d{2,3}[.,]?\d*)\s*kg/]);
+  result.height = extractNum([/(?:altura|talla|estatura)[:\s]+(\d{2,3})\s*cm/,/(\d{3})\s*cm/]);
+
+  const sexM = tl.match(/(?:sexo|género)[:\s]+(masculino|femenino|hombre|mujer)/i);
+  if (sexM) result.sex = /masc|hombre/i.test(sexM[1]) ? 'Masculino' : 'Femenino';
+
+  result.goalWeight = extractNum([/(?:peso\s*objetivo|meta)[:\s]+(\d{2,3}[.,]?\d*)\s*kg/]);
+  result.phone = extract([/(?:tel[eé]fono|cel|móvil|whatsapp)[:\s]+([\+\d\s\-]{7,20})/]);
+  result.job   = extract([/(?:ocupaci[oó]n|trabajo|profesión)[:\s]+([^\n,\.]{3,40})/]);
+
+  const jobTypeKw = {
+    'Sedentaria (oficina, escritorio)': /sedentari|oficina|escritorio|remoto/,
+    'Activa (de pie, caminando)':       /de\s*pie|caminando|activa/,
+    'Mixta':                            /mixta/,
+    'Trabajo físico intenso':           /f[íi]sico\s*intenso|construcci/,
+  };
+  for (const [label, re] of Object.entries(jobTypeKw)) {
+    if (re.test(tl)) { result.jobType = label; break; }
+  }
+
+  const goalKw = {
+    'Recomposición corporal': /recomposici/,
+    'Pérdida de grasa':       /p[eé]rdida\s*de\s*grasa|bajar\s*de\s*peso|adelgazar/,
+    'Hipertrofia estética':   /hipertrofia|volumen/,
+    'Fuerza pura':            /fuerza\s*pura/,
+    'Salud general':          /salud\s*general/,
+    'Movilidad y flexibilidad':/movilidad|flexibilidad/,
+    'Resistencia cardiovascular':/resistencia\s*cardiovascular/,
+    'Rendimiento deportivo':  /rendimiento\s*deportivo/,
+    'Longevidad y calidad de vida':/longevidad/,
+    'Fuerza explosiva':       /fuerza\s*explosiva/,
+    'Reducción del estrés y bienestar':/bienestar|estr[eé]s\s*y/,
+    'Control de peso':        /control\s*de\s*peso/,
+    'Rehabilitación / recuperación':/rehabilitaci|recuperaci/,
+  };
+  for (const [label, re] of Object.entries(goalKw)) {
+    if (re.test(tl)) { result.goal = label; break; }
+  }
+
+  result.medical  = extract([/(?:historial\s*m[eé]dico|condici[oó]n|patolog[íi]a)[:\s]+([^\n]{3,100})/]);
+  result.injuries = extract([/(?:lesiones?|lesionado)[:\s]+([^\n]{3,100})/]);
+  result.meds     = extract([/(?:medicaci[oó]n|medicamentos?|f[áa]rmacos?)[:\s]+([^\n]{3,80})/]);
+  result.pain     = extract([/(?:dolor|zona\s*de\s*dolor)[:\s]+([^\n]{3,80})/]);
+
+  result.days     = extractNum([/(\d)\s*d[íi]as?\s*(?:por|a la)?\s*semana/,/entrena\s*(\d)\s*d[íi]as/]);
+  result.duration = extract([/(\d{2,3}\s*(?:min(?:utos?)?|hs?|horas?))/]);
+
+  result.sleep    = extract([/(?:sue[ñn]o|duerme)[:\s]+([\d\-\s]+\s*hs?(?:oras?)?)/]);
+  result.stress   = extractNum([/estr[eé]s[:\s]+(\d{1,2})\s*(?:\/|\s*de\s*)10/,/(\d{1,2})\s*\/\s*10\s*(?:de\s*)?estr[eé]s/]);
+  result.hydration= extract([/(?:hidrataci[oó]n|agua)[:\s]+([\d\.,\-]+\s*L(?:itros?)?)/i]);
+
+  const smokeKw = { 'No': /no\s+fuma|no\s+tabaco/, 'Sí': /fuma|fumador/, 'Ex fumador/a': /ex[\s\-]?fumador/ };
+  for (const [v, re] of Object.entries(smokeKw)) { if (re.test(tl)) { result.smoke = v; break; } }
+
+  const alcoholKw = { 'No consumo': /no\s+(?:consume|toma|bebe)\s*alcohol|no\s+alcohol/, 'Ocasional': /alcohol\s*ocasional|ocasional/, 'Moderado': /moderado/, 'Frecuente': /frecuente/ };
+  for (const [v, re] of Object.entries(alcoholKw)) { if (re.test(tl)) { result.alcohol = v; break; } }
+
+  const cardioKw = { 'No': /sin\s+cardio|no\s+(?:hace|tiene)\s+cardio/, 'Presión alta': /presi[oó]n\s*alta|hipertensi/, 'Diabetes': /diabet/, 'Colesterol alto': /colesterol/, 'Problemas cardíacos': /card[íi]aco|coraz[oó]n/, 'Asma': /asma/ };
+  for (const [v, re] of Object.entries(cardioKw)) { if (re.test(tl)) { result.cardio = v; break; } }
+
+  result.motivation = extract([/(?:motivaci[oó]n|por\s*qu[eé]\s*entrena)[:\s]+([^\n]{10,200})/]);
+  result.extra      = extract([/(?:notas?\s*adicionales?|observaciones?|extra)[:\s]+([^\n]{5,300})/]);
+
+  return result;
+}
+
+function fillAnamnesisFields(prefix, parsed) {
+  // prefix = 'ns' (nuevo alumno) o 'ea' (editar anamnesis)
+  let filled = 0;
+
+  const fillIfEmpty = (id, val) => {
+    if (!val) return;
+    const el = document.getElementById(id);
+    if (!el || el.value) return;
+    el.value = val;
+    el.style.borderColor = 'var(--success)';
+    setTimeout(() => { if(el) el.style.borderColor = ''; }, 2000);
+    filled++;
+  };
+
+  if (parsed.name && prefix === 'ns') fillIfEmpty('ns-name', parsed.name);
+  fillIfEmpty(`${prefix}-age`, parsed.age);
+  if (parsed.sex) {
+    const sel = document.getElementById(`${prefix}-sex`);
+    if (sel && !sel.value) { sel.value = parsed.sex; filled++; }
+  }
+  fillIfEmpty(`${prefix}-weight`, parsed.weight);
+  fillIfEmpty(`${prefix}-height`, parsed.height);
+  fillIfEmpty(`${prefix}-phone`, parsed.phone);
+  fillIfEmpty(`${prefix}-job`, parsed.job);
+  fillIfEmpty(`${prefix}-goal-weight`, parsed.goalWeight);
+  fillIfEmpty(`${prefix}-medical`, parsed.medical);
+  fillIfEmpty(`${prefix}-injuries`, parsed.injuries);
+  fillIfEmpty(`${prefix}-meds`, parsed.meds);
+  fillIfEmpty(`${prefix}-pain`, parsed.pain);
+  fillIfEmpty(`${prefix}-days`, parsed.days);
+  fillIfEmpty(`${prefix}-sleep`, parsed.sleep);
+  fillIfEmpty(`${prefix}-stress`, parsed.stress);
+  fillIfEmpty(`${prefix}-hydration`, parsed.hydration);
+  fillIfEmpty(`${prefix}-motivation`, parsed.motivation);
+  fillIfEmpty(`${prefix}-extra`, parsed.extra);
+
+  if (parsed.jobType) {
+    const sel = document.getElementById(`${prefix}-job-type`);
+    if (sel && !sel.value) { sel.value = parsed.jobType; filled++; }
+  }
+  if (parsed.goal) {
+    const sel = document.getElementById(`${prefix}-goal`);
+    if (sel && !sel.value) { sel.value = parsed.goal; filled++; }
+  }
+  if (parsed.smoke) {
+    const sel = document.getElementById(`${prefix}-smoke`);
+    if (sel && !sel.value) { sel.value = parsed.smoke; filled++; }
+  }
+  if (parsed.alcohol) {
+    const sel = document.getElementById(`${prefix}-alcohol`);
+    if (sel && !sel.value) { sel.value = parsed.alcohol; filled++; }
+  }
+  if (parsed.cardio) {
+    const sel = document.getElementById(`${prefix}-cardio`);
+    if (sel && !sel.value) { sel.value = parsed.cardio; filled++; }
+  }
+
+  return filled;
+}
+
+function applyNsPasteText() {
+  const text = document.getElementById('ns-paste-text')?.value || '';
+  const resultEl = document.getElementById('ns-paste-result');
+  if (!text.trim()) { if(resultEl) resultEl.innerHTML = '<span style="color:var(--danger)">Pegá algún texto primero.</span>'; return; }
+  const parsed = parseAnamnesisText(text);
+  const filled = fillAnamnesisFields('ns', parsed);
+  if (resultEl) {
+    if (filled === 0) resultEl.innerHTML = '<span style="color:var(--gray-light)">No se detectaron datos reconocibles.</span>';
+    else resultEl.innerHTML = `<span style="color:var(--success)">✅ ${filled} campo${filled>1?'s':''} completado${filled>1?'s':''}.</span>`;
+  }
+}
+
+function toggleAnamnesisTextCard() {
+  const body = document.getElementById('anamnesis-paste-body');
+  if (body) body.style.display = body.style.display === 'none' ? 'block' : 'none';
+}
+
+function applyAnamnesisText() {
+  const text = document.getElementById('anamnesis-paste-text')?.value || '';
+  const resultEl = document.getElementById('anamnesis-paste-result');
+  if (!text.trim()) { if(resultEl) resultEl.innerHTML = '<span style="color:var(--danger)">Pegá algún texto primero.</span>'; return; }
+
+  const s = state.students.find(x => x.id === state.currentStudentId);
+  if (!s) return;
+
+  // Abrir modal y aplicar parseo con delay
+  openEditAnamnesisModal();
+
+  setTimeout(() => {
+    const parsed = parseAnamnesisText(text);
+    const filled = fillAnamnesisFields('ns', parsed);
+    if (resultEl) {
+      if (filled === 0) resultEl.innerHTML = '<span style="color:var(--gray-light)">No se detectaron datos reconocibles.</span>';
+      else resultEl.innerHTML = `<span style="color:var(--success)">✅ ${filled} campo${filled>1?'s':''} aplicado${filled>1?'s':''} en el formulario de edición.</span>`;
+    }
+  }, 350);
+}
+
+// ─── FIN ANAMNESIS TEXT ─────────────────────
 // ═══════════════════════════════════════════
 
 // Estado temporal del parser por role+alumno
