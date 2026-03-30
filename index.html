@@ -2806,12 +2806,64 @@ ALMUERZO
     <div class="modal-title">✏️ Editar medición</div>
     <input type="hidden" id="em-idx">
 
+    <!-- Fecha con precisión variable -->
     <div class="anamnesis-block">
       <div class="anamnesis-block-title">Fecha</div>
-      <div class="input-group">
-        <label class="input-label">Fecha de la medición</label>
-        <input type="text" class="input-field" id="em-date" placeholder="ej: 15/03/2026">
+      <div class="input-group" style="margin-bottom:0.6rem">
+        <div style="display:flex;gap:0.5rem">
+          <button class="btn btn-secondary btn-sm" id="em-date-prec-full"
+            onclick="setEmDatePrecision('full')"
+            style="flex:1;border-color:var(--orange);color:var(--orange);background:var(--orange-dim)">📅 Día completo</button>
+          <button class="btn btn-secondary btn-sm" id="em-date-prec-month"
+            onclick="setEmDatePrecision('month')"
+            style="flex:1">📆 Mes / año</button>
+          <button class="btn btn-secondary btn-sm" id="em-date-prec-year"
+            onclick="setEmDatePrecision('year')"
+            style="flex:1">🗓 Solo año</button>
+        </div>
       </div>
+      <div id="em-date-field-full">
+        <input type="date" class="input-field" id="em-date-input">
+      </div>
+      <div id="em-date-field-month" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem">
+          <div class="input-group" style="margin:0">
+            <label class="input-label">Mes</label>
+            <select class="input-field" id="em-month-input">
+              <option value="01">Enero</option><option value="02">Febrero</option>
+              <option value="03">Marzo</option><option value="04">Abril</option>
+              <option value="05">Mayo</option><option value="06">Junio</option>
+              <option value="07">Julio</option><option value="08">Agosto</option>
+              <option value="09">Septiembre</option><option value="10">Octubre</option>
+              <option value="11">Noviembre</option><option value="12">Diciembre</option>
+            </select>
+          </div>
+          <div class="input-group" style="margin:0">
+            <label class="input-label">Año</label>
+            <input type="number" class="input-field" id="em-year-month-input"
+              placeholder="2024" min="2000" max="2099">
+          </div>
+        </div>
+      </div>
+      <div id="em-date-field-year" style="display:none">
+        <input type="number" class="input-field" id="em-year-input"
+          placeholder="2024" min="2000" max="2099">
+      </div>
+    </div>
+
+    <!-- Pegar texto para completar datos faltantes -->
+    <div class="card" style="margin-bottom:1rem;background:var(--dark3)">
+      <div class="card-title">📋 Completar datos desde texto</div>
+      <div class="text-small text-gray" style="margin-bottom:0.8rem;line-height:1.6">
+        Si tenés datos nuevos para agregar a esta medición, pegálos acá y los campos vacíos se completan automáticamente.
+      </div>
+      <textarea class="input-field" id="em-paste-text" rows="4"
+        placeholder="Peso: 85.5 kg&#10;Grasa: 24.1%&#10;Músculo: 58.3%&#10;Visceral: 7&#10;Cintura: 91 cm"
+        style="font-size:0.85rem;line-height:1.6;font-family:var(--font-mono)"></textarea>
+      <button class="btn btn-secondary btn-sm btn-full" onclick="parseEmPasteText()" style="margin-top:0.6rem">
+        🔍 Aplicar al formulario
+      </button>
+      <div id="em-paste-result" style="font-size:0.8rem;min-height:1rem;margin-top:0.4rem"></div>
     </div>
 
     <div class="anamnesis-block">
@@ -4192,7 +4244,107 @@ function showImportResult(msg,type){const el=document.getElementById('import-res
 // ═══════════════════════════════════════════
 
 // ═══════════════════════════════════════════
-//  PEGAR TEXTO DE MÉTRICAS
+//  EDITAR MÉTRICAS — FECHA Y PASTE
+// ═══════════════════════════════════════════
+function setEmDatePrecision(prec) {
+  document.getElementById('em-date-field-full').style.display  = prec === 'full'  ? 'block' : 'none';
+  document.getElementById('em-date-field-month').style.display = prec === 'month' ? 'block' : 'none';
+  document.getElementById('em-date-field-year').style.display  = prec === 'year'  ? 'block' : 'none';
+  ['full','month','year'].forEach(p => {
+    const btn = document.getElementById(`em-date-prec-${p}`);
+    if (!btn) return;
+    if (p === prec) {
+      btn.style.borderColor = 'var(--orange)';
+      btn.style.color = 'var(--orange)';
+      btn.style.background = 'var(--orange-dim)';
+    } else {
+      btn.style.borderColor = '';
+      btn.style.color = '';
+      btn.style.background = '';
+    }
+  });
+}
+
+function getEmDate(idx, s) {
+  // Fallback a fecha existente
+  const existing = s?.metricsLog?.[idx];
+  const fallbackISO   = existing?.dateISO   || new Date().toISOString().split('T')[0];
+  const fallbackLabel = existing?.date       || new Date().toLocaleDateString('es-AR');
+
+  const fullField  = document.getElementById('em-date-field-full');
+  const monthField = document.getElementById('em-date-field-month');
+
+  if (fullField && fullField.style.display !== 'none') {
+    const val = document.getElementById('em-date-input')?.value;
+    if (!val) return { dateISO: fallbackISO, dateLabel: fallbackLabel };
+    const [y,m,d] = val.split('-');
+    return {
+      dateISO: val,
+      dateLabel: new Date(parseInt(y), parseInt(m)-1, parseInt(d))
+        .toLocaleDateString('es-AR', { day:'numeric', month:'long', year:'numeric' })
+    };
+  }
+  if (monthField && monthField.style.display !== 'none') {
+    const month = document.getElementById('em-month-input')?.value;
+    const year  = document.getElementById('em-year-month-input')?.value;
+    if (!month || !year) return { dateISO: fallbackISO, dateLabel: fallbackLabel };
+    const monthNames = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio',
+      'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    return {
+      dateISO: `${year}-${month}-15`,
+      dateLabel: `${monthNames[parseInt(month)]} ${year}`
+    };
+  }
+  const year = document.getElementById('em-year-input')?.value;
+  if (!year) return { dateISO: fallbackISO, dateLabel: fallbackLabel };
+  return { dateISO: `${year}-06-15`, dateLabel: `${year}` };
+}
+
+// Parsear texto y completar SOLO campos vacíos en el modal de edición
+function parseEmPasteText() {
+  const text = document.getElementById('em-paste-text')?.value || '';
+  if (!text.trim()) {
+    const r = document.getElementById('em-paste-result');
+    if (r) r.innerHTML = '<span style="color:var(--danger)">Pegá algún texto primero.</span>';
+    return;
+  }
+
+  const parsed = parseMetricsText(text);
+  let filled = 0;
+
+  const fillIfEmpty = (id, val) => {
+    if (!val) return;
+    const el = document.getElementById(id);
+    if (!el || el.value) return; // no sobreescribir si ya tiene dato
+    el.value = val;
+    el.style.borderColor = 'var(--success)';
+    setTimeout(() => { if (el) el.style.borderColor = ''; }, 2000);
+    filled++;
+  };
+
+  if (parsed.weight)   fillIfEmpty('em-weight', parsed.weight);
+  if (parsed.fat)      fillIfEmpty('em-fat-manual', parsed.fat);
+  if (parsed.muscle)   fillIfEmpty('em-muscle-manual', parsed.muscle);
+  if (parsed.visceral) fillIfEmpty('em-visceral', parsed.visceral);
+  if (parsed.bmr)      fillIfEmpty('em-bmr-manual', parsed.bmr);
+  if (parsed.waist)    fillIfEmpty('em-waist', parsed.waist);
+  if (parsed.hip)      fillIfEmpty('em-hip', parsed.hip);
+  if (parsed.chest)    fillIfEmpty('em-chest', parsed.chest);
+  if (parsed.thigh)    fillIfEmpty('em-thigh', parsed.thigh);
+  if (parsed.bone)     fillIfEmpty('em-bone', parsed.bone);
+
+  const r = document.getElementById('em-paste-result');
+  if (!r) return;
+  if (filled === 0 && !parsed.weight) {
+    r.innerHTML = '<span style="color:var(--danger)">No se detectaron datos válidos.</span>';
+  } else if (filled === 0) {
+    r.innerHTML = '<span style="color:var(--gray-light)">Todos los campos ya tenían datos — nada se modificó.</span>';
+  } else {
+    r.innerHTML = `<span style="color:var(--success)">✅ ${filled} campo${filled>1?'s':''} completado${filled>1?'s':''}.</span>`;
+  }
+}
+
+// ─── FIN EDITAR MÉTRICAS ────────────────────
 // ═══════════════════════════════════════════
 
 // Estado temporal del parser por role+alumno
@@ -8327,19 +8479,32 @@ function openEditMetricsModal(idx) {
   const e = s.metricsLog[idx];
 
   document.getElementById('em-idx').value = idx;
-  document.getElementById('em-date').value = e.date || '';
-  document.getElementById('em-weight').value = e.weight || '';
-  document.getElementById('em-fat-manual').value = e.fatManual || '';
+
+  // Cargar fecha — detectar precisión desde dateISO o dateLabel
+  setEmDatePrecision('full');
+  if (e.dateISO) {
+    const dateInput = document.getElementById('em-date-input');
+    if (dateInput) dateInput.value = e.dateISO.substring(0,10);
+  }
+
+  document.getElementById('em-weight').value        = e.weight || '';
+  document.getElementById('em-fat-manual').value    = e.fatManual || '';
   document.getElementById('em-muscle-manual').value = e.muscleManual || '';
-  document.getElementById('em-visceral').value = e.visceralManual || '';
-  document.getElementById('em-bmr-manual').value = e.bmrManual || '';
-  document.getElementById('em-bmi-manual').value = e.bmiManual || '';
-  document.getElementById('em-waist').value = e.waist || '';
-  document.getElementById('em-hip').value = e.hip || '';
-  document.getElementById('em-chest').value = e.chest || '';
-  document.getElementById('em-thigh').value = e.thigh || '';
-  document.getElementById('em-bone').value = e.bone || '';
-  document.getElementById('em-activity').value = e.activity || 1.55;
+  document.getElementById('em-visceral').value      = e.visceralManual || e.calc?.visceralEst || '';
+  document.getElementById('em-bmr-manual').value    = e.bmrManual || e.calc?.bmr || '';
+  document.getElementById('em-bmi-manual').value    = e.bmiManual || e.calc?.bmi || '';
+  document.getElementById('em-waist').value         = e.waist || '';
+  document.getElementById('em-hip').value           = e.hip || '';
+  document.getElementById('em-chest').value         = e.chest || '';
+  document.getElementById('em-thigh').value         = e.thigh || '';
+  document.getElementById('em-bone').value          = e.bone || '';
+  document.getElementById('em-activity').value      = e.activity || 1.55;
+
+  // Limpiar paste
+  const pasteEl = document.getElementById('em-paste-text');
+  const resultEl = document.getElementById('em-paste-result');
+  if (pasteEl) pasteEl.value = '';
+  if (resultEl) resultEl.textContent = '';
 
   document.getElementById('modal-edit-metrics').classList.add('show');
 }
@@ -8369,21 +8534,25 @@ function saveEditMetrics() {
 
   const gv = id => document.getElementById(id)?.value ? parseFloat(document.getElementById(id).value) : null;
 
+  // Fecha desde selector
+  const emDateResult = getEmDate(idx, s);
+
   s.metricsLog[idx] = {
     ...s.metricsLog[idx],
-    date:         document.getElementById('em-date').value || s.metricsLog[idx].date,
-    weight:       parseFloat(weight),
-    fatManual:    gv('em-fat-manual'),
-    muscleManual: gv('em-muscle-manual'),
-    visceralManual: gv('em-visceral'),
-    bmrManual:    gv('em-bmr-manual'),
-    bmiManual:    gv('em-bmi-manual'),
-    waist:        gv('em-waist'),
-    hip:          gv('em-hip'),
-    chest:        gv('em-chest'),
-    thigh:        gv('em-thigh'),
-    bone:         gv('em-bone'),
-    activity:     parseFloat(activity),
+    date:            emDateResult.dateLabel,
+    dateISO:         emDateResult.dateISO,
+    weight:          parseFloat(weight),
+    fatManual:       gv('em-fat-manual'),
+    muscleManual:    gv('em-muscle-manual'),
+    visceralManual:  gv('em-visceral'),
+    bmrManual:       gv('em-bmr-manual'),
+    bmiManual:       gv('em-bmi-manual'),
+    waist:           gv('em-waist'),
+    hip:             gv('em-hip'),
+    chest:           gv('em-chest'),
+    thigh:           gv('em-thigh'),
+    bone:            gv('em-bone'),
+    activity:        parseFloat(activity),
     calc
   };
 
