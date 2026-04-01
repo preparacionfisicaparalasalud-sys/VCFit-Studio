@@ -1019,7 +1019,6 @@
     margin-top: 0.3rem;
   }
 
-
   /* ── CHARTS ── */
   .chart-wrapper {
     position: relative;
@@ -1061,7 +1060,6 @@
     border-color: var(--orange);
   }
   canvas { max-width: 100%; }
-
 
   /* ── PIN KEYBOARD ── */
   .pin-dot {
@@ -1294,7 +1292,6 @@
       <div class="card-title">👥 Alumnos recientes</div>
       <div id="trainer-recent-students"></div>
     </div>
-
 
     <div class="card" style="border-color:var(--orange-border);background:linear-gradient(135deg,var(--dark2),var(--dark3))">
       <div style="display:flex;align-items:center;gap:1rem">
@@ -2084,134 +2081,6 @@ ALMUERZO
   </div>
 </div>
 
-<div class="modal-overlay" id="modal-ai-generator">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title" style="display:flex;align-items:center;gap:0.6rem">
-      🤖 <span>Generador con IA</span>
-    </div>
-
-    <!-- Selector de modo -->
-    <div style="display:flex;gap:0.5rem;margin-bottom:1.2rem">
-      <button id="ai-mode-routine" class="btn btn-primary btn-sm" style="flex:1"
-        onclick="setAIMode('routine')">📋 Rutina suelta</button>
-      <button id="ai-mode-period" class="btn btn-secondary btn-sm" style="flex:1"
-        onclick="setAIMode('periodization')">📅 Periodización</button>
-    </div>
-
-    <!-- Opciones: Rutina suelta -->
-    <div id="ai-opts-routine">
-      <div class="anamnesis-block">
-        <div class="anamnesis-block-title">Parámetros de la rutina</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem">
-          <div class="input-group">
-            <label class="input-label">Días por semana</label>
-            <select class="input-field" id="ai-days">
-              <option value="2">2 días</option>
-              <option value="3" selected>3 días</option>
-              <option value="4">4 días</option>
-              <option value="5">5 días</option>
-            </select>
-          </div>
-          <div class="input-group">
-            <label class="input-label">Duración por sesión</label>
-            <select class="input-field" id="ai-duration">
-              <option value="45">45 min</option>
-              <option value="60" selected>60 min</option>
-              <option value="75">75 min</option>
-              <option value="90">90 min</option>
-            </select>
-          </div>
-        </div>
-        <div class="input-group">
-          <label class="input-label">Equipamiento disponible</label>
-          <select class="input-field" id="ai-equipment">
-            <option value="calistenia y barras">Calistenia y barras</option>
-            <option value="mancuernas" selected>Mancuernas</option>
-            <option value="mancuernas y barras">Mancuernas y barras</option>
-            <option value="gimnasio completo con máquinas">Gimnasio completo</option>
-            <option value="sin equipamiento">Sin equipamiento</option>
-          </select>
-        </div>
-        <div class="input-group">
-          <label class="input-label">Enfoque especial (opcional)</label>
-          <input type="text" class="input-field" id="ai-focus"
-            placeholder="ej: enfatizar tren superior, evitar saltos, progresión de fuerza">
-        </div>
-        <div class="input-group">
-          <label class="input-label">Nombre para la rutina</label>
-          <input type="text" class="input-field" id="ai-routine-name"
-            placeholder="ej: Fuerza + Hipertrofia 3 días">
-        </div>
-      </div>
-    </div>
-
-    <!-- Opciones: Periodización -->
-    <div id="ai-opts-period" style="display:none">
-      <div class="anamnesis-block">
-        <div class="anamnesis-block-title">Parámetros del plan</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem">
-          <div class="input-group">
-            <label class="input-label">Número de fases</label>
-            <select class="input-field" id="ai-phases">
-              <option value="2">2 fases</option>
-              <option value="3" selected>3 fases</option>
-              <option value="4">4 fases</option>
-            </select>
-          </div>
-          <div class="input-group">
-            <label class="input-label">Semanas por fase</label>
-            <select class="input-field" id="ai-weeks-per-phase">
-              <option value="3">3 semanas</option>
-              <option value="4" selected>4 semanas</option>
-              <option value="6">6 semanas</option>
-              <option value="8">8 semanas</option>
-            </select>
-          </div>
-        </div>
-        <div class="input-group">
-          <label class="input-label">Tipo de progresión</label>
-          <select class="input-field" id="ai-progression">
-            <option value="lineal (aumentando carga y volumen progresivamente)">Lineal</option>
-            <option value="ondulante (variando intensidad y volumen por semana)">Ondulante</option>
-            <option value="por bloques (fuerza → hipertrofia → potencia)">Por bloques</option>
-          </select>
-        </div>
-        <div class="input-group">
-          <label class="input-label">Equipamiento disponible</label>
-          <select class="input-field" id="ai-equip-period">
-            <option value="calistenia y barras">Calistenia y barras</option>
-            <option value="mancuernas" selected>Mancuernas</option>
-            <option value="mancuernas y barras">Mancuernas y barras</option>
-            <option value="gimnasio completo con máquinas">Gimnasio completo</option>
-          </select>
-        </div>
-        <div class="input-group">
-          <label class="input-label">Indicaciones adicionales (opcional)</label>
-          <input type="text" class="input-field" id="ai-period-notes"
-            placeholder="ej: énfasis en fuerza primero, incluir descarga semana 4">
-        </div>
-      </div>
-    </div>
-
-    <!-- Loading state -->
-    <div id="ai-loading" style="display:none;text-align:center;padding:1.5rem 0">
-      <div style="font-size:2rem;margin-bottom:0.5rem;animation:spin 1s linear infinite;display:inline-block">⚙️</div>
-      <div class="text-small text-gray" id="ai-loading-msg">Analizando el perfil del alumno...</div>
-    </div>
-
-    <!-- Error -->
-    <div id="ai-error" style="display:none;color:var(--danger);font-size:0.82rem;margin-bottom:0.8rem;padding:0.6rem;background:rgba(229,57,53,0.1);border-radius:8px"></div>
-
-    <div id="ai-actions" style="display:flex;gap:0.8rem;padding-bottom:1rem">
-      <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-ai-generator')">Cancelar</button>
-      <button class="btn btn-primary" style="flex:1" onclick="generateWithAI()">
-        🤖 Generar
-      </button>
-    </div>
-  </div>
-</div>
-
 <!-- ═══════════════════════════════════════════
      MODAL: EDITAR SESIÓN COMPLETADA
 ═══════════════════════════════════════════ -->
@@ -2285,6 +2154,127 @@ ALMUERZO
     <div style="display:flex;gap:0.8rem;padding-bottom:1rem">
       <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-assign-bulk')">Cancelar</button>
       <button class="btn btn-primary" style="flex:1" onclick="saveAssignBulk()">💾 Asignar seleccionados</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: FINANZAS
+═══════════════════════════════════════════ -->
+<div id="screen-finance" class="screen">
+  <div class="topbar">
+    <button class="btn-back" onclick="showScreen('screen-trainer')">←</button>
+    <div style="flex:1"><div class="topbar-title">💰 Finanzas</div></div>
+    <button class="btn btn-secondary btn-sm" onclick="openFinanceExportModal()">📤 Exportar</button>
+  </div>
+  <div class="content">
+
+    <!-- Tabs -->
+    <div class="tabs" style="margin-bottom:1rem" id="finance-tabs">
+      <button class="tab active" onclick="switchFinanceTab('resumen')">Resumen</button>
+      <button class="tab" onclick="switchFinanceTab('ingresos')">Ingresos</button>
+      <button class="tab" onclick="switchFinanceTab('egresos')">Egresos</button>
+      <button class="tab" onclick="switchFinanceTab('csv')">CSV</button>
+    </div>
+
+    <!-- Selector de período -->
+    <div style="display:flex;gap:0.6rem;align-items:center;margin-bottom:1rem">
+      <button class="btn btn-secondary btn-sm" style="padding:0.3rem 0.7rem" onclick="financeChangePeriod(-1)">‹</button>
+      <div style="flex:1;text-align:center;font-family:var(--font-label);font-size:1rem;letter-spacing:1px;text-transform:capitalize" id="finance-period-label">—</div>
+      <button class="btn btn-secondary btn-sm" style="padding:0.3rem 0.7rem" onclick="financeChangePeriod(1)">›</button>
+    </div>
+
+    <div id="finance-view"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     MODAL: EGRESO
+═══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-expense">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="expense-modal-title">➕ Nuevo egreso</div>
+    <input type="hidden" id="expense-edit-id">
+
+    <div class="input-group">
+      <label class="input-label">Categoría</label>
+      <select class="input-field" id="expense-cat">
+        <option value="alquiler">🏠 Alquiler / espacio</option>
+        <option value="materiales">🏋️ Materiales / equipamiento</option>
+        <option value="marketing">📢 Marketing / publicidad</option>
+        <option value="software">💻 Software / suscripciones</option>
+        <option value="salud">🩺 Salud / seguros</option>
+        <option value="transporte">🚗 Transporte</option>
+        <option value="capacitacion">📚 Capacitación</option>
+        <option value="otros">📦 Otros</option>
+      </select>
+    </div>
+    <div class="input-group">
+      <label class="input-label">Descripción</label>
+      <input type="text" class="input-field" id="expense-desc" placeholder="ej: Alquiler sala Colegiales, Meta Ads...">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem">
+      <div class="input-group">
+        <label class="input-label">Fecha</label>
+        <input type="date" class="input-field" id="expense-date">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Monto ($)</label>
+        <input type="number" class="input-field" id="expense-amount" placeholder="ej: 25000" step="100">
+      </div>
+    </div>
+    <div class="input-group">
+      <label class="input-label">Nota (opcional)</label>
+      <input type="text" class="input-field" id="expense-note" placeholder="ej: Transferencia, efectivo, tarjeta...">
+    </div>
+    <div class="input-group">
+      <label class="input-label">¿Se repite?</label>
+      <select class="input-field" id="expense-recur">
+        <option value="no">No, es puntual</option>
+        <option value="mensual">Mensual (se agrega automáticamente)</option>
+      </select>
+    </div>
+
+    <div style="display:flex;gap:0.8rem;padding-bottom:1rem">
+      <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-expense')">Cancelar</button>
+      <button class="btn btn-primary" style="flex:1" onclick="saveExpense()">💾 Guardar egreso</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     MODAL: EXPORTAR / IMPORTAR CSV MONEY TOWER
+═══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-finance-export">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📊 Exportar / Importar CSV</div>
+    <div class="text-small text-gray" style="margin-bottom:1rem;line-height:1.6">
+      Formato compatible con Money Tower y cualquier planilla de cálculo.
+    </div>
+
+    <div class="anamnesis-block" style="margin-bottom:1rem">
+      <div class="anamnesis-block-title">Exportar</div>
+      <div style="display:flex;gap:0.6rem;flex-wrap:wrap">
+        <button class="btn btn-secondary btn-sm" style="flex:1" onclick="exportFinanceCSV('month')">📥 Mes actual</button>
+        <button class="btn btn-secondary btn-sm" style="flex:1" onclick="exportFinanceCSV('year')">📥 Año completo</button>
+        <button class="btn btn-secondary btn-sm" style="flex:1" onclick="exportFinanceCSV('all')">📥 Todo el historial</button>
+      </div>
+    </div>
+
+    <div class="anamnesis-block" style="margin-bottom:1rem">
+      <div class="anamnesis-block-title">Importar egresos desde CSV</div>
+      <div class="text-small text-gray" style="margin-bottom:0.6rem;line-height:1.5">
+        Columnas requeridas: <code style="font-size:0.75rem;color:var(--orange)">fecha, categoria, descripcion, monto</code>
+      </div>
+      <input type="file" class="input-field" id="finance-import-file" accept=".csv,.txt" onchange="previewExpenseCSV(event)" style="padding:0.6rem">
+      <div id="finance-import-preview" style="margin-top:0.5rem;font-size:0.8rem"></div>
+    </div>
+
+    <div style="display:flex;gap:0.8rem;padding-bottom:1rem">
+      <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-finance-export')">Cerrar</button>
+      <button class="btn btn-primary btn-sm" style="flex:1" id="finance-import-confirm" onclick="confirmImportExpenses()" disabled>✅ Importar egresos</button>
     </div>
   </div>
 </div>
@@ -2371,7 +2361,6 @@ ALMUERZO
         <div id="student-anamnesis-readonly"></div>
       </div>
     </div>
-
 
     <!-- TAB MY METRICS -->
     <div id="tab-my-metrics" class="tab-content" style="display:none">
@@ -2662,8 +2651,6 @@ ALMUERZO
     </div>
   </div>
 </div>
-
-
 
 <!-- ═══════════════════════════════════════════
      MODAL: RESET PIN (entrenador)
@@ -3136,20 +3123,22 @@ function isValidApiKey(key) {
 }
 
 // Obtener API key del localStorage
-function getApiKey() {
-  return (localStorage.getItem('vcfit-api-key') || '').trim();
-}
 
 // Rate limiting para llamadas a la API (mínimo 3 segundos entre llamadas)
 let _lastApiCall = 0;
-function checkRateLimit() {
-  const now = Date.now();
-  if (now - _lastApiCall < 3000) {
-    alert('Esperá un momento antes de hacer otra consulta.');
-    return false;
+const _attempts = {};
+function checkRateLimit(key) {
+  if (!key) {
+    // Time-based rate limit for API calls
+    const now = Date.now();
+    if (now - _lastApiCall < 3000) { alert('Esperá un momento antes de hacer otra consulta.'); return false; }
+    _lastApiCall = now;
+    return true;
   }
-  _lastApiCall = now;
-  return true;
+  // Attempt-based rate limit for login
+  if (!_attempts[key]) _attempts[key] = { count:0, lockUntil:0 };
+  const a = _attempts[key];
+  if (a.lockUntil > Date.now()) { const secs = Math.ceil((a.lockUntil - Date.now()) / 1000); return `⛔ Demasiados intentos. Esperá ${secs} segundos.`; }
 }
 
 // Headers seguros para Anthropic API
@@ -3536,263 +3525,6 @@ function sendMonthlyReport(s) {
 }
 
 // ═══════════════════════════════════════════
-//  GENERADOR DE RUTINAS CON IA
-// ═══════════════════════════════════════════
-let _aiMode = 'routine';
-
-function openAIGenerator(mode) {
-  _aiMode = mode || 'routine';
-  setAIMode(_aiMode);
-  const s = state.students.find(x => x.id === state.currentStudentId);
-  if (s?.anamnesis?.days) {
-    const dSel = document.getElementById('ai-days');
-    if (dSel) dSel.value = s.anamnesis.days;
-  }
-  document.getElementById('ai-loading').style.display = 'none';
-  document.getElementById('ai-error').style.display = 'none';
-  document.getElementById('ai-actions').style.display = 'flex';
-  document.getElementById('modal-ai-generator').classList.add('show');
-}
-
-function setAIMode(mode) {
-  _aiMode = mode;
-  document.getElementById('ai-opts-routine').style.display = mode === 'routine' ? 'block' : 'none';
-  document.getElementById('ai-opts-period').style.display  = mode === 'periodization' ? 'block' : 'none';
-  const rb = document.getElementById('ai-mode-routine');
-  const pb = document.getElementById('ai-mode-period');
-  if (rb) { rb.className = `btn btn-sm ${mode==='routine'?'btn-primary':'btn-secondary'}`; rb.style.flex='1'; }
-  if (pb) { pb.className = `btn btn-sm ${mode==='periodization'?'btn-primary':'btn-secondary'}`; pb.style.flex='1'; }
-}
-
-function buildStudentContext(s) {
-  const a = s.anamnesis || {};
-  const latest = s.metricsLog?.length ? s.metricsLog[s.metricsLog.length - 1] : null;
-  let ctx = `PERFIL DEL ALUMNO:\n`;
-  ctx += `• Nombre: ${s.name}\n`;
-  ctx += `• Edad: ${a.age || 'No especificada'} años\n`;
-  ctx += `• Sexo: ${a.sex || 'No especificado'}\n`;
-  ctx += `• Peso: ${a.weight || (latest?.weight || 'No especificado')} kg\n`;
-  ctx += `• Altura: ${a.height || 'No especificada'} cm\n`;
-  ctx += `• Objetivo: ${a.goal || 'No especificado'}\n`;
-  ctx += `• Peso objetivo: ${a.goalWeight || 'No especificado'} kg\n`;
-  ctx += `• Ocupación: ${a.job || ''} (${a.jobType || ''})\n`;
-  ctx += `• Entrena actualmente: ${a.trainsNow === 'Sí' ? `Sí — ${a.trainType}` : 'No'}\n`;
-  ctx += `• Días disponibles: ${a.days || '3'}/semana\n`;
-  ctx += `• Duración por sesión: ${a.duration || '60 min'}\n`;
-  if (a.injuries) ctx += `• Lesiones/limitaciones: ${a.injuries}\n`;
-  if (a.pain)     ctx += `• Zonas de dolor: ${a.pain}\n`;
-  if (a.medical)  ctx += `• Historial médico: ${a.medical}\n`;
-  if (a.cardio)   ctx += `• Cardio/presión: ${a.cardio}\n`;
-  if (a.extra)    ctx += `• Notas: ${a.extra}\n`;
-  if (latest?.calc) {
-    ctx += `\nMÉTRICAS ACTUALES:\n`;
-    if (latest.calc.fatPct)    ctx += `• % Grasa: ${parseFloat(latest.calc.fatPct).toFixed(1)}%\n`;
-    if (latest.calc.musclePct) ctx += `• % Músculo: ${parseFloat(latest.calc.musclePct).toFixed(1)}%\n`;
-    if (latest.calc.bmr)       ctx += `• BMR: ${Math.round(latest.calc.bmr)} kcal\n`;
-  }
-  return ctx;
-}
-
-async function generateWithAI() {
-  const s = state.students.find(x => x.id === state.currentStudentId);
-  if (!s) { alert('No hay alumno seleccionado.'); return; }
-
-  document.getElementById('ai-loading').style.display = 'block';
-  document.getElementById('ai-error').style.display = 'none';
-  document.getElementById('ai-actions').style.display = 'none';
-  document.getElementById('ai-opts-routine').style.display = 'none';
-  document.getElementById('ai-opts-period').style.display = 'none';
-
-  const msgs = [
-    'Analizando el perfil del alumno...',
-    'Diseñando la estructura...',
-    'Seleccionando ejercicios...',
-    'Ajustando progresión y cargas...',
-    'Finalizando el plan...'
-  ];
-  let mi = 0;
-  const msgEl = document.getElementById('ai-loading-msg');
-  const interval = setInterval(() => { mi=(mi+1)%msgs.length; if(msgEl) msgEl.textContent=msgs[mi]; }, 2500);
-
-  try {
-    const prompt = _aiMode === 'routine' ? buildRoutinePrompt(s) : buildPeriodizationPrompt(s);
-    const result = await callClaudeAPI(prompt, _aiMode === 'periodization' ? 4000 : 2000);
-    if (_aiMode === 'routine') applyRoutineResult(result, s);
-    else applyPeriodizationResult(result, s);
-    closeModal('modal-ai-generator');
-  } catch (err) {
-    const errEl = document.getElementById('ai-error');
-    errEl.style.display = 'block';
-    errEl.textContent = `Error: ${err.message}. Verificá tu conexión e intentá de nuevo.`;
-    document.getElementById('ai-actions').style.display = 'flex';
-    document.getElementById(_aiMode === 'routine' ? 'ai-opts-routine' : 'ai-opts-period').style.display = 'block';
-  } finally {
-    clearInterval(interval);
-    document.getElementById('ai-loading').style.display = 'none';
-  }
-}
-
-async function callClaudeAPI(prompt, maxTokens = 2000) {
-  const response = await anthropicFetch({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: maxTokens,
-      messages: [{ role: 'user', content: prompt }]
-    });
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
-    throw new Error(err.error?.message || `HTTP ${response.status}`);
-  }
-  const data = await response.json();
-  return data.content?.[0]?.text || '';
-}
-
-function buildRoutinePrompt(s) {
-  const days     = document.getElementById('ai-days')?.value || s.anamnesis?.days || '3';
-  const duration = document.getElementById('ai-duration')?.value || '60';
-  const equip    = document.getElementById('ai-equipment')?.value || 'mancuernas';
-  const focus    = document.getElementById('ai-focus')?.value?.trim() || '';
-  const rName    = document.getElementById('ai-routine-name')?.value?.trim() || '';
-  const ctx = buildStudentContext(s);
-
-  return `Eres un entrenador personal especializado en fitness funcional y recomposición corporal para adultos.
-
-${ctx}
-
-PARÁMETROS:
-• Días: ${days}/semana
-• Duración: ${duration} min por sesión
-• Equipamiento: ${equip}
-• Nombre de la rutina: ${rName || `Rutina ${days} días`}
-${focus ? `• Énfasis: ${focus}` : ''}
-
-FORMATO DE SALIDA — EXACTO, SIN VARIACIONES:
-Línea 1: nombre de la rutina (solo el nombre, sin prefijos)
-Línea 2: en blanco
-Luego para cada día:
-"DÍA N - NOMBRE DEL DÍA" (en mayúsculas)
-"Nombre ejercicio en español: NxN (Xseg)"
-Línea en blanco entre días.
-Sin explicaciones, sin secciones extra, sin calentamiento.
-
-EJEMPLO:
-Fuerza Funcional 3 Días
-
-DÍA 1 - TREN SUPERIOR
-Press de hombros con mancuernas: 4x10 (90 seg)
-Remo con mancuerna: 4x10 (60 seg)
-Dominadas asistidas: 4x8 (90 seg)
-Curl de bíceps: 3x12 (60 seg)
-
-DÍA 2 - TREN INFERIOR
-Sentadilla búlgara: 4x10 cada pierna (90 seg)
-Peso muerto rumano: 4x12 (90 seg)
-Hip thrust: 4x15 (60 seg)
-Zancadas caminando: 3x12 (60 seg)
-
-Generá la rutina ahora.`;
-}
-
-function buildPeriodizationPrompt(s) {
-  const phases = document.getElementById('ai-phases')?.value || '3';
-  const wpp    = document.getElementById('ai-weeks-per-phase')?.value || '4';
-  const prog   = document.getElementById('ai-progression')?.value || 'lineal';
-  const equip  = document.getElementById('ai-equip-period')?.value || 'mancuernas';
-  const notes  = document.getElementById('ai-period-notes')?.value?.trim() || '';
-  const days   = s.anamnesis?.days || '3';
-  const ctx = buildStudentContext(s);
-
-  return `Eres un entrenador personal especializado en periodización deportiva.
-
-${ctx}
-
-PARÁMETROS DEL PLAN:
-• Fases: ${phases}
-• Semanas por fase: ${wpp}
-• Progresión: ${prog}
-• Días/semana: ${days}
-• Equipamiento: ${equip}
-${notes ? `• Indicaciones: ${notes}` : ''}
-
-FORMATO EXACTO — SEGUIR SIN VARIACIONES:
-Para cada fase:
-"FASE N - NOMBRE DE LA FASE"
-"Semanas: N | Enfoque: descripción breve"
-(línea en blanco)
-"DÍA N - NOMBRE DEL DÍA"
-"Ejercicio en español: NxN (Xseg)"
-(línea en blanco entre días)
-"---" para separar fases.
-Sin texto adicional, sin explicaciones.
-
-EJEMPLO:
-FASE 1 - ADAPTACIÓN
-Semanas: 4 | Enfoque: Técnica y base de fuerza
-
-DÍA 1 - TREN SUPERIOR
-Press con mancuernas: 4x12 (60 seg)
-Remo con mancuerna: 4x12 (60 seg)
-
-DÍA 2 - TREN INFERIOR
-Sentadilla goblet: 4x15 (60 seg)
-Hip thrust: 4x15 (45 seg)
-
----
-FASE 2 - HIPERTROFIA
-Semanas: 4 | Enfoque: Volumen y tiempo bajo tensión
-
-DÍA 1 - EMPUJE
-Press inclinado: 4x10 (75 seg)
-Aperturas: 3x15 (45 seg)
-
-Generá el plan completo.`;
-}
-
-function applyRoutineResult(text, s) {
-  const lines = text.trim().split('\n');
-  const name = lines[0].trim().replace(/^#+\s*/, '');
-  const content = lines.slice(1).join('\n').trim();
-  const nameEl    = document.getElementById('aw-name');
-  const contentEl = document.getElementById('aw-content');
-  if (nameEl) nameEl.value = name;
-  if (contentEl) contentEl.value = content;
-  const excl = document.querySelector('input[name="aw-save-mode"][value="exclusive"]');
-  if (excl) excl.checked = true;
-  setTimeout(() => contentEl?.scrollIntoView({ behavior:'smooth', block:'center' }), 300);
-  alert(`✅ Rutina "${name}" generada. Revisala y tocá "Guardar y asignar".`);
-}
-
-function applyPeriodizationResult(text, s) {
-  const rawPhases = text.split(/^---\s*$/m).map(p => p.trim()).filter(Boolean);
-  if (!rawPhases.length) throw new Error('No se pudieron parsear las fases. Intentá de nuevo.');
-
-  if (!s.cyclePlan) s.cyclePlan = [];
-  if (!s.cycleStartDate) s.cycleStartDate = new Date().toISOString().split('T')[0];
-
-  let added = 0;
-  for (const raw of rawPhases) {
-    const lines = raw.split('\n').filter(Boolean);
-    if (!lines.length) continue;
-    const headerMatch = lines[0].match(/FASE\s+\d+\s*[-–]\s*(.+)/i);
-    const phaseName = headerMatch ? headerMatch[1].trim() : lines[0].trim();
-    const weekMatch = lines[1]?.match(/semanas?\s*[:=]?\s*(\d+)/i);
-    const weeks = weekMatch ? parseInt(weekMatch[1]) : 4;
-    const routineContent = lines.slice(2).join('\n').trim();
-    if (!routineContent) continue;
-
-    const workout = { id: genId(), name: phaseName, desc: `Fase ${added+1} — ${weeks} semanas`, content: routineContent };
-    state.workouts.push(workout);
-    s.cyclePlan.push({ name: phaseName, weeks, workoutId: workout.id });
-    added++;
-  }
-
-  if (!added) throw new Error('No se encontraron fases válidas. Intentá de nuevo.');
-  saveState();
-  renderCyclePlan(s);
-  renderWorkoutsList();
-  alert(`✅ Plan de ${added} fases generado. Revisá las rutinas y el ciclo.`);
-}
-
-// ═══════════════════════════════════════════
 //  ASISTENTE IA — CHAT
 // ═══════════════════════════════════════════
 let _chatHistory   = [];
@@ -4028,21 +3760,7 @@ function esc(str) {
   if (!str && str !== 0) return '';
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
-function sanitizeInput(str) {
-  if (!str) return '';
-  return String(str).replace(/<script[\s\S]*?<\/script>/gi,'').replace(/<iframe[\s\S]*?<\/iframe>/gi,'').replace(/javascript:/gi,'').replace(/on\w+\s*=/gi,'').trim().substring(0, 2000);
-}
-const _attempts = {};
-function checkRateLimit(key) {
-  const now = Date.now();
-  if (!_attempts[key]) _attempts[key] = { count:0, lockUntil:0 };
-  const a = _attempts[key];
-  if (a.lockUntil > now) {
-    const secs = Math.ceil((a.lockUntil - now) / 1000);
-    return `⛔ Demasiados intentos. Esperá ${secs} segundos.`;
-  }
-  return null;
-}
+
 function registerFail(key) {
   if (!_attempts[key]) _attempts[key] = { count:0, lockUntil:0 };
   const a = _attempts[key];
@@ -4051,30 +3769,13 @@ function registerFail(key) {
 }
 function resetAttempts(key) { if(_attempts[key]) _attempts[key]={count:0,lockUntil:0}; }
 
-// ═══════════════════════════════════════════
-//  API KEY
-// ═══════════════════════════════════════════
-function getApiKey() { return localStorage.getItem('vcfit-api-key') || ''; }
-
-function saveApiKey() {
-  const key = document.getElementById('tp-apikey')?.value.trim();
-  const msg = document.getElementById('tp-apikey-msg');
-  if (!key) { if(msg){msg.style.color='var(--danger)';msg.textContent='Ingresá una API key.';} return; }
-  if (!key.startsWith('sk-ant')) { if(msg){msg.style.color='var(--danger)';msg.textContent='La key debe empezar con sk-ant...';} return; }
-  localStorage.setItem('vcfit-api-key', key);
-  if(msg){msg.style.color='var(--success)';msg.textContent='✅ API Key guardada en este dispositivo';}
-  if(document.getElementById('tp-apikey')) document.getElementById('tp-apikey').value = '••••••••••••••••••••' + key.slice(-4);
-}
 function deleteApiKey() {
   localStorage.removeItem('vcfit-api-key');
   if(document.getElementById('tp-apikey')) document.getElementById('tp-apikey').value = '';
   const msg = document.getElementById('tp-apikey-msg');
   if(msg){msg.style.color='var(--gray-light)';msg.textContent='API Key eliminada.';}
 }
-function toggleApiKeyVisibility() {
-  const input = document.getElementById('tp-apikey');
-  if (input) input.type = input.type === 'password' ? 'text' : 'password';
-}
+
 function loadApiKeyStatus() {
   const key = getApiKey();
   if (key && document.getElementById('tp-apikey')) document.getElementById('tp-apikey').value = '••••••••••••••••••••' + key.slice(-4);
@@ -4086,27 +3787,6 @@ function getAIHeaders() {
   const h = { 'Content-Type':'application/json','anthropic-version':'2023-06-16','anthropic-dangerous-direct-browser-access':'true' };
   if (key) h['x-api-key'] = key;
   return h;
-}
-
-// ═══════════════════════════════════════════
-//  IMPORTAR HISTORIAL DE MÉTRICAS
-// ═══════════════════════════════════════════
-let _csvRawData = [], _quickRowCount = 0;
-
-function openImportMetrics() {
-  _csvRawData = []; _quickRowCount = 0;
-  document.getElementById('import-result').textContent = '';
-  setImportMode('text');
-  document.getElementById('modal-import-metrics').classList.add('show');
-}
-function setImportMode(mode) {
-  ['text','csv','quick','json'].forEach(m => {
-    const p = document.getElementById(`import-panel-${m}`);
-    if(p) p.style.display = m===mode ? 'block' : 'none';
-    const b = document.getElementById(`imb-${m}`);
-    if(b) b.classList.toggle('active', m===mode);
-  });
-  if (mode==='quick' && _quickRowCount===0) { addQuickRow(); addQuickRow(); addQuickRow(); }
 }
 
 function parseMetricDate(str) {
@@ -4141,151 +3821,7 @@ function buildMetricEntry(obj) {
   };
 }
 
-function importFromText() {
-  const raw = document.getElementById('import-text-input')?.value.trim();
-  if (!raw) { showImportResult('❌ Pegá el texto primero.','danger'); return; }
-  const s = state.students.find(x=>x.id===state.currentStudentId);
-  if (!s) return;
-  const lines = raw.split('\n').filter(l=>l.trim());
-  const entries = [];
-  for (const line of lines) {
-    let fechaStr = null;
-    for (const pat of [/(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4})/,/(\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2})/,/(\w+\s+\d{4})/i]) {
-      const m=line.match(pat); if(m){fechaStr=m[1];break;}
-    }
-    if (!fechaStr) continue;
-    let peso = null;
-    const kgM = line.match(/(\d+[\.,]\d+|\d+)\s*kg/i);
-    if (kgM) peso=extractNumber(kgM[1]);
-    if (!peso) { const nums=[...line.matchAll(/(\d+[\.,]\d+|\d{2,3})/g)].map(m=>parseFloat(m[1].replace(',','.'))); peso=nums.find(n=>n>30&&n<300)||null; }
-    if (!peso) continue;
-    let grasa=null,musculo=null,cintura=null;
-    const gM=line.match(/(\d+[\.,]\d+|\d+)\s*%/); if(gM) grasa=extractNumber(gM[1]);
-    const gM2=line.match(/grasa[:\s=]+(\d+[\.,]\d+|\d+)/i); if(gM2) grasa=extractNumber(gM2[1]);
-    const mM=line.match(/m[uú]sculo[:\s=]+(\d+[\.,]\d+|\d+)/i); if(mM) musculo=extractNumber(mM[1]);
-    const cM=line.match(/cintura[:\s=]+(\d+[\.,]\d+|\d+)/i); if(cM) cintura=extractNumber(cM[1]);
-    const entry=buildMetricEntry({fecha:fechaStr,peso,grasa,musculo,cintura});
-    if(entry) entries.push(entry);
-  }
-  if (!entries.length) { showImportResult('❌ No se pudieron parsear métricas. Verificá el formato.','danger'); return; }
-  saveImportedMetrics(s, entries);
-}
-
 let _csvParsed = [];
-function handleCSVUpload(event) {
-  const file = event.target.files[0]; if(!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const text = e.target.result;
-      const sep = text.includes(';')?';':',';
-      const lines = text.trim().split(/\r?\n/);
-      if(lines.length<2){showImportResult('❌ El CSV debe tener al menos 2 filas.','danger');return;}
-      const headers = lines[0].split(sep).map(h=>h.trim().replace(/"/g,'').toLowerCase());
-      _csvParsed = lines.slice(1).filter(l=>l.trim()).map(line=>{
-        const vals=line.split(sep).map(v=>v.trim().replace(/"/g,''));
-        const obj={};
-        headers.forEach((h,i)=>{obj[h]=vals[i]||'';});
-        return obj;
-      });
-      const sample=_csvParsed.slice(0,3);
-      const keys=Object.keys(sample[0]||{});
-      const previewEl=document.getElementById('csv-preview');
-      const tableEl=document.getElementById('csv-preview-table');
-      const msgEl=document.getElementById('csv-preview-msg');
-      const btnEl=document.getElementById('csv-import-btn');
-      if(msgEl) msgEl.textContent=`${_csvParsed.length} filas detectadas. Vista previa (primeras 3):`;
-      if(tableEl) tableEl.innerHTML=`<table style="border-collapse:collapse;width:100%"><tr>${keys.map(k=>`<th style="border:1px solid var(--dark4);padding:3px 6px;background:var(--dark3);font-size:0.7rem">${esc(k)}</th>`).join('')}</tr>${sample.map(row=>`<tr>${keys.map(k=>`<td style="border:1px solid var(--dark4);padding:3px 6px;font-size:0.72rem">${esc(row[k])}</td>`).join('')}</tr>`).join('')}</table>`;
-      if(previewEl) previewEl.style.display='block';
-      if(btnEl) btnEl.style.display='block';
-    } catch(err){ showImportResult('❌ Error: '+err.message,'danger'); }
-  };
-  reader.readAsText(file,'UTF-8');
-  event.target.value='';
-}
-function importFromCSV() {
-  if(!_csvParsed.length){showImportResult('❌ Cargá el CSV primero.','danger');return;}
-  const s=state.students.find(x=>x.id===state.currentStudentId); if(!s) return;
-  const entries=_csvParsed.map(buildMetricEntry).filter(Boolean);
-  if(!entries.length){showImportResult('❌ No se encontraron métricas válidas. Verificá las columnas.','danger');return;}
-  saveImportedMetrics(s,entries);
-}
-
-function addQuickRow() {
-  const container=document.getElementById('quick-rows-container'); if(!container) return;
-  const idx=_quickRowCount++;
-  const div=document.createElement('div');
-  div.id=`qr-${idx}`;
-  div.style.cssText='background:var(--dark3);border-radius:8px;padding:0.7rem;margin-bottom:0.5rem';
-  div.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem"><span class="text-small bold">Medición ${idx+1}</span><button class="btn btn-danger btn-sm" style="padding:0.15rem 0.4rem;font-size:0.7rem" onclick="removeQuickRow(${idx})">✕</button></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:0.4rem"><input type="date" class="input-field qr-fecha" style="padding:0.5rem"><input type="number" class="input-field qr-peso" style="padding:0.5rem" placeholder="Peso (kg)" step="0.1"><input type="number" class="input-field qr-grasa" style="padding:0.5rem" placeholder="% Grasa" step="0.1"><input type="number" class="input-field qr-musculo" style="padding:0.5rem" placeholder="% Músculo" step="0.1"><input type="number" class="input-field qr-cintura" style="padding:0.5rem" placeholder="Cintura (cm)"><input type="number" class="input-field qr-visceral" style="padding:0.5rem" placeholder="Grasa visceral"></div>`;
-  container.appendChild(div);
-}
-function removeQuickRow(idx){ const el=document.getElementById(`qr-${idx}`); if(el) el.remove(); }
-
-function importFromQuick() {
-  const s=state.students.find(x=>x.id===state.currentStudentId); if(!s) return;
-  const rows=document.querySelectorAll('#quick-rows-container > div[id^="qr-"]');
-  const entries=[];
-  rows.forEach(row=>{
-    const fechaISO=row.querySelector('.qr-fecha')?.value;
-    const peso=extractNumber(row.querySelector('.qr-peso')?.value);
-    if(!fechaISO||!peso) return;
-    const d=new Date(fechaISO+'T12:00:00');
-    const entry=buildMetricEntry({fecha:`${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`,peso,grasa:extractNumber(row.querySelector('.qr-grasa')?.value),musculo:extractNumber(row.querySelector('.qr-musculo')?.value),cintura:extractNumber(row.querySelector('.qr-cintura')?.value)});
-    if(entry){const v=extractNumber(row.querySelector('.qr-visceral')?.value);if(v)entry.calc.visceralEst=v;entries.push(entry);}
-  });
-  if(!entries.length){showImportResult('❌ Completá al menos fecha y peso en una fila.','danger');return;}
-  saveImportedMetrics(s,entries);
-}
-
-function handleJSONUpload(event) {
-  const file=event.target.files[0]; if(!file) return;
-  const reader=new FileReader();
-  reader.onload=e=>{if(document.getElementById('import-json-input'))document.getElementById('import-json-input').value=e.target.result;};
-  reader.readAsText(file);
-  event.target.value='';
-}
-function importFromJSON() {
-  const raw=document.getElementById('import-json-input')?.value.trim();
-  if(!raw){showImportResult('❌ Pegá o cargá el JSON primero.','danger');return;}
-  const s=state.students.find(x=>x.id===state.currentStudentId); if(!s) return;
-  let data;
-  try{data=JSON.parse(raw);}catch(e){showImportResult('❌ JSON inválido: '+e.message,'danger');return;}
-  if(!Array.isArray(data)){showImportResult('❌ El JSON debe ser un array [...].','danger');return;}
-  const allowed=['fecha','date','peso','weight','grasa','fat','musculo','muscle','cintura','waist','cadera','hip','pecho','chest','muslo','thigh','visceral','bmr','imc','bmi','bone','hueso'];
-  const cleaned=data.map(obj=>{const safe={};allowed.forEach(k=>{if(obj[k]!==undefined)safe[k]=obj[k];});return safe;});
-  const entries=cleaned.map(buildMetricEntry).filter(Boolean);
-  if(!entries.length){showImportResult('❌ No se encontraron métricas válidas.','danger');return;}
-  saveImportedMetrics(s,entries);
-}
-
-function saveImportedMetrics(s, entries) {
-  if(!s.metricsLog) s.metricsLog=[];
-  let added=0, skipped=0;
-  entries.forEach(entry=>{
-    if(s.metricsLog.some(e=>e.dateISO===entry.dateISO)){skipped++;return;}
-    if(entry.weight&&(entry.fatManual||entry.muscleManual)){
-      const age=parseInt(s.anamnesis?.age)||40, h=parseInt(s.anamnesis?.height)||170, w=entry.weight;
-      const isFem=(s.anamnesis?.sex||'').toLowerCase().includes('fem');
-      const bmr=isFem?Math.round(10*w+6.25*h-5*age-161):Math.round(10*w+6.25*h-5*age+5);
-      entry.calc={
-        bmi:parseFloat((w/((h/100)**2)).toFixed(1)),bmr,tdee:Math.round(bmr*1.375),
-        fatPct:entry.fatManual,musclePct:entry.muscleManual,
-        fatMass:entry.fatManual?parseFloat((w*entry.fatManual/100).toFixed(1)):null,
-        leanMass:entry.fatManual?parseFloat((w*(1-entry.fatManual/100)).toFixed(1)):null,
-        visceralEst:entry.calc?.visceralEst||null,
-        bmiStatus:w/((h/100)**2)<25?'Normal':'Sobrepeso',bmiClass:w/((h/100)**2)<25?'status-ok':'status-warn'
-      };
-    }
-    s.metricsLog.push(entry);
-    added++;
-  });
-  s.metricsLog.sort((a,b)=>(a.dateISO||'').localeCompare(b.dateISO||''));
-  saveState();
-  renderMetricsView(s,'trainer');
-  showImportResult(`✅ ${added} medición${added!==1?'es':''} importada${added!==1?'s':''}.${skipped?` ${skipped} ya existían y se omitieron.`:''}`, 'success');
-}
-function showImportResult(msg,type){const el=document.getElementById('import-result');if(el){el.style.color=type==='success'?'var(--success)':'var(--danger)';el.textContent=msg;}}
 
 // ═══════════════════════════════════════════
 //  FIN SEGURIDAD + API KEY + IMPORTACIÓN
@@ -5415,6 +4951,7 @@ try {
 let state = {
   students: [],
   workouts: [],
+  expenses: [],
   currentStudentId: null,
   currentRole: null,
   logoDataUrl: null,
@@ -5759,7 +5296,6 @@ Abdominales bicicleta: 3x15`
 
 // loadDemoData() se llama desde el init async al final del script
 
-
 // ═══════════════════════════════════════════
 //  LOGO HANDLING
 // ═══════════════════════════════════════════
@@ -5790,7 +5326,7 @@ applyLogo();
 // Pantallas exclusivas del entrenador
 const TRAINER_SCREENS = [
   'screen-trainer','screen-trainer-profile','screen-students','screen-student-detail',
-  'screen-workouts','screen-stats','screen-ai-chat'
+  'screen-workouts','screen-stats','screen-ai-chat','screen-finance'
 ];
 
 function showScreen(id) {
@@ -6965,6 +6501,11 @@ function refreshTrainerDashboard() {
         <div class="nav-card-icon">${SVG.settings}</div>
         <div class="nav-card-label">Mi perfil</div>
         <div class="nav-card-count">→</div>
+      </div>
+      <div class="nav-card" onclick="openFinanceScreen()">
+        <div class="nav-card-icon">💰</div>
+        <div class="nav-card-label">Finanzas</div>
+        <div class="nav-card-count" id="count-finance">→</div>
       </div>`;
   }
 
@@ -8033,9 +7574,6 @@ function renderStudentProgress(s) {
     </div>`;
 }
 
-
-
-
 function openEditSessionModal(idx) {
   const s = state.students.find(x => x.id === state.currentStudentId);
   if (!s || !s.progressLog || !s.progressLog[idx]) return;
@@ -8713,8 +8251,6 @@ function renderStudentPaymentBanner(s) {
 //  SISTEMA DE PAGOS — FIN
 // ═══════════════════════════════════════════
 
-
-
 function openEditMetricsModal(idx) {
   const s = state.students.find(x => x.id === state.currentStudentId);
   if (!s || !s.metricsLog || !s.metricsLog[idx]) return;
@@ -9355,10 +8891,581 @@ function saveProgressPhoto(studentId, view, event) {
 // ═══════════════════════════════════════════
 //  INIT — async para esperar Firebase
 // ═══════════════════════════════════════════
+// ═══════════════════════════════════════════
+// MÓDULO FINANCIERO
+// ═══════════════════════════════════════════
+
+// Estado del módulo financiero
+let _financePeriod = null; // { year, month } — null = mes actual
+let _financeTab = 'resumen';
+let _pendingImportExpenses = [];
+
+const EXPENSE_CAT_LABELS = {
+  alquiler:      '🏠 Alquiler / espacio',
+  materiales:    '🏋️ Materiales',
+  marketing:     '📢 Marketing',
+  software:      '💻 Software',
+  salud:         '🩺 Salud',
+  transporte:    '🚗 Transporte',
+  capacitacion:  '📚 Capacitación',
+  otros:         '📦 Otros'
+};
+
+function openFinanceScreen() {
+  if (!_financePeriod) {
+    const now = new Date();
+    _financePeriod = { year: now.getFullYear(), month: now.getMonth() + 1 };
+  }
+  _financeTab = 'resumen';
+  showScreen('screen-finance');
+  renderFinanceScreen();
+}
+
+function financeChangePeriod(delta) {
+  let { year, month } = _financePeriod;
+  month += delta;
+  if (month > 12) { month = 1; year++; }
+  if (month < 1)  { month = 12; year--; }
+  _financePeriod = { year, month };
+  renderFinanceScreen();
+}
+
+function switchFinanceTab(tab) {
+  _financeTab = tab;
+  document.querySelectorAll('#finance-tabs .tab').forEach((btn, i) => {
+    const tabs = ['resumen','ingresos','egresos','csv'];
+    btn.classList.toggle('active', tabs[i] === tab);
+  });
+  renderFinanceView();
+}
+
+function renderFinanceScreen() {
+  const { year, month } = _financePeriod;
+  const label = new Date(year, month - 1, 1)
+    .toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
+  document.getElementById('finance-period-label').textContent = label;
+  document.querySelectorAll('#finance-tabs .tab').forEach((btn, i) => {
+    const tabs = ['resumen','ingresos','egresos','csv'];
+    btn.classList.toggle('active', tabs[i] === _financeTab);
+  });
+  renderFinanceView();
+}
+
+// ── Obtener ingresos del período desde datos existentes ──
+function getIncomeForPeriod(year, month) {
+  const mesKey = `${year}-${String(month).padStart(2,'0')}`;
+  const items = [];
+
+  state.students.forEach(s => {
+    const nombre = s.name;
+
+    // Mensualidades
+    (s.payments || []).forEach(p => {
+      if (p.mes === mesKey && p.monto) {
+        const [y, m] = p.mes.split('-');
+        items.push({
+          fecha: p.fecha || `${String(m).padStart(2,'0')}/${y}`,
+          fechaISO: p.fechaISO || `${y}-${m}-01`,
+          categoria: 'mensualidad',
+          descripcion: `Mensualidad — ${nombre}`,
+          monto: p.monto,
+          alumno: nombre,
+          nota: p.nota || ''
+        });
+      }
+    });
+
+    // Clases individuales
+    (s.clasesIndividuales || []).forEach(c => {
+      if (!c.monto) return;
+      const iso = c.fechaISO || '';
+      if (iso.startsWith(mesKey)) {
+        items.push({
+          fecha: c.fecha,
+          fechaISO: iso,
+          categoria: 'clase_individual',
+          descripcion: `Clase individual — ${nombre}`,
+          monto: c.monto,
+          alumno: nombre,
+          nota: c.nota || ''
+        });
+      }
+    });
+
+    // Paquetes de clases
+    (s.classPacks || []).forEach(p => {
+      if (!p.monto) return;
+      const iso = p.fechaISO || '';
+      if (iso.startsWith(mesKey)) {
+        items.push({
+          fecha: p.fecha,
+          fechaISO: iso,
+          categoria: 'paquete',
+          descripcion: `Paquete ${p.total} clases — ${nombre}`,
+          monto: p.monto,
+          alumno: nombre,
+          nota: p.nota || ''
+        });
+      }
+    });
+  });
+
+  return items.sort((a, b) => (b.fechaISO || '').localeCompare(a.fechaISO || ''));
+}
+
+function getExpensesForPeriod(year, month) {
+  const mesKey = `${year}-${String(month).padStart(2,'0')}`;
+  return (state.expenses || [])
+    .filter(e => (e.fecha || '').startsWith(mesKey))
+    .sort((a, b) => b.fecha.localeCompare(a.fecha));
+}
+
+function renderFinanceView() {
+  const { year, month } = _financePeriod;
+  const el = document.getElementById('finance-view');
+  if (!el) return;
+
+  const ingresos = getIncomeForPeriod(year, month);
+  const egresos  = getExpensesForPeriod(year, month);
+  const totalIn  = ingresos.reduce((a, x) => a + (x.monto || 0), 0);
+  const totalOut = egresos.reduce((a, x) => a + (x.monto || 0), 0);
+  const balance  = totalIn - totalOut;
+
+  if (_financeTab === 'resumen') el.innerHTML = renderFinanceResumen(ingresos, egresos, totalIn, totalOut, balance);
+  else if (_financeTab === 'ingresos') el.innerHTML = renderFinanceIngresos(ingresos, totalIn);
+  else if (_financeTab === 'egresos') el.innerHTML = renderFinanceEgresos(egresos, totalOut);
+  else if (_financeTab === 'csv') el.innerHTML = renderFinanceCSVTab();
+}
+
+function renderFinanceResumen(ingresos, egresos, totalIn, totalOut, balance) {
+  const balColor = balance >= 0 ? 'var(--success)' : 'var(--danger)';
+  const margen = totalIn > 0 ? Math.round((balance / totalIn) * 100) : 0;
+
+  // Ingresos por categoría
+  const catIngresos = {};
+  ingresos.forEach(x => {
+    catIngresos[x.categoria] = (catIngresos[x.categoria] || 0) + x.monto;
+  });
+
+  // Egresos por categoría
+  const catEgresos = {};
+  egresos.forEach(x => {
+    catEgresos[x.categoria] = (catEgresos[x.categoria] || 0) + x.monto;
+  });
+
+  const CAT_IN_LABEL = {
+    mensualidad: '📅 Mensualidades',
+    clase_individual: '🎯 Clases individuales',
+    paquete: '📦 Paquetes'
+  };
+
+  let html = `
+  <div class="metrics-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:1rem">
+    <div class="metric-card highlight">
+      <div class="metric-label">Ingresos</div>
+      <div class="metric-value" style="font-size:1.1rem;color:var(--success)">$${totalIn.toLocaleString('es-AR')}</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Egresos</div>
+      <div class="metric-value" style="font-size:1.1rem;color:var(--danger)">$${totalOut.toLocaleString('es-AR')}</div>
+    </div>
+    <div class="metric-card" style="border-color:${balColor}">
+      <div class="metric-label">Balance</div>
+      <div class="metric-value" style="font-size:1rem;color:${balColor}">${balance >= 0 ? '+' : ''}$${balance.toLocaleString('es-AR')}</div>
+      <div class="metric-unit">${margen}% margen</div>
+    </div>
+  </div>`;
+
+  // Barra de balance visual
+  const pct = totalIn > 0 ? Math.min(100, Math.round((totalOut / totalIn) * 100)) : 0;
+  html += `
+  <div class="card" style="margin-bottom:1rem">
+    <div class="card-title">📊 Estructura del período</div>
+    <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--gray-light);margin-bottom:0.4rem">
+      <span>Egresos ${pct}%</span><span>Margen ${100 - pct}%</span>
+    </div>
+    <div style="height:10px;background:var(--dark3);border-radius:5px;overflow:hidden;margin-bottom:1rem">
+      <div style="height:100%;width:${pct}%;background:var(--danger);border-radius:5px;transition:width 0.4s"></div>
+    </div>`;
+
+  if (Object.keys(catIngresos).length) {
+    html += `<div class="anamnesis-block-title" style="margin-bottom:0.5rem">Ingresos por tipo</div>`;
+    Object.entries(catIngresos).forEach(([cat, monto]) => {
+      const pctCat = totalIn > 0 ? Math.round((monto / totalIn) * 100) : 0;
+      html += `
+      <div style="margin-bottom:0.6rem">
+        <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:0.25rem">
+          <span>${CAT_IN_LABEL[cat] || cat}</span>
+          <span style="color:var(--success)">$${monto.toLocaleString('es-AR')} (${pctCat}%)</span>
+        </div>
+        <div style="height:5px;background:var(--dark3);border-radius:3px;overflow:hidden">
+          <div style="height:100%;width:${pctCat}%;background:var(--success);border-radius:3px"></div>
+        </div>
+      </div>`;
+    });
+  }
+
+  if (Object.keys(catEgresos).length) {
+    html += `<div class="anamnesis-block-title" style="margin-bottom:0.5rem;margin-top:0.8rem">Egresos por categoría</div>`;
+    Object.entries(catEgresos).sort((a,b) => b[1]-a[1]).forEach(([cat, monto]) => {
+      const pctCat = totalOut > 0 ? Math.round((monto / totalOut) * 100) : 0;
+      html += `
+      <div style="margin-bottom:0.6rem">
+        <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:0.25rem">
+          <span>${EXPENSE_CAT_LABELS[cat] || cat}</span>
+          <span style="color:var(--danger)">$${monto.toLocaleString('es-AR')} (${pctCat}%)</span>
+        </div>
+        <div style="height:5px;background:var(--dark3);border-radius:3px;overflow:hidden">
+          <div style="height:100%;width:${pctCat}%;background:var(--danger);border-radius:3px"></div>
+        </div>
+      </div>`;
+    });
+  }
+
+  html += `</div>`;
+
+  // Top alumnos por ingreso
+  const byStudent = {};
+  ingresos.forEach(x => { byStudent[x.alumno] = (byStudent[x.alumno] || 0) + x.monto; });
+  const topStudents = Object.entries(byStudent).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  if (topStudents.length) {
+    html += `<div class="card" style="margin-bottom:1rem">
+      <div class="card-title">🏆 Top alumnos del período</div>
+      ${topStudents.map(([nombre, monto]) => `
+        <div class="progress-row">
+          <span class="progress-label">${nombre}</span>
+          <span class="progress-value text-orange">$${monto.toLocaleString('es-AR')}</span>
+        </div>`).join('')}
+    </div>`;
+  }
+
+  html += `<button class="btn btn-primary btn-full" onclick="openExpenseModal()">➕ Registrar egreso</button>`;
+  return html;
+}
+
+function renderFinanceIngresos(ingresos, totalIn) {
+  const CAT_IN_LABEL = {
+    mensualidad: '📅 Mensualidad',
+    clase_individual: '🎯 Clase individual',
+    paquete: '📦 Paquete'
+  };
+
+  let html = `
+  <div class="card" style="margin-bottom:1rem">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="card-title" style="margin:0">Total ingresos</div>
+      <div style="font-family:var(--font-title);font-size:1.6rem;color:var(--success)">$${totalIn.toLocaleString('es-AR')}</div>
+    </div>
+  </div>`;
+
+  if (!ingresos.length) {
+    html += `<div class="text-small text-gray" style="text-align:center;padding:2rem">Sin ingresos registrados en este período.</div>`;
+    return html;
+  }
+
+  html += `<div class="card">
+    <div class="card-title">Detalle de ingresos</div>`;
+  ingresos.forEach(x => {
+    html += `
+    <div class="progress-row" style="padding:0.6rem 0;align-items:flex-start">
+      <div style="flex:1">
+        <div class="bold text-small">${x.descripcion}</div>
+        <div class="text-small text-gray">${x.fecha} · ${CAT_IN_LABEL[x.categoria] || x.categoria}</div>
+        ${x.nota ? `<div class="text-small" style="color:var(--gray-light);font-style:italic">${x.nota}</div>` : ''}
+      </div>
+      <span class="bold" style="color:var(--success);flex-shrink:0">$${x.monto.toLocaleString('es-AR')}</span>
+    </div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
+function renderFinanceEgresos(egresos, totalOut) {
+  let html = `
+  <div class="card" style="margin-bottom:1rem">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="card-title" style="margin:0">Total egresos</div>
+      <div style="font-family:var(--font-title);font-size:1.6rem;color:var(--danger)">$${totalOut.toLocaleString('es-AR')}</div>
+    </div>
+  </div>
+  <button class="btn btn-primary btn-full" style="margin-bottom:1rem" onclick="openExpenseModal()">➕ Registrar egreso</button>`;
+
+  if (!egresos.length) {
+    html += `<div class="text-small text-gray" style="text-align:center;padding:2rem">Sin egresos registrados en este período.</div>`;
+    return html;
+  }
+
+  html += `<div class="card"><div class="card-title">Detalle de egresos</div>`;
+  egresos.forEach(e => {
+    html += `
+    <div class="progress-row" style="padding:0.6rem 0;align-items:flex-start">
+      <div style="flex:1">
+        <div class="bold text-small">${e.descripcion}</div>
+        <div class="text-small text-gray">${e.fecha} · ${EXPENSE_CAT_LABELS[e.categoria] || e.categoria}</div>
+        ${e.nota ? `<div class="text-small" style="color:var(--gray-light);font-style:italic">${e.nota}</div>` : ''}
+        ${e.recurrente === 'mensual' ? `<div class="tag tag-green" style="font-size:0.65rem;display:inline-block;margin-top:0.2rem">🔁 Mensual</div>` : ''}
+      </div>
+      <div style="display:flex;align-items:center;gap:0.5rem;flex-shrink:0">
+        <span class="bold" style="color:var(--danger)">$${e.monto.toLocaleString('es-AR')}</span>
+        <button class="btn btn-secondary btn-sm" style="padding:0.2rem 0.5rem;font-size:0.7rem" onclick="openExpenseModal('${e.id}')">✏️</button>
+        <button class="btn btn-danger btn-sm" style="padding:0.2rem 0.5rem;font-size:0.7rem" onclick="deleteExpense('${e.id}')">🗑️</button>
+      </div>
+    </div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
+function renderFinanceCSVTab() {
+  return `
+  <div class="card" style="margin-bottom:1rem">
+    <div class="card-title">📤 Exportar CSV</div>
+    <div class="text-small text-gray" style="margin-bottom:0.8rem;line-height:1.6">
+      Exportá los movimientos del período actual o el historial completo para importar en Money Tower, Excel o Google Sheets.
+    </div>
+    <div style="display:flex;flex-direction:column;gap:0.5rem">
+      <button class="btn btn-secondary btn-sm btn-full" onclick="exportFinanceCSV('month')">📥 Exportar mes actual (ingresos + egresos)</button>
+      <button class="btn btn-secondary btn-sm btn-full" onclick="exportFinanceCSV('year')">📥 Exportar año ${_financePeriod.year}</button>
+      <button class="btn btn-secondary btn-sm btn-full" onclick="exportFinanceCSV('all')">📥 Exportar historial completo</button>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:1rem">
+    <div class="card-title">📤 Importar egresos desde CSV</div>
+    <div class="text-small text-gray" style="margin-bottom:0.6rem;line-height:1.5">
+      Columnas requeridas: <code style="color:var(--orange);font-size:0.75rem">fecha, categoria, descripcion, monto</code><br>
+      Columnas opcionales: nota, recurrente
+    </div>
+    <input type="file" class="input-field" id="finance-csv-file2" accept=".csv,.txt" onchange="previewExpenseCSV(event)" style="padding:0.6rem">
+    <div id="finance-import-preview2" style="margin-top:0.5rem;font-size:0.8rem"></div>
+    <button class="btn btn-primary btn-sm btn-full" style="margin-top:0.8rem" id="finance-import-btn2" onclick="confirmImportExpenses()" disabled>✅ Importar egresos</button>
+  </div>`;
+}
+
+// ── CRUD Egresos ──
+function openExpenseModal(id) {
+  const today = new Date().toISOString().split('T')[0];
+  if (id) {
+    const e = (state.expenses || []).find(x => x.id === id);
+    if (!e) return;
+    document.getElementById('expense-modal-title').textContent = '✏️ Editar egreso';
+    document.getElementById('expense-edit-id').value = id;
+    document.getElementById('expense-cat').value    = e.categoria || 'otros';
+    document.getElementById('expense-desc').value   = e.descripcion || '';
+    document.getElementById('expense-date').value   = e.fecha || today;
+    document.getElementById('expense-amount').value = e.monto || '';
+    document.getElementById('expense-note').value   = e.nota || '';
+    document.getElementById('expense-recur').value  = e.recurrente || 'no';
+  } else {
+    document.getElementById('expense-modal-title').textContent = '➕ Nuevo egreso';
+    document.getElementById('expense-edit-id').value = '';
+    document.getElementById('expense-cat').value    = 'alquiler';
+    document.getElementById('expense-desc').value   = '';
+    document.getElementById('expense-date').value   = today;
+    document.getElementById('expense-amount').value = '';
+    document.getElementById('expense-note').value   = '';
+    document.getElementById('expense-recur').value  = 'no';
+  }
+  openModal('modal-expense');
+}
+
+function saveExpense() {
+  const id      = document.getElementById('expense-edit-id').value;
+  const cat     = document.getElementById('expense-cat').value;
+  const desc    = sanitizeInput(document.getElementById('expense-desc').value, 200);
+  const fecha   = document.getElementById('expense-date').value;
+  const monto   = parseFloat(document.getElementById('expense-amount').value) || 0;
+  const nota    = sanitizeInput(document.getElementById('expense-note').value, 200);
+  const recur   = document.getElementById('expense-recur').value;
+
+  if (!desc || !fecha || !monto) {
+    alert('Completá descripción, fecha y monto.');
+    return;
+  }
+
+  if (!state.expenses) state.expenses = [];
+
+  if (id) {
+    const idx = state.expenses.findIndex(x => x.id === id);
+    if (idx >= 0) {
+      state.expenses[idx] = { ...state.expenses[idx], categoria: cat, descripcion: desc, fecha, monto, nota, recurrente: recur };
+    }
+  } else {
+    state.expenses.push({
+      id: 'exp_' + Date.now(),
+      categoria: cat,
+      descripcion: desc,
+      fecha,
+      monto,
+      nota,
+      recurrente: recur
+    });
+  }
+
+  saveState();
+  closeModal('modal-expense');
+  renderFinanceView();
+}
+
+function deleteExpense(id) {
+  if (!confirm('¿Eliminar este egreso?')) return;
+  state.expenses = (state.expenses || []).filter(x => x.id !== id);
+  saveState();
+  renderFinanceView();
+}
+
+// ── Exportar CSV ──
+function exportFinanceCSV(scope) {
+  const { year, month } = _financePeriod;
+  let ingresos = [];
+  let egresos  = [];
+
+  if (scope === 'month') {
+    ingresos = getIncomeForPeriod(year, month);
+    egresos  = getExpensesForPeriod(year, month);
+  } else if (scope === 'year') {
+    for (let m = 1; m <= 12; m++) {
+      ingresos = ingresos.concat(getIncomeForPeriod(year, m));
+      egresos  = egresos.concat(getExpensesForPeriod(year, m));
+    }
+  } else {
+    // all: todos los años presentes
+    const allYears = new Set();
+    (state.expenses || []).forEach(e => { if (e.fecha) allYears.add(e.fecha.substring(0,4)); });
+    state.students.forEach(s => {
+      (s.payments||[]).forEach(p => allYears.add(p.mes?.substring(0,4)));
+      (s.clasesIndividuales||[]).forEach(c => allYears.add((c.fechaISO||'').substring(0,4)));
+      (s.classPacks||[]).forEach(p => allYears.add((p.fechaISO||'').substring(0,4)));
+    });
+    allYears.forEach(y => {
+      if (!y || isNaN(y)) return;
+      for (let m = 1; m <= 12; m++) {
+        ingresos = ingresos.concat(getIncomeForPeriod(parseInt(y), m));
+        egresos  = egresos.concat(getExpensesForPeriod(parseInt(y), m));
+      }
+    });
+  }
+
+  const rows = [['fecha','tipo','categoria','descripcion','alumno','monto','nota']];
+
+  ingresos.forEach(x => rows.push([
+    x.fecha || '', 'ingreso', x.categoria, x.descripcion, x.alumno || '', x.monto, x.nota || ''
+  ]));
+  egresos.forEach(x => rows.push([
+    x.fecha || '', 'egreso', x.categoria, x.descripcion, '', x.monto, x.nota || ''
+  ]));
+
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const tag = scope === 'month' ? `${year}-${String(month).padStart(2,'0')}` : scope === 'year' ? year : 'historial';
+  a.download = `VCFit_Finanzas_${tag}.csv`;
+  a.click();
+}
+
+// ── Importar CSV de egresos ──
+function previewExpenseCSV(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const previewId = event.target.id === 'finance-csv-file2' ? 'finance-import-preview2' : 'finance-import-preview';
+  const btnId     = event.target.id === 'finance-csv-file2' ? 'finance-import-btn2'     : 'finance-import-confirm';
+
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const text = ev.target.result;
+    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+    if (lines.length < 2) {
+      document.getElementById(previewId).innerHTML = '<span style="color:var(--danger)">CSV vacío o inválido.</span>';
+      return;
+    }
+    const header = lines[0].toLowerCase().replace(/"/g,'').split(',').map(x=>x.trim());
+    const idxFecha = header.findIndex(h => h.includes('fecha'));
+    const idxCat   = header.findIndex(h => h.includes('categ'));
+    const idxDesc  = header.findIndex(h => h.includes('desc'));
+    const idxMonto = header.findIndex(h => h.includes('monto'));
+    const idxNota  = header.findIndex(h => h.includes('nota'));
+    const idxRecur = header.findIndex(h => h.includes('recur'));
+
+    if (idxFecha < 0 || idxMonto < 0) {
+      document.getElementById(previewId).innerHTML = '<span style="color:var(--danger)">Faltan columnas requeridas: fecha, monto.</span>';
+      return;
+    }
+
+    _pendingImportExpenses = [];
+    const parseCell = (row, idx) => idx >= 0 ? (row[idx] || '').replace(/^"|"$/g,'').trim() : '';
+
+    lines.slice(1).forEach(line => {
+      const cols = line.match(/(".*?"|[^,]+)/g) || line.split(',');
+      const fecha = parseCell(cols, idxFecha);
+      const monto = parseFloat(parseCell(cols, idxMonto).replace(/[^\d.]/g,'')) || 0;
+      if (!fecha || !monto) return;
+      _pendingImportExpenses.push({
+        id: 'exp_' + Date.now() + Math.random(),
+        fecha,
+        categoria: parseCell(cols, idxCat) || 'otros',
+        descripcion: parseCell(cols, idxDesc) || 'Importado',
+        monto,
+        nota: parseCell(cols, idxNota) || '',
+        recurrente: parseCell(cols, idxRecur) || 'no'
+      });
+    });
+
+    document.getElementById(previewId).innerHTML =
+      `<span style="color:var(--success)">✅ ${_pendingImportExpenses.length} egresos listos para importar.</span>`;
+    const btn = document.getElementById(btnId);
+    if (btn) btn.disabled = _pendingImportExpenses.length === 0;
+  };
+  reader.readAsText(file);
+}
+
+function confirmImportExpenses() {
+  if (!_pendingImportExpenses.length) return;
+  if (!state.expenses) state.expenses = [];
+  state.expenses = state.expenses.concat(_pendingImportExpenses);
+  saveState();
+  _pendingImportExpenses = [];
+  closeModal('modal-finance-export');
+  renderFinanceView();
+  alert(`✅ ${_pendingImportExpenses.length || 'Egresos'} importados correctamente.`);
+}
+
+function openFinanceExportModal() {
+  openModal('modal-finance-export');
+}
+
+// ── Egresos recurrentes mensuales: auto-propagar al abrir cada mes ──
+function propagateRecurringExpenses() {
+  if (!state.expenses) return;
+  const now = new Date();
+  const mesKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const recurring = state.expenses.filter(e => e.recurrente === 'mensual');
+  recurring.forEach(e => {
+    // Verificar que no exista ya para este mes
+    const base = e.descripcion.replace(/\s*\[.*\]/, '').trim();
+    const exists = state.expenses.some(x => x.fecha?.startsWith(mesKey) && x.descripcion === base && x.categoria === e.categoria);
+    if (!exists && !e.fecha?.startsWith(mesKey)) {
+      state.expenses.push({
+        id: 'exp_' + Date.now() + Math.random(),
+        fecha: `${mesKey}-01`,
+        categoria: e.categoria,
+        descripcion: base,
+        monto: e.monto,
+        nota: e.nota,
+        recurrente: 'mensual'
+      });
+    }
+  });
+}
+
 (async function init() {
   initTheme();
   initApiKeyUI();
   await loadState();
+  if (!state.expenses) state.expenses = [];
+  propagateRecurringExpenses();
+  const now = new Date();
+  _financePeriod = { year: now.getFullYear(), month: now.getMonth() + 1 };
   loadDemoData();
   refreshTrainerDashboard();
   renderStudentsList();
