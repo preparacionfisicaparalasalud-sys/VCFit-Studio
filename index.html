@@ -5110,34 +5110,36 @@ function mergePhotosFromLocal(fsState) {
 
 // ── loadState: Firestore primero, localStorage como fallback ──
 async function loadState() {
-  // 1. Carga rápida desde localStorage
+  // Cargar desde localStorage siempre primero
   try {
     const saved = localStorage.getItem('vcfit_state');
     if (saved) state = JSON.parse(saved);
   } catch(e) {}
 
-  // 2. Intentar Firestore solo si está disponible
+  // Firestore: solo si disponible, con timeout de 5 segundos
   if (!_firebaseAvailable || !STATE_DOC) {
     setSyncStatus('offline');
     return;
   }
 
   try {
-    setLoadingMsg('Conectando con Firebase...');
-    const doc = await STATE_DOC.get();
+    setLoadingMsg('Sincronizando...');
+    const timeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('timeout')), 5000)
+    );
+    const doc = await Promise.race([STATE_DOC.get(), timeout]);
     if (doc.exists) {
       const merged = mergePhotosFromLocal(doc.data());
       state = { ...merged, currentRole: null, currentStudentId: null };
       localStorage.setItem('vcfit_state', JSON.stringify(state));
     } else {
-      setLoadingMsg('Primer inicio: creando base de datos...');
-      await STATE_DOC.set(stateForFirestore());
+      STATE_DOC.set(stateForFirestore()).catch(() => {});
     }
     syncEnabled = true;
     setSyncStatus('ok');
     initSync();
   } catch(e) {
-    console.warn('Firebase no disponible, usando localStorage:', e.message);
+    // Timeout o error — la app sigue con localStorage
     setSyncStatus('offline');
   }
 }
