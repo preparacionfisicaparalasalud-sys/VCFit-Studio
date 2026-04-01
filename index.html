@@ -1019,6 +1019,7 @@
     margin-top: 0.3rem;
   }
 
+
   /* ── CHARTS ── */
   .chart-wrapper {
     position: relative;
@@ -1060,6 +1061,7 @@
     border-color: var(--orange);
   }
   canvas { max-width: 100%; }
+
 
   /* ── PIN KEYBOARD ── */
   .pin-dot {
@@ -1292,6 +1294,7 @@
       <div class="card-title">👥 Alumnos recientes</div>
       <div id="trainer-recent-students"></div>
     </div>
+
 
     <div class="card" style="border-color:var(--orange-border);background:linear-gradient(135deg,var(--dark2),var(--dark3))">
       <div style="display:flex;align-items:center;gap:1rem">
@@ -2081,6 +2084,134 @@ ALMUERZO
   </div>
 </div>
 
+<div class="modal-overlay" id="modal-ai-generator">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" style="display:flex;align-items:center;gap:0.6rem">
+      🤖 <span>Generador con IA</span>
+    </div>
+
+    <!-- Selector de modo -->
+    <div style="display:flex;gap:0.5rem;margin-bottom:1.2rem">
+      <button id="ai-mode-routine" class="btn btn-primary btn-sm" style="flex:1"
+        onclick="setAIMode('routine')">📋 Rutina suelta</button>
+      <button id="ai-mode-period" class="btn btn-secondary btn-sm" style="flex:1"
+        onclick="setAIMode('periodization')">📅 Periodización</button>
+    </div>
+
+    <!-- Opciones: Rutina suelta -->
+    <div id="ai-opts-routine">
+      <div class="anamnesis-block">
+        <div class="anamnesis-block-title">Parámetros de la rutina</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem">
+          <div class="input-group">
+            <label class="input-label">Días por semana</label>
+            <select class="input-field" id="ai-days">
+              <option value="2">2 días</option>
+              <option value="3" selected>3 días</option>
+              <option value="4">4 días</option>
+              <option value="5">5 días</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Duración por sesión</label>
+            <select class="input-field" id="ai-duration">
+              <option value="45">45 min</option>
+              <option value="60" selected>60 min</option>
+              <option value="75">75 min</option>
+              <option value="90">90 min</option>
+            </select>
+          </div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Equipamiento disponible</label>
+          <select class="input-field" id="ai-equipment">
+            <option value="calistenia y barras">Calistenia y barras</option>
+            <option value="mancuernas" selected>Mancuernas</option>
+            <option value="mancuernas y barras">Mancuernas y barras</option>
+            <option value="gimnasio completo con máquinas">Gimnasio completo</option>
+            <option value="sin equipamiento">Sin equipamiento</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Enfoque especial (opcional)</label>
+          <input type="text" class="input-field" id="ai-focus"
+            placeholder="ej: enfatizar tren superior, evitar saltos, progresión de fuerza">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Nombre para la rutina</label>
+          <input type="text" class="input-field" id="ai-routine-name"
+            placeholder="ej: Fuerza + Hipertrofia 3 días">
+        </div>
+      </div>
+    </div>
+
+    <!-- Opciones: Periodización -->
+    <div id="ai-opts-period" style="display:none">
+      <div class="anamnesis-block">
+        <div class="anamnesis-block-title">Parámetros del plan</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem">
+          <div class="input-group">
+            <label class="input-label">Número de fases</label>
+            <select class="input-field" id="ai-phases">
+              <option value="2">2 fases</option>
+              <option value="3" selected>3 fases</option>
+              <option value="4">4 fases</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Semanas por fase</label>
+            <select class="input-field" id="ai-weeks-per-phase">
+              <option value="3">3 semanas</option>
+              <option value="4" selected>4 semanas</option>
+              <option value="6">6 semanas</option>
+              <option value="8">8 semanas</option>
+            </select>
+          </div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Tipo de progresión</label>
+          <select class="input-field" id="ai-progression">
+            <option value="lineal (aumentando carga y volumen progresivamente)">Lineal</option>
+            <option value="ondulante (variando intensidad y volumen por semana)">Ondulante</option>
+            <option value="por bloques (fuerza → hipertrofia → potencia)">Por bloques</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Equipamiento disponible</label>
+          <select class="input-field" id="ai-equip-period">
+            <option value="calistenia y barras">Calistenia y barras</option>
+            <option value="mancuernas" selected>Mancuernas</option>
+            <option value="mancuernas y barras">Mancuernas y barras</option>
+            <option value="gimnasio completo con máquinas">Gimnasio completo</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Indicaciones adicionales (opcional)</label>
+          <input type="text" class="input-field" id="ai-period-notes"
+            placeholder="ej: énfasis en fuerza primero, incluir descarga semana 4">
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading state -->
+    <div id="ai-loading" style="display:none;text-align:center;padding:1.5rem 0">
+      <div style="font-size:2rem;margin-bottom:0.5rem;animation:spin 1s linear infinite;display:inline-block">⚙️</div>
+      <div class="text-small text-gray" id="ai-loading-msg">Analizando el perfil del alumno...</div>
+    </div>
+
+    <!-- Error -->
+    <div id="ai-error" style="display:none;color:var(--danger);font-size:0.82rem;margin-bottom:0.8rem;padding:0.6rem;background:rgba(229,57,53,0.1);border-radius:8px"></div>
+
+    <div id="ai-actions" style="display:flex;gap:0.8rem;padding-bottom:1rem">
+      <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-ai-generator')">Cancelar</button>
+      <button class="btn btn-primary" style="flex:1" onclick="generateWithAI()">
+        🤖 Generar
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════════════════════════════════════
      MODAL: EDITAR SESIÓN COMPLETADA
 ═══════════════════════════════════════════ -->
@@ -2159,116 +2290,7 @@ ALMUERZO
 </div>
 
 <!-- ═══════════════════════════════════════════
-     SCREEN: GOOGLE CALENDAR
-═══════════════════════════════════════════ -->
-<div id="screen-calendar" class="screen">
-  <div class="topbar">
-    <button class="btn-back" onclick="showScreen('screen-trainer')">←</button>
-    <div style="flex:1"><div class="topbar-title">📅 Calendario</div></div>
-    <button class="btn btn-secondary btn-sm" id="cal-sync-btn" onclick="calendarSync()" style="display:none">🔄 Sync</button>
-  </div>
-  <div class="content">
-    <div id="cal-auth-section">
-      <div class="card" style="text-align:center;padding:2rem 1.5rem;margin-bottom:1rem">
-        <div style="font-size:3rem;margin-bottom:1rem">📅</div>
-        <div class="bold" style="font-size:1.1rem;margin-bottom:0.5rem;font-family:var(--font-label);letter-spacing:1px">Google Calendar</div>
-        <div class="text-small text-gray" style="line-height:1.7;margin-bottom:1.5rem">
-          Sincronizá sesiones completadas, vencimientos de pago y recordatorios con tu Google Calendar.
-        </div>
-        <button class="btn btn-primary btn-full" onclick="calendarSignIn()">
-          <span style="margin-right:0.5rem">🔑</span> Conectar con Google
-        </button>
-      </div>
-      <div class="card" style="margin-bottom:1rem">
-        <div class="card-title">¿Qué se sincroniza?</div>
-        <div class="progress-row"><span class="progress-label">✅ Sesiones completadas</span><span class="progress-value text-small">→ evento en Calendar</span></div>
-        <div class="progress-row"><span class="progress-label">💰 Vencimientos de pago</span><span class="progress-value text-small">→ recordatorio</span></div>
-        <div class="progress-row"><span class="progress-label">📥 Eventos de Calendar</span><span class="progress-value text-small">→ visible en app</span></div>
-        <div class="progress-row"><span class="progress-label">🔄 Bidireccional</span><span class="progress-value text-small">→ siempre actualizado</span></div>
-      </div>
-    </div>
-
-    <div id="cal-main-section" style="display:none">
-      <!-- Estado conexión -->
-      <div class="card" style="margin-bottom:1rem;border-color:var(--success)">
-        <div style="display:flex;align-items:center;gap:0.8rem">
-          <div style="width:10px;height:10px;border-radius:50%;background:var(--success);flex-shrink:0"></div>
-          <div style="flex:1">
-            <div class="bold text-small">Conectado</div>
-            <div class="text-small text-gray" id="cal-user-email">—</div>
-          </div>
-          <button class="btn btn-secondary btn-sm" onclick="calendarSignOut()">Desconectar</button>
-        </div>
-      </div>
-
-      <!-- Tabs -->
-      <div class="tabs" style="margin-bottom:1rem" id="cal-tabs">
-        <button class="tab active" onclick="switchCalTab('upcoming')">Próximos</button>
-        <button class="tab" onclick="switchCalTab('sync')">Sincronizar</button>
-        <button class="tab" onclick="switchCalTab('settings')">Config</button>
-      </div>
-
-      <div id="cal-view"></div>
-    </div>
-
-    <div id="cal-loading" style="display:none;text-align:center;padding:3rem 1rem">
-      <div style="font-size:2rem;animation:spin 1s linear infinite;display:inline-block">⚙️</div>
-      <div class="text-small text-gray" style="margin-top:0.8rem" id="cal-loading-msg">Conectando...</div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════
-     MODAL: NUEVO EVENTO CALENDAR
-═══════════════════════════════════════════ -->
-<div class="modal-overlay" id="modal-cal-event">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title">📅 Crear evento</div>
-
-    <div class="input-group">
-      <label class="input-label">Título</label>
-      <input type="text" class="input-field" id="cal-ev-title" placeholder="ej: Sesión con Juan Pérez">
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem">
-      <div class="input-group">
-        <label class="input-label">Fecha</label>
-        <input type="date" class="input-field" id="cal-ev-date">
-      </div>
-      <div class="input-group">
-        <label class="input-label">Hora inicio</label>
-        <input type="time" class="input-field" id="cal-ev-time" value="09:00">
-      </div>
-    </div>
-    <div class="input-group">
-      <label class="input-label">Duración</label>
-      <select class="input-field" id="cal-ev-duration">
-        <option value="30">30 minutos</option>
-        <option value="45">45 minutos</option>
-        <option value="60" selected>60 minutos</option>
-        <option value="90">90 minutos</option>
-      </select>
-    </div>
-    <div class="input-group">
-      <label class="input-label">Alumno (opcional)</label>
-      <select class="input-field" id="cal-ev-student">
-        <option value="">— Sin alumno —</option>
-      </select>
-    </div>
-    <div class="input-group">
-      <label class="input-label">Nota</label>
-      <input type="text" class="input-field" id="cal-ev-note" placeholder="ej: Traer ropa cómoda">
-    </div>
-
-    <div style="display:flex;gap:0.8rem;padding-bottom:1rem">
-      <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-cal-event')">Cancelar</button>
-      <button class="btn btn-primary" style="flex:1" onclick="calCreateEvent()">📅 Crear en Calendar</button>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════
-     SCREEN: GOOGLE CALENDAR
+     SCREEN: FINANZAS
 ═══════════════════════════════════════════ -->
 <div id="screen-finance" class="screen">
   <div class="topbar">
@@ -2470,6 +2492,7 @@ ALMUERZO
         <div id="student-anamnesis-readonly"></div>
       </div>
     </div>
+
 
     <!-- TAB MY METRICS -->
     <div id="tab-my-metrics" class="tab-content" style="display:none">
@@ -2760,6 +2783,8 @@ ALMUERZO
     </div>
   </div>
 </div>
+
+
 
 <!-- ═══════════════════════════════════════════
      MODAL: RESET PIN (entrenador)
@@ -3232,22 +3257,20 @@ function isValidApiKey(key) {
 }
 
 // Obtener API key del localStorage
+function getApiKey() {
+  return (localStorage.getItem('vcfit-api-key') || '').trim();
+}
 
 // Rate limiting para llamadas a la API (mínimo 3 segundos entre llamadas)
 let _lastApiCall = 0;
-const _attempts = {};
-function checkRateLimit(key) {
-  if (!key) {
-    // Time-based rate limit for API calls
-    const now = Date.now();
-    if (now - _lastApiCall < 3000) { alert('Esperá un momento antes de hacer otra consulta.'); return false; }
-    _lastApiCall = now;
-    return true;
+function checkRateLimit() {
+  const now = Date.now();
+  if (now - _lastApiCall < 3000) {
+    alert('Esperá un momento antes de hacer otra consulta.');
+    return false;
   }
-  // Attempt-based rate limit for login
-  if (!_attempts[key]) _attempts[key] = { count:0, lockUntil:0 };
-  const a = _attempts[key];
-  if (a.lockUntil > Date.now()) { const secs = Math.ceil((a.lockUntil - Date.now()) / 1000); return `⛔ Demasiados intentos. Esperá ${secs} segundos.`; }
+  _lastApiCall = now;
+  return true;
 }
 
 // Headers seguros para Anthropic API
@@ -3634,6 +3657,263 @@ function sendMonthlyReport(s) {
 }
 
 // ═══════════════════════════════════════════
+//  GENERADOR DE RUTINAS CON IA
+// ═══════════════════════════════════════════
+let _aiMode = 'routine';
+
+function openAIGenerator(mode) {
+  _aiMode = mode || 'routine';
+  setAIMode(_aiMode);
+  const s = state.students.find(x => x.id === state.currentStudentId);
+  if (s?.anamnesis?.days) {
+    const dSel = document.getElementById('ai-days');
+    if (dSel) dSel.value = s.anamnesis.days;
+  }
+  document.getElementById('ai-loading').style.display = 'none';
+  document.getElementById('ai-error').style.display = 'none';
+  document.getElementById('ai-actions').style.display = 'flex';
+  document.getElementById('modal-ai-generator').classList.add('show');
+}
+
+function setAIMode(mode) {
+  _aiMode = mode;
+  document.getElementById('ai-opts-routine').style.display = mode === 'routine' ? 'block' : 'none';
+  document.getElementById('ai-opts-period').style.display  = mode === 'periodization' ? 'block' : 'none';
+  const rb = document.getElementById('ai-mode-routine');
+  const pb = document.getElementById('ai-mode-period');
+  if (rb) { rb.className = `btn btn-sm ${mode==='routine'?'btn-primary':'btn-secondary'}`; rb.style.flex='1'; }
+  if (pb) { pb.className = `btn btn-sm ${mode==='periodization'?'btn-primary':'btn-secondary'}`; pb.style.flex='1'; }
+}
+
+function buildStudentContext(s) {
+  const a = s.anamnesis || {};
+  const latest = s.metricsLog?.length ? s.metricsLog[s.metricsLog.length - 1] : null;
+  let ctx = `PERFIL DEL ALUMNO:\n`;
+  ctx += `• Nombre: ${s.name}\n`;
+  ctx += `• Edad: ${a.age || 'No especificada'} años\n`;
+  ctx += `• Sexo: ${a.sex || 'No especificado'}\n`;
+  ctx += `• Peso: ${a.weight || (latest?.weight || 'No especificado')} kg\n`;
+  ctx += `• Altura: ${a.height || 'No especificada'} cm\n`;
+  ctx += `• Objetivo: ${a.goal || 'No especificado'}\n`;
+  ctx += `• Peso objetivo: ${a.goalWeight || 'No especificado'} kg\n`;
+  ctx += `• Ocupación: ${a.job || ''} (${a.jobType || ''})\n`;
+  ctx += `• Entrena actualmente: ${a.trainsNow === 'Sí' ? `Sí — ${a.trainType}` : 'No'}\n`;
+  ctx += `• Días disponibles: ${a.days || '3'}/semana\n`;
+  ctx += `• Duración por sesión: ${a.duration || '60 min'}\n`;
+  if (a.injuries) ctx += `• Lesiones/limitaciones: ${a.injuries}\n`;
+  if (a.pain)     ctx += `• Zonas de dolor: ${a.pain}\n`;
+  if (a.medical)  ctx += `• Historial médico: ${a.medical}\n`;
+  if (a.cardio)   ctx += `• Cardio/presión: ${a.cardio}\n`;
+  if (a.extra)    ctx += `• Notas: ${a.extra}\n`;
+  if (latest?.calc) {
+    ctx += `\nMÉTRICAS ACTUALES:\n`;
+    if (latest.calc.fatPct)    ctx += `• % Grasa: ${parseFloat(latest.calc.fatPct).toFixed(1)}%\n`;
+    if (latest.calc.musclePct) ctx += `• % Músculo: ${parseFloat(latest.calc.musclePct).toFixed(1)}%\n`;
+    if (latest.calc.bmr)       ctx += `• BMR: ${Math.round(latest.calc.bmr)} kcal\n`;
+  }
+  return ctx;
+}
+
+async function generateWithAI() {
+  const s = state.students.find(x => x.id === state.currentStudentId);
+  if (!s) { alert('No hay alumno seleccionado.'); return; }
+
+  document.getElementById('ai-loading').style.display = 'block';
+  document.getElementById('ai-error').style.display = 'none';
+  document.getElementById('ai-actions').style.display = 'none';
+  document.getElementById('ai-opts-routine').style.display = 'none';
+  document.getElementById('ai-opts-period').style.display = 'none';
+
+  const msgs = [
+    'Analizando el perfil del alumno...',
+    'Diseñando la estructura...',
+    'Seleccionando ejercicios...',
+    'Ajustando progresión y cargas...',
+    'Finalizando el plan...'
+  ];
+  let mi = 0;
+  const msgEl = document.getElementById('ai-loading-msg');
+  const interval = setInterval(() => { mi=(mi+1)%msgs.length; if(msgEl) msgEl.textContent=msgs[mi]; }, 2500);
+
+  try {
+    const prompt = _aiMode === 'routine' ? buildRoutinePrompt(s) : buildPeriodizationPrompt(s);
+    const result = await callClaudeAPI(prompt, _aiMode === 'periodization' ? 4000 : 2000);
+    if (_aiMode === 'routine') applyRoutineResult(result, s);
+    else applyPeriodizationResult(result, s);
+    closeModal('modal-ai-generator');
+  } catch (err) {
+    const errEl = document.getElementById('ai-error');
+    errEl.style.display = 'block';
+    errEl.textContent = `Error: ${err.message}. Verificá tu conexión e intentá de nuevo.`;
+    document.getElementById('ai-actions').style.display = 'flex';
+    document.getElementById(_aiMode === 'routine' ? 'ai-opts-routine' : 'ai-opts-period').style.display = 'block';
+  } finally {
+    clearInterval(interval);
+    document.getElementById('ai-loading').style.display = 'none';
+  }
+}
+
+async function callClaudeAPI(prompt, maxTokens = 2000) {
+  const response = await anthropicFetch({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: maxTokens,
+      messages: [{ role: 'user', content: prompt }]
+    });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error?.message || `HTTP ${response.status}`);
+  }
+  const data = await response.json();
+  return data.content?.[0]?.text || '';
+}
+
+function buildRoutinePrompt(s) {
+  const days     = document.getElementById('ai-days')?.value || s.anamnesis?.days || '3';
+  const duration = document.getElementById('ai-duration')?.value || '60';
+  const equip    = document.getElementById('ai-equipment')?.value || 'mancuernas';
+  const focus    = document.getElementById('ai-focus')?.value?.trim() || '';
+  const rName    = document.getElementById('ai-routine-name')?.value?.trim() || '';
+  const ctx = buildStudentContext(s);
+
+  return `Eres un entrenador personal especializado en fitness funcional y recomposición corporal para adultos.
+
+${ctx}
+
+PARÁMETROS:
+• Días: ${days}/semana
+• Duración: ${duration} min por sesión
+• Equipamiento: ${equip}
+• Nombre de la rutina: ${rName || `Rutina ${days} días`}
+${focus ? `• Énfasis: ${focus}` : ''}
+
+FORMATO DE SALIDA — EXACTO, SIN VARIACIONES:
+Línea 1: nombre de la rutina (solo el nombre, sin prefijos)
+Línea 2: en blanco
+Luego para cada día:
+"DÍA N - NOMBRE DEL DÍA" (en mayúsculas)
+"Nombre ejercicio en español: NxN (Xseg)"
+Línea en blanco entre días.
+Sin explicaciones, sin secciones extra, sin calentamiento.
+
+EJEMPLO:
+Fuerza Funcional 3 Días
+
+DÍA 1 - TREN SUPERIOR
+Press de hombros con mancuernas: 4x10 (90 seg)
+Remo con mancuerna: 4x10 (60 seg)
+Dominadas asistidas: 4x8 (90 seg)
+Curl de bíceps: 3x12 (60 seg)
+
+DÍA 2 - TREN INFERIOR
+Sentadilla búlgara: 4x10 cada pierna (90 seg)
+Peso muerto rumano: 4x12 (90 seg)
+Hip thrust: 4x15 (60 seg)
+Zancadas caminando: 3x12 (60 seg)
+
+Generá la rutina ahora.`;
+}
+
+function buildPeriodizationPrompt(s) {
+  const phases = document.getElementById('ai-phases')?.value || '3';
+  const wpp    = document.getElementById('ai-weeks-per-phase')?.value || '4';
+  const prog   = document.getElementById('ai-progression')?.value || 'lineal';
+  const equip  = document.getElementById('ai-equip-period')?.value || 'mancuernas';
+  const notes  = document.getElementById('ai-period-notes')?.value?.trim() || '';
+  const days   = s.anamnesis?.days || '3';
+  const ctx = buildStudentContext(s);
+
+  return `Eres un entrenador personal especializado en periodización deportiva.
+
+${ctx}
+
+PARÁMETROS DEL PLAN:
+• Fases: ${phases}
+• Semanas por fase: ${wpp}
+• Progresión: ${prog}
+• Días/semana: ${days}
+• Equipamiento: ${equip}
+${notes ? `• Indicaciones: ${notes}` : ''}
+
+FORMATO EXACTO — SEGUIR SIN VARIACIONES:
+Para cada fase:
+"FASE N - NOMBRE DE LA FASE"
+"Semanas: N | Enfoque: descripción breve"
+(línea en blanco)
+"DÍA N - NOMBRE DEL DÍA"
+"Ejercicio en español: NxN (Xseg)"
+(línea en blanco entre días)
+"---" para separar fases.
+Sin texto adicional, sin explicaciones.
+
+EJEMPLO:
+FASE 1 - ADAPTACIÓN
+Semanas: 4 | Enfoque: Técnica y base de fuerza
+
+DÍA 1 - TREN SUPERIOR
+Press con mancuernas: 4x12 (60 seg)
+Remo con mancuerna: 4x12 (60 seg)
+
+DÍA 2 - TREN INFERIOR
+Sentadilla goblet: 4x15 (60 seg)
+Hip thrust: 4x15 (45 seg)
+
+---
+FASE 2 - HIPERTROFIA
+Semanas: 4 | Enfoque: Volumen y tiempo bajo tensión
+
+DÍA 1 - EMPUJE
+Press inclinado: 4x10 (75 seg)
+Aperturas: 3x15 (45 seg)
+
+Generá el plan completo.`;
+}
+
+function applyRoutineResult(text, s) {
+  const lines = text.trim().split('\n');
+  const name = lines[0].trim().replace(/^#+\s*/, '');
+  const content = lines.slice(1).join('\n').trim();
+  const nameEl    = document.getElementById('aw-name');
+  const contentEl = document.getElementById('aw-content');
+  if (nameEl) nameEl.value = name;
+  if (contentEl) contentEl.value = content;
+  const excl = document.querySelector('input[name="aw-save-mode"][value="exclusive"]');
+  if (excl) excl.checked = true;
+  setTimeout(() => contentEl?.scrollIntoView({ behavior:'smooth', block:'center' }), 300);
+  alert(`✅ Rutina "${name}" generada. Revisala y tocá "Guardar y asignar".`);
+}
+
+function applyPeriodizationResult(text, s) {
+  const rawPhases = text.split(/^---\s*$/m).map(p => p.trim()).filter(Boolean);
+  if (!rawPhases.length) throw new Error('No se pudieron parsear las fases. Intentá de nuevo.');
+
+  if (!s.cyclePlan) s.cyclePlan = [];
+  if (!s.cycleStartDate) s.cycleStartDate = new Date().toISOString().split('T')[0];
+
+  let added = 0;
+  for (const raw of rawPhases) {
+    const lines = raw.split('\n').filter(Boolean);
+    if (!lines.length) continue;
+    const headerMatch = lines[0].match(/FASE\s+\d+\s*[-–]\s*(.+)/i);
+    const phaseName = headerMatch ? headerMatch[1].trim() : lines[0].trim();
+    const weekMatch = lines[1]?.match(/semanas?\s*[:=]?\s*(\d+)/i);
+    const weeks = weekMatch ? parseInt(weekMatch[1]) : 4;
+    const routineContent = lines.slice(2).join('\n').trim();
+    if (!routineContent) continue;
+
+    const workout = { id: genId(), name: phaseName, desc: `Fase ${added+1} — ${weeks} semanas`, content: routineContent };
+    state.workouts.push(workout);
+    s.cyclePlan.push({ name: phaseName, weeks, workoutId: workout.id });
+    added++;
+  }
+
+  if (!added) throw new Error('No se encontraron fases válidas. Intentá de nuevo.');
+  saveState();
+  renderCyclePlan(s);
+  renderWorkoutsList();
+  alert(`✅ Plan de ${added} fases generado. Revisá las rutinas y el ciclo.`);
+}
+
+// ═══════════════════════════════════════════
 //  ASISTENTE IA — CHAT
 // ═══════════════════════════════════════════
 let _chatHistory   = [];
@@ -3869,7 +4149,21 @@ function esc(str) {
   if (!str && str !== 0) return '';
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
-
+function sanitizeInput(str) {
+  if (!str) return '';
+  return String(str).replace(/<script[\s\S]*?<\/script>/gi,'').replace(/<iframe[\s\S]*?<\/iframe>/gi,'').replace(/javascript:/gi,'').replace(/on\w+\s*=/gi,'').trim().substring(0, 2000);
+}
+const _attempts = {};
+function checkRateLimit(key) {
+  const now = Date.now();
+  if (!_attempts[key]) _attempts[key] = { count:0, lockUntil:0 };
+  const a = _attempts[key];
+  if (a.lockUntil > now) {
+    const secs = Math.ceil((a.lockUntil - now) / 1000);
+    return `⛔ Demasiados intentos. Esperá ${secs} segundos.`;
+  }
+  return null;
+}
 function registerFail(key) {
   if (!_attempts[key]) _attempts[key] = { count:0, lockUntil:0 };
   const a = _attempts[key];
@@ -3878,13 +4172,30 @@ function registerFail(key) {
 }
 function resetAttempts(key) { if(_attempts[key]) _attempts[key]={count:0,lockUntil:0}; }
 
+// ═══════════════════════════════════════════
+//  API KEY
+// ═══════════════════════════════════════════
+function getApiKey() { return localStorage.getItem('vcfit-api-key') || ''; }
+
+function saveApiKey() {
+  const key = document.getElementById('tp-apikey')?.value.trim();
+  const msg = document.getElementById('tp-apikey-msg');
+  if (!key) { if(msg){msg.style.color='var(--danger)';msg.textContent='Ingresá una API key.';} return; }
+  if (!key.startsWith('sk-ant')) { if(msg){msg.style.color='var(--danger)';msg.textContent='La key debe empezar con sk-ant...';} return; }
+  localStorage.setItem('vcfit-api-key', key);
+  if(msg){msg.style.color='var(--success)';msg.textContent='✅ API Key guardada en este dispositivo';}
+  if(document.getElementById('tp-apikey')) document.getElementById('tp-apikey').value = '••••••••••••••••••••' + key.slice(-4);
+}
 function deleteApiKey() {
   localStorage.removeItem('vcfit-api-key');
   if(document.getElementById('tp-apikey')) document.getElementById('tp-apikey').value = '';
   const msg = document.getElementById('tp-apikey-msg');
   if(msg){msg.style.color='var(--gray-light)';msg.textContent='API Key eliminada.';}
 }
-
+function toggleApiKeyVisibility() {
+  const input = document.getElementById('tp-apikey');
+  if (input) input.type = input.type === 'password' ? 'text' : 'password';
+}
 function loadApiKeyStatus() {
   const key = getApiKey();
   if (key && document.getElementById('tp-apikey')) document.getElementById('tp-apikey').value = '••••••••••••••••••••' + key.slice(-4);
@@ -3896,6 +4207,27 @@ function getAIHeaders() {
   const h = { 'Content-Type':'application/json','anthropic-version':'2023-06-16','anthropic-dangerous-direct-browser-access':'true' };
   if (key) h['x-api-key'] = key;
   return h;
+}
+
+// ═══════════════════════════════════════════
+//  IMPORTAR HISTORIAL DE MÉTRICAS
+// ═══════════════════════════════════════════
+let _csvRawData = [], _quickRowCount = 0;
+
+function openImportMetrics() {
+  _csvRawData = []; _quickRowCount = 0;
+  document.getElementById('import-result').textContent = '';
+  setImportMode('text');
+  document.getElementById('modal-import-metrics').classList.add('show');
+}
+function setImportMode(mode) {
+  ['text','csv','quick','json'].forEach(m => {
+    const p = document.getElementById(`import-panel-${m}`);
+    if(p) p.style.display = m===mode ? 'block' : 'none';
+    const b = document.getElementById(`imb-${m}`);
+    if(b) b.classList.toggle('active', m===mode);
+  });
+  if (mode==='quick' && _quickRowCount===0) { addQuickRow(); addQuickRow(); addQuickRow(); }
 }
 
 function parseMetricDate(str) {
@@ -3930,7 +4262,151 @@ function buildMetricEntry(obj) {
   };
 }
 
+function importFromText() {
+  const raw = document.getElementById('import-text-input')?.value.trim();
+  if (!raw) { showImportResult('❌ Pegá el texto primero.','danger'); return; }
+  const s = state.students.find(x=>x.id===state.currentStudentId);
+  if (!s) return;
+  const lines = raw.split('\n').filter(l=>l.trim());
+  const entries = [];
+  for (const line of lines) {
+    let fechaStr = null;
+    for (const pat of [/(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4})/,/(\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2})/,/(\w+\s+\d{4})/i]) {
+      const m=line.match(pat); if(m){fechaStr=m[1];break;}
+    }
+    if (!fechaStr) continue;
+    let peso = null;
+    const kgM = line.match(/(\d+[\.,]\d+|\d+)\s*kg/i);
+    if (kgM) peso=extractNumber(kgM[1]);
+    if (!peso) { const nums=[...line.matchAll(/(\d+[\.,]\d+|\d{2,3})/g)].map(m=>parseFloat(m[1].replace(',','.'))); peso=nums.find(n=>n>30&&n<300)||null; }
+    if (!peso) continue;
+    let grasa=null,musculo=null,cintura=null;
+    const gM=line.match(/(\d+[\.,]\d+|\d+)\s*%/); if(gM) grasa=extractNumber(gM[1]);
+    const gM2=line.match(/grasa[:\s=]+(\d+[\.,]\d+|\d+)/i); if(gM2) grasa=extractNumber(gM2[1]);
+    const mM=line.match(/m[uú]sculo[:\s=]+(\d+[\.,]\d+|\d+)/i); if(mM) musculo=extractNumber(mM[1]);
+    const cM=line.match(/cintura[:\s=]+(\d+[\.,]\d+|\d+)/i); if(cM) cintura=extractNumber(cM[1]);
+    const entry=buildMetricEntry({fecha:fechaStr,peso,grasa,musculo,cintura});
+    if(entry) entries.push(entry);
+  }
+  if (!entries.length) { showImportResult('❌ No se pudieron parsear métricas. Verificá el formato.','danger'); return; }
+  saveImportedMetrics(s, entries);
+}
+
 let _csvParsed = [];
+function handleCSVUpload(event) {
+  const file = event.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const text = e.target.result;
+      const sep = text.includes(';')?';':',';
+      const lines = text.trim().split(/\r?\n/);
+      if(lines.length<2){showImportResult('❌ El CSV debe tener al menos 2 filas.','danger');return;}
+      const headers = lines[0].split(sep).map(h=>h.trim().replace(/"/g,'').toLowerCase());
+      _csvParsed = lines.slice(1).filter(l=>l.trim()).map(line=>{
+        const vals=line.split(sep).map(v=>v.trim().replace(/"/g,''));
+        const obj={};
+        headers.forEach((h,i)=>{obj[h]=vals[i]||'';});
+        return obj;
+      });
+      const sample=_csvParsed.slice(0,3);
+      const keys=Object.keys(sample[0]||{});
+      const previewEl=document.getElementById('csv-preview');
+      const tableEl=document.getElementById('csv-preview-table');
+      const msgEl=document.getElementById('csv-preview-msg');
+      const btnEl=document.getElementById('csv-import-btn');
+      if(msgEl) msgEl.textContent=`${_csvParsed.length} filas detectadas. Vista previa (primeras 3):`;
+      if(tableEl) tableEl.innerHTML=`<table style="border-collapse:collapse;width:100%"><tr>${keys.map(k=>`<th style="border:1px solid var(--dark4);padding:3px 6px;background:var(--dark3);font-size:0.7rem">${esc(k)}</th>`).join('')}</tr>${sample.map(row=>`<tr>${keys.map(k=>`<td style="border:1px solid var(--dark4);padding:3px 6px;font-size:0.72rem">${esc(row[k])}</td>`).join('')}</tr>`).join('')}</table>`;
+      if(previewEl) previewEl.style.display='block';
+      if(btnEl) btnEl.style.display='block';
+    } catch(err){ showImportResult('❌ Error: '+err.message,'danger'); }
+  };
+  reader.readAsText(file,'UTF-8');
+  event.target.value='';
+}
+function importFromCSV() {
+  if(!_csvParsed.length){showImportResult('❌ Cargá el CSV primero.','danger');return;}
+  const s=state.students.find(x=>x.id===state.currentStudentId); if(!s) return;
+  const entries=_csvParsed.map(buildMetricEntry).filter(Boolean);
+  if(!entries.length){showImportResult('❌ No se encontraron métricas válidas. Verificá las columnas.','danger');return;}
+  saveImportedMetrics(s,entries);
+}
+
+function addQuickRow() {
+  const container=document.getElementById('quick-rows-container'); if(!container) return;
+  const idx=_quickRowCount++;
+  const div=document.createElement('div');
+  div.id=`qr-${idx}`;
+  div.style.cssText='background:var(--dark3);border-radius:8px;padding:0.7rem;margin-bottom:0.5rem';
+  div.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem"><span class="text-small bold">Medición ${idx+1}</span><button class="btn btn-danger btn-sm" style="padding:0.15rem 0.4rem;font-size:0.7rem" onclick="removeQuickRow(${idx})">✕</button></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:0.4rem"><input type="date" class="input-field qr-fecha" style="padding:0.5rem"><input type="number" class="input-field qr-peso" style="padding:0.5rem" placeholder="Peso (kg)" step="0.1"><input type="number" class="input-field qr-grasa" style="padding:0.5rem" placeholder="% Grasa" step="0.1"><input type="number" class="input-field qr-musculo" style="padding:0.5rem" placeholder="% Músculo" step="0.1"><input type="number" class="input-field qr-cintura" style="padding:0.5rem" placeholder="Cintura (cm)"><input type="number" class="input-field qr-visceral" style="padding:0.5rem" placeholder="Grasa visceral"></div>`;
+  container.appendChild(div);
+}
+function removeQuickRow(idx){ const el=document.getElementById(`qr-${idx}`); if(el) el.remove(); }
+
+function importFromQuick() {
+  const s=state.students.find(x=>x.id===state.currentStudentId); if(!s) return;
+  const rows=document.querySelectorAll('#quick-rows-container > div[id^="qr-"]');
+  const entries=[];
+  rows.forEach(row=>{
+    const fechaISO=row.querySelector('.qr-fecha')?.value;
+    const peso=extractNumber(row.querySelector('.qr-peso')?.value);
+    if(!fechaISO||!peso) return;
+    const d=new Date(fechaISO+'T12:00:00');
+    const entry=buildMetricEntry({fecha:`${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`,peso,grasa:extractNumber(row.querySelector('.qr-grasa')?.value),musculo:extractNumber(row.querySelector('.qr-musculo')?.value),cintura:extractNumber(row.querySelector('.qr-cintura')?.value)});
+    if(entry){const v=extractNumber(row.querySelector('.qr-visceral')?.value);if(v)entry.calc.visceralEst=v;entries.push(entry);}
+  });
+  if(!entries.length){showImportResult('❌ Completá al menos fecha y peso en una fila.','danger');return;}
+  saveImportedMetrics(s,entries);
+}
+
+function handleJSONUpload(event) {
+  const file=event.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{if(document.getElementById('import-json-input'))document.getElementById('import-json-input').value=e.target.result;};
+  reader.readAsText(file);
+  event.target.value='';
+}
+function importFromJSON() {
+  const raw=document.getElementById('import-json-input')?.value.trim();
+  if(!raw){showImportResult('❌ Pegá o cargá el JSON primero.','danger');return;}
+  const s=state.students.find(x=>x.id===state.currentStudentId); if(!s) return;
+  let data;
+  try{data=JSON.parse(raw);}catch(e){showImportResult('❌ JSON inválido: '+e.message,'danger');return;}
+  if(!Array.isArray(data)){showImportResult('❌ El JSON debe ser un array [...].','danger');return;}
+  const allowed=['fecha','date','peso','weight','grasa','fat','musculo','muscle','cintura','waist','cadera','hip','pecho','chest','muslo','thigh','visceral','bmr','imc','bmi','bone','hueso'];
+  const cleaned=data.map(obj=>{const safe={};allowed.forEach(k=>{if(obj[k]!==undefined)safe[k]=obj[k];});return safe;});
+  const entries=cleaned.map(buildMetricEntry).filter(Boolean);
+  if(!entries.length){showImportResult('❌ No se encontraron métricas válidas.','danger');return;}
+  saveImportedMetrics(s,entries);
+}
+
+function saveImportedMetrics(s, entries) {
+  if(!s.metricsLog) s.metricsLog=[];
+  let added=0, skipped=0;
+  entries.forEach(entry=>{
+    if(s.metricsLog.some(e=>e.dateISO===entry.dateISO)){skipped++;return;}
+    if(entry.weight&&(entry.fatManual||entry.muscleManual)){
+      const age=parseInt(s.anamnesis?.age)||40, h=parseInt(s.anamnesis?.height)||170, w=entry.weight;
+      const isFem=(s.anamnesis?.sex||'').toLowerCase().includes('fem');
+      const bmr=isFem?Math.round(10*w+6.25*h-5*age-161):Math.round(10*w+6.25*h-5*age+5);
+      entry.calc={
+        bmi:parseFloat((w/((h/100)**2)).toFixed(1)),bmr,tdee:Math.round(bmr*1.375),
+        fatPct:entry.fatManual,musclePct:entry.muscleManual,
+        fatMass:entry.fatManual?parseFloat((w*entry.fatManual/100).toFixed(1)):null,
+        leanMass:entry.fatManual?parseFloat((w*(1-entry.fatManual/100)).toFixed(1)):null,
+        visceralEst:entry.calc?.visceralEst||null,
+        bmiStatus:w/((h/100)**2)<25?'Normal':'Sobrepeso',bmiClass:w/((h/100)**2)<25?'status-ok':'status-warn'
+      };
+    }
+    s.metricsLog.push(entry);
+    added++;
+  });
+  s.metricsLog.sort((a,b)=>(a.dateISO||'').localeCompare(b.dateISO||''));
+  saveState();
+  renderMetricsView(s,'trainer');
+  showImportResult(`✅ ${added} medición${added!==1?'es':''} importada${added!==1?'s':''}.${skipped?` ${skipped} ya existían y se omitieron.`:''}`, 'success');
+}
+function showImportResult(msg,type){const el=document.getElementById('import-result');if(el){el.style.color=type==='success'?'var(--success)':'var(--danger)';el.textContent=msg;}}
 
 // ═══════════════════════════════════════════
 //  FIN SEGURIDAD + API KEY + IMPORTACIÓN
@@ -5110,36 +5586,34 @@ function mergePhotosFromLocal(fsState) {
 
 // ── loadState: Firestore primero, localStorage como fallback ──
 async function loadState() {
-  // Cargar desde localStorage siempre primero
+  // 1. Carga rápida desde localStorage
   try {
     const saved = localStorage.getItem('vcfit_state');
     if (saved) state = JSON.parse(saved);
   } catch(e) {}
 
-  // Firestore: solo si disponible, con timeout de 5 segundos
+  // 2. Intentar Firestore solo si está disponible
   if (!_firebaseAvailable || !STATE_DOC) {
     setSyncStatus('offline');
     return;
   }
 
   try {
-    setLoadingMsg('Sincronizando...');
-    const timeout = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('timeout')), 5000)
-    );
-    const doc = await Promise.race([STATE_DOC.get(), timeout]);
+    setLoadingMsg('Conectando con Firebase...');
+    const doc = await STATE_DOC.get();
     if (doc.exists) {
       const merged = mergePhotosFromLocal(doc.data());
       state = { ...merged, currentRole: null, currentStudentId: null };
       localStorage.setItem('vcfit_state', JSON.stringify(state));
     } else {
-      STATE_DOC.set(stateForFirestore()).catch(() => {});
+      setLoadingMsg('Primer inicio: creando base de datos...');
+      await STATE_DOC.set(stateForFirestore());
     }
     syncEnabled = true;
     setSyncStatus('ok');
     initSync();
   } catch(e) {
-    // Timeout o error — la app sigue con localStorage
+    console.warn('Firebase no disponible, usando localStorage:', e.message);
     setSyncStatus('offline');
   }
 }
@@ -5407,6 +5881,7 @@ Abdominales bicicleta: 3x15`
 
 // loadDemoData() se llama desde el init async al final del script
 
+
 // ═══════════════════════════════════════════
 //  LOGO HANDLING
 // ═══════════════════════════════════════════
@@ -5437,7 +5912,7 @@ applyLogo();
 // Pantallas exclusivas del entrenador
 const TRAINER_SCREENS = [
   'screen-trainer','screen-trainer-profile','screen-students','screen-student-detail',
-  'screen-workouts','screen-stats','screen-ai-chat','screen-finance','screen-calendar'
+  'screen-workouts','screen-stats','screen-ai-chat','screen-finance'
 ];
 
 function showScreen(id) {
@@ -6617,11 +7092,6 @@ function refreshTrainerDashboard() {
         <div class="nav-card-icon">💰</div>
         <div class="nav-card-label">Finanzas</div>
         <div class="nav-card-count" id="count-finance">→</div>
-      </div>
-      <div class="nav-card" onclick="openCalendarScreen()">
-        <div class="nav-card-icon">📅</div>
-        <div class="nav-card-label">Calendario</div>
-        <div class="nav-card-count" id="count-cal-events">→</div>
       </div>`;
   }
 
@@ -7183,7 +7653,6 @@ ${series.map(ser => `
   <span>Generado el ${now}</span>
 </div>
 
-
 </body>
 </html>`;
 
@@ -7290,7 +7759,6 @@ function exportStudentReport() {
   <div style="margin-top:40px;padding-top:16px;border-top:1px solid #eee;color:#999;font-size:11px;text-align:center">
     VC FIT STUDIO · ${state.trainerProfile?.name || 'Entrenador'} · ${state.trainerProfile?.specialty || ''} · Generado el ${now}
   </div>
-
 </body>
 </html>`;
 
@@ -7591,9 +8059,6 @@ function completeWorkout() {
   if (checksKey) state.exerciseChecks[checksKey] = {};
   saveState();
 
-  // Auto-sync a Google Calendar si está configurado
-  calAutoSyncSession(s.name, entry.dateISO, entry.duration, entry.workoutName);
-
   document.getElementById('completed-message').textContent =
     `Rutina "${w ? w.name : ''}" registrada. ¡Seguí así, ${s.name.split(' ')[0]}!`;
   document.getElementById('completed-overlay').classList.add('show');
@@ -7694,6 +8159,9 @@ function renderStudentProgress(s) {
       }).join('')}
     </div>`;
 }
+
+
+
 
 function openEditSessionModal(idx) {
   const s = state.students.find(x => x.id === state.currentStudentId);
@@ -8371,6 +8839,8 @@ function renderStudentPaymentBanner(s) {
 // ═══════════════════════════════════════════
 //  SISTEMA DE PAGOS — FIN
 // ═══════════════════════════════════════════
+
+
 
 function openEditMetricsModal(idx) {
   const s = state.students.find(x => x.id === state.currentStudentId);
@@ -9579,601 +10049,6 @@ function propagateRecurringExpenses() {
   });
 }
 
-// ═══════════════════════════════════════════
-// MÓDULO GOOGLE CALENDAR
-// ═══════════════════════════════════════════
-
-const GCAL_CLIENT_ID    = '738858575495-4uliefqj08a6kdmuuh8o43tkg0h3067e.apps.googleusercontent.com';
-const GCAL_SCOPES       = 'https://www.googleapis.com/auth/calendar';
-const GCAL_DISCOVERY    = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
-const VCFIT_CALENDAR_ID = 'primary';  // usar calendario principal
-
-let _gapiInited  = false;
-let _gisInited   = false;
-let _tokenClient = null;
-let _calTab      = 'upcoming';
-let _calEvents   = [];
-let _calSyncing  = false;
-
-// ── Inicialización GAPI ──
-function gapiLoaded() {
-  gapi.load('client', async () => {
-    try {
-      await gapi.client.init({ discoveryDocs: [GCAL_DISCOVERY] });
-      _gapiInited = true;
-      maybeEnableCalendar();
-    } catch(e) {
-      console.warn('GAPI init error:', e);
-    }
-  });
-}
-
-function gapiLoadError() {
-  console.warn('Google API no disponible — sin conexión o bloqueado.');
-}
-
-function gisLoaded() {
-  try {
-    _tokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: GCAL_CLIENT_ID,
-      scope: GCAL_SCOPES,
-      callback: handleTokenResponse,
-    });
-    _gisInited = true;
-    maybeEnableCalendar();
-  } catch(e) {
-    console.warn('GIS init error:', e);
-  }
-}
-
-function maybeEnableCalendar() {
-  if (!_gapiInited || !_gisInited) return;
-  // Verificar si hay token guardado
-  const token = localStorage.getItem('vcfit_gcal_token');
-  if (token) {
-    try {
-      const t = JSON.parse(token);
-      if (t.expires_at > Date.now()) {
-        gapi.client.setToken(t);
-        calSetConnected(t.email || '');
-        return;
-      }
-    } catch(e) {}
-    localStorage.removeItem('vcfit_gcal_token');
-  }
-}
-
-function handleTokenResponse(resp) {
-  calHideLoading();
-  if (resp.error) {
-    console.warn('OAuth error:', resp.error);
-    alert('No se pudo conectar con Google: ' + resp.error);
-    return;
-  }
-  // Guardar token con expiración
-  const tokenData = {
-    ...gapi.client.getToken(),
-    expires_at: Date.now() + (resp.expires_in || 3600) * 1000,
-    email: ''  // se llena después
-  };
-  // Obtener email del usuario
-  fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-    headers: { Authorization: 'Bearer ' + tokenData.access_token }
-  }).then(r => r.json()).then(info => {
-    tokenData.email = info.email || '';
-    localStorage.setItem('vcfit_gcal_token', JSON.stringify(tokenData));
-    calSetConnected(tokenData.email);
-  }).catch(() => {
-    localStorage.setItem('vcfit_gcal_token', JSON.stringify(tokenData));
-    calSetConnected('');
-  });
-}
-
-// ── UI de pantalla Calendar ──
-function openCalendarScreen() {
-  showScreen('screen-calendar');
-  if (_gapiInited && _gisInited) {
-    const token = localStorage.getItem('vcfit_gcal_token');
-    if (token) {
-      try {
-        const t = JSON.parse(token);
-        if (t.expires_at > Date.now()) {
-          calSetConnected(t.email || '');
-          return;
-        }
-      } catch(e) {}
-    }
-  }
-  // Mostrar sección de login
-  document.getElementById('cal-auth-section').style.display = 'block';
-  document.getElementById('cal-main-section').style.display = 'none';
-  document.getElementById('cal-loading').style.display = 'none';
-}
-
-function calSetConnected(email) {
-  document.getElementById('cal-auth-section').style.display = 'none';
-  document.getElementById('cal-loading').style.display = 'none';
-  document.getElementById('cal-main-section').style.display = 'block';
-  document.getElementById('cal-sync-btn').style.display = 'inline-flex';
-  if (email) document.getElementById('cal-user-email').textContent = email;
-  _calTab = 'upcoming';
-  updateCalTabs();
-  calFetchEvents();
-}
-
-function calShowLoading(msg) {
-  document.getElementById('cal-auth-section').style.display = 'none';
-  document.getElementById('cal-main-section').style.display = 'none';
-  document.getElementById('cal-loading').style.display = 'block';
-  document.getElementById('cal-loading-msg').textContent = msg || 'Conectando...';
-}
-
-function calHideLoading() {
-  document.getElementById('cal-loading').style.display = 'none';
-}
-
-function calendarSignIn() {
-  if (!_gapiInited || !_gisInited || !_tokenClient) {
-    alert('Las librerías de Google aún se están cargando. Esperá un momento e intentá de nuevo.');
-    return;
-  }
-  calShowLoading('Conectando con Google...');
-  _tokenClient.requestAccessToken({ prompt: 'consent' });
-}
-
-function calendarSignOut() {
-  if (!confirm('¿Desconectar Google Calendar?')) return;
-  const token = gapi.client.getToken();
-  if (token) {
-    google.accounts.oauth2.revoke(token.access_token, () => {});
-    gapi.client.setToken('');
-  }
-  localStorage.removeItem('vcfit_gcal_token');
-  _calEvents = [];
-  document.getElementById('cal-auth-section').style.display = 'block';
-  document.getElementById('cal-main-section').style.display = 'none';
-  document.getElementById('cal-sync-btn').style.display = 'none';
-}
-
-// ── Tabs ──
-function switchCalTab(tab) {
-  _calTab = tab;
-  updateCalTabs();
-  renderCalView();
-}
-
-function updateCalTabs() {
-  const tabs = ['upcoming','sync','settings'];
-  document.querySelectorAll('#cal-tabs .tab').forEach((btn, i) => {
-    btn.classList.toggle('active', tabs[i] === _calTab);
-  });
-  renderCalView();
-}
-
-// ── Fetch eventos de Google Calendar ──
-async function calFetchEvents() {
-  if (!gapi.client.calendar) return;
-  try {
-    const now = new Date();
-    const timeMin = now.toISOString();
-    const timeMax = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
-    const resp = await gapi.client.calendar.events.list({
-      calendarId: VCFIT_CALENDAR_ID,
-      timeMin,
-      timeMax,
-      maxResults: 50,
-      singleEvents: true,
-      orderBy: 'startTime',
-      q: 'VC Fit'
-    });
-    _calEvents = resp.result.items || [];
-    renderCalView();
-    // Actualizar counter en dashboard
-    const counter = document.getElementById('count-cal-events');
-    if (counter) counter.textContent = _calEvents.length || '→';
-  } catch(e) {
-    console.warn('Error fetching calendar:', e);
-    if (e.status === 401) {
-      localStorage.removeItem('vcfit_gcal_token');
-      calendarSignOut();
-    }
-  }
-}
-
-// ── Renderizar vista ──
-function renderCalView() {
-  const el = document.getElementById('cal-view');
-  if (!el) return;
-  if (_calTab === 'upcoming')  el.innerHTML = renderCalUpcoming();
-  else if (_calTab === 'sync') el.innerHTML = renderCalSync();
-  else if (_calTab === 'settings') el.innerHTML = renderCalSettings();
-}
-
-function renderCalUpcoming() {
-  let html = `
-  <button class="btn btn-primary btn-full" style="margin-bottom:1rem" onclick="openCalEventModal()">
-    ➕ Nuevo evento
-  </button>`;
-
-  if (!_calEvents.length) {
-    html += `<div class="card"><div class="text-small text-gray" style="text-align:center;padding:1.5rem">
-      Sin eventos VC Fit en los próximos 30 días.
-    </div></div>`;
-    return html;
-  }
-
-  html += `<div class="card"><div class="card-title">Próximos 30 días</div>`;
-  _calEvents.forEach(ev => {
-    const start = ev.start?.dateTime || ev.start?.date;
-    const dateObj = start ? new Date(start) : null;
-    const dateStr = dateObj ? dateObj.toLocaleDateString('es-AR', {
-      weekday: 'short', day: 'numeric', month: 'short'
-    }) : '—';
-    const timeStr = ev.start?.dateTime ? dateObj.toLocaleTimeString('es-AR', {
-      hour: '2-digit', minute: '2-digit'
-    }) : 'Todo el día';
-
-    html += `
-    <div class="progress-row" style="padding:0.7rem 0;align-items:flex-start">
-      <div style="flex:1">
-        <div class="bold text-small">${ev.summary || 'Sin título'}</div>
-        <div class="text-small text-gray">${dateStr} · ${timeStr}</div>
-        ${ev.description ? `<div class="text-small" style="color:var(--gray-light);font-style:italic;margin-top:0.2rem">${ev.description.substring(0,80)}</div>` : ''}
-      </div>
-      <button class="btn btn-danger btn-sm" style="padding:0.2rem 0.5rem;font-size:0.7rem;flex-shrink:0"
-        onclick="calDeleteEvent('${ev.id}')">🗑️</button>
-    </div>`;
-  });
-  html += `</div>`;
-  return html;
-}
-
-function renderCalSync() {
-  const now = new Date();
-  const mesActual = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-
-  // Sesiones completadas este mes sin evento en Calendar
-  const sesiones = [];
-  state.students.forEach(s => {
-    (s.progressLog || []).forEach(e => {
-      const iso = e.dateISO || '';
-      if (iso.startsWith(mesActual)) {
-        sesiones.push({ alumno: s.name, fecha: e.date, iso, duracion: e.duration || 60 });
-      }
-    });
-  });
-
-  // Vencimientos de pago próximos (alumnos sin pago este mes)
-  const vencimientos = state.students.filter(s => {
-    const pagado = (s.payments || []).some(p => p.mes === mesActual);
-    const pack = (s.classPacks || []).some(p => p.restantes > 0);
-    return !pagado && !pack;
-  }).map(s => s.name);
-
-  let html = `
-  <div class="card" style="margin-bottom:1rem">
-    <div class="card-title">📤 Sesiones → Calendar</div>
-    <div class="text-small text-gray" style="margin-bottom:0.8rem;line-height:1.6">
-      Exportá las sesiones completadas este mes como eventos en tu Google Calendar.
-    </div>`;
-
-  if (!sesiones.length) {
-    html += `<div class="text-small text-gray">Sin sesiones registradas este mes.</div>`;
-  } else {
-    html += `<div style="max-height:200px;overflow-y:auto;margin-bottom:0.8rem">`;
-    sesiones.forEach(s => {
-      html += `<div class="progress-row" style="padding:0.4rem 0">
-        <span class="progress-label text-small">${s.alumno}</span>
-        <span class="progress-value text-small text-gray">${s.fecha} · ${s.duracion} min</span>
-      </div>`;
-    });
-    html += `</div>`;
-    html += `<button class="btn btn-primary btn-sm btn-full" onclick="calSyncSessions()">
-      📤 Exportar ${sesiones.length} sesión${sesiones.length !== 1 ? 'es' : ''} a Calendar
-    </button>`;
-  }
-  html += `</div>`;
-
-  html += `
-  <div class="card" style="margin-bottom:1rem">
-    <div class="card-title">💰 Recordatorios de pago</div>`;
-  if (!vencimientos.length) {
-    html += `<div class="text-small text-gray">Todos los alumnos están al día. 🎉</div>`;
-  } else {
-    html += `
-    <div class="text-small text-gray" style="margin-bottom:0.8rem">
-      ${vencimientos.length} alumno${vencimientos.length !== 1 ? 's' : ''} sin pago este mes:
-    </div>
-    <div style="margin-bottom:0.8rem">
-      ${vencimientos.map(n => `<div class="tag tag-danger" style="display:inline-block;margin:0.2rem;font-size:0.75rem">${n}</div>`).join('')}
-    </div>
-    <button class="btn btn-secondary btn-sm btn-full" onclick="calCreatePaymentReminders()">
-      🔔 Crear recordatorios en Calendar
-    </button>`;
-  }
-  html += `</div>`;
-
-  html += `
-  <div class="card">
-    <div class="card-title">📥 Importar desde Calendar</div>
-    <div class="text-small text-gray" style="margin-bottom:0.8rem;line-height:1.6">
-      Traé eventos de Google Calendar a la app como sesiones completadas.
-    </div>
-    <button class="btn btn-secondary btn-sm btn-full" onclick="calFetchEvents().then(renderCalView)">
-      🔄 Actualizar eventos
-    </button>
-  </div>`;
-
-  return html;
-}
-
-function renderCalSettings() {
-  const saved = JSON.parse(localStorage.getItem('vcfit_gcal_settings') || '{}');
-  return `
-  <div class="card" style="margin-bottom:1rem">
-    <div class="card-title">⚙️ Configuración de sincronización</div>
-
-    <div class="input-group">
-      <label class="input-label">Auto-sync al completar sesión</label>
-      <select class="input-field" id="cset-autosync" onchange="saveCalSettings()">
-        <option value="1" ${saved.autosync !== false ? 'selected' : ''}>✅ Activado</option>
-        <option value="0" ${saved.autosync === false ? 'selected' : ''}>❌ Desactivado</option>
-      </select>
-    </div>
-
-    <div class="input-group">
-      <label class="input-label">Duración por defecto de sesión</label>
-      <select class="input-field" id="cset-duration" onchange="saveCalSettings()">
-        <option value="45" ${saved.defaultDuration === 45 ? 'selected' : ''}>45 min</option>
-        <option value="60" ${!saved.defaultDuration || saved.defaultDuration === 60 ? 'selected' : ''}>60 min</option>
-        <option value="75" ${saved.defaultDuration === 75 ? 'selected' : ''}>75 min</option>
-        <option value="90" ${saved.defaultDuration === 90 ? 'selected' : ''}>90 min</option>
-      </select>
-    </div>
-
-    <div class="input-group">
-      <label class="input-label">Color de eventos en Calendar</label>
-      <select class="input-field" id="cset-color" onchange="saveCalSettings()">
-        <option value="1" ${saved.colorId === '1' ? 'selected' : ''}>🔵 Azul lavanda</option>
-        <option value="2" ${saved.colorId === '2' ? 'selected' : ''}>🟢 Salvia</option>
-        <option value="3" ${!saved.colorId || saved.colorId === '3' ? 'selected' : ''}>🟣 Uva</option>
-        <option value="6" ${saved.colorId === '6' ? 'selected' : ''}>🟠 Mandarina</option>
-        <option value="11" ${saved.colorId === '11' ? 'selected' : ''}>🔴 Tomate</option>
-      </select>
-    </div>
-
-    <div class="input-group">
-      <label class="input-label">Prefijo de eventos</label>
-      <input type="text" class="input-field" id="cset-prefix" value="${saved.prefix || 'VC Fit'}"
-        onchange="saveCalSettings()" placeholder="ej: VC Fit">
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">🗑️ Zona peligrosa</div>
-    <div class="text-small text-gray" style="margin-bottom:0.8rem;line-height:1.5">
-      Eliminá todos los eventos VC Fit de tu Google Calendar (no se puede deshacer).
-    </div>
-    <button class="btn btn-danger btn-sm btn-full" onclick="calDeleteAllVCFit()">
-      🗑️ Eliminar todos los eventos VC Fit
-    </button>
-  </div>`;
-}
-
-// ── Acciones Calendar ──
-function openCalEventModal() {
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('cal-ev-title').value = '';
-  document.getElementById('cal-ev-date').value = today;
-  document.getElementById('cal-ev-time').value = '09:00';
-  document.getElementById('cal-ev-duration').value = '60';
-  document.getElementById('cal-ev-note').value = '';
-
-  // Poblar selector de alumnos
-  const sel = document.getElementById('cal-ev-student');
-  sel.innerHTML = '<option value="">— Sin alumno —</option>';
-  state.students.forEach(s => {
-    sel.innerHTML += `<option value="${s.id}">${s.name}</option>`;
-  });
-
-  openModal('modal-cal-event');
-}
-
-async function calCreateEvent() {
-  const title    = document.getElementById('cal-ev-title').value.trim();
-  const date     = document.getElementById('cal-ev-date').value;
-  const time     = document.getElementById('cal-ev-time').value;
-  const duration = parseInt(document.getElementById('cal-ev-duration').value);
-  const note     = document.getElementById('cal-ev-note').value.trim();
-  const studentId = document.getElementById('cal-ev-student').value;
-
-  if (!title || !date) { alert('Completá título y fecha.'); return; }
-
-  const settings = JSON.parse(localStorage.getItem('vcfit_gcal_settings') || '{}');
-  const prefix = settings.prefix || 'VC Fit';
-  const colorId = settings.colorId || '3';
-
-  const startDT = new Date(`${date}T${time}:00`);
-  const endDT   = new Date(startDT.getTime() + duration * 60000);
-
-  const student = studentId ? state.students.find(s => s.id === studentId) : null;
-  const fullTitle = `${prefix} · ${title}${student ? ` · ${student.name}` : ''}`;
-
-  const event = {
-    summary: fullTitle,
-    description: note || (student ? `Sesión con ${student.name}` : ''),
-    colorId,
-    start: { dateTime: startDT.toISOString(), timeZone: 'America/Argentina/Buenos_Aires' },
-    end:   { dateTime: endDT.toISOString(),   timeZone: 'America/Argentina/Buenos_Aires' },
-  };
-
-  try {
-    await gapi.client.calendar.events.insert({ calendarId: VCFIT_CALENDAR_ID, resource: event });
-    closeModal('modal-cal-event');
-    await calFetchEvents();
-    alert('✅ Evento creado en Google Calendar.');
-  } catch(e) {
-    alert('Error al crear evento: ' + (e.result?.error?.message || e.message));
-  }
-}
-
-async function calDeleteEvent(eventId) {
-  if (!confirm('¿Eliminar este evento de Google Calendar?')) return;
-  try {
-    await gapi.client.calendar.events.delete({ calendarId: VCFIT_CALENDAR_ID, eventId });
-    await calFetchEvents();
-  } catch(e) {
-    alert('Error al eliminar: ' + (e.result?.error?.message || e.message));
-  }
-}
-
-async function calSyncSessions() {
-  if (!confirm('¿Crear eventos en Google Calendar para las sesiones de este mes?')) return;
-  const now = new Date();
-  const mesActual = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-  const settings = JSON.parse(localStorage.getItem('vcfit_gcal_settings') || '{}');
-  const prefix   = settings.prefix || 'VC Fit';
-  const colorId  = settings.colorId || '3';
-  const duration = settings.defaultDuration || 60;
-
-  let created = 0;
-  const promises = [];
-
-  state.students.forEach(s => {
-    (s.progressLog || []).forEach(e => {
-      const iso = e.dateISO || '';
-      if (!iso.startsWith(mesActual)) return;
-      const startDT = new Date(`${iso}T09:00:00`);
-      const endDT   = new Date(startDT.getTime() + (e.duration || duration) * 60000);
-      const event = {
-        summary:     `${prefix} · Sesión · ${s.name}`,
-        description: e.note || `Sesión completada. Rutina: ${e.routineName || '—'}`,
-        colorId,
-        start: { dateTime: startDT.toISOString(), timeZone: 'America/Argentina/Buenos_Aires' },
-        end:   { dateTime: endDT.toISOString(),   timeZone: 'America/Argentina/Buenos_Aires' },
-      };
-      promises.push(
-        gapi.client.calendar.events.insert({ calendarId: VCFIT_CALENDAR_ID, resource: event })
-          .then(() => created++)
-          .catch(() => {})
-      );
-    });
-  });
-
-  await Promise.all(promises);
-  await calFetchEvents();
-  alert(`✅ ${created} sesiones exportadas a Google Calendar.`);
-}
-
-async function calCreatePaymentReminders() {
-  if (!confirm('¿Crear recordatorios de pago en Google Calendar?')) return;
-  const now = new Date();
-  const mesActual = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-  const settings = JSON.parse(localStorage.getItem('vcfit_gcal_settings') || '{}');
-  const prefix = settings.prefix || 'VC Fit';
-
-  const pendientes = state.students.filter(s => {
-    const pagado = (s.payments || []).some(p => p.mes === mesActual);
-    const pack   = (s.classPacks || []).some(p => p.restantes > 0);
-    return !pagado && !pack;
-  });
-
-  if (!pendientes.length) { alert('Todos los alumnos están al día.'); return; }
-
-  // Crear recordatorio para el día 5 del mes siguiente
-  const next = new Date(now.getFullYear(), now.getMonth() + 1, 5);
-  const promises = pendientes.map(s => {
-    const event = {
-      summary:     `${prefix} · 💰 Pago pendiente · ${s.name}`,
-      description: `Recordatorio: ${s.name} no registró pago este mes.`,
-      colorId:     '11',  // rojo
-      start: { date: next.toISOString().split('T')[0] },
-      end:   { date: next.toISOString().split('T')[0] },
-    };
-    return gapi.client.calendar.events.insert({ calendarId: VCFIT_CALENDAR_ID, resource: event })
-      .catch(() => {});
-  });
-
-  await Promise.all(promises);
-  await calFetchEvents();
-  alert(`✅ ${pendientes.length} recordatorio${pendientes.length !== 1 ? 's' : ''} creado${pendientes.length !== 1 ? 's' : ''}.`);
-}
-
-async function calDeleteAllVCFit() {
-  if (!confirm('⚠️ ¿Eliminar TODOS los eventos VC Fit de Google Calendar? Esta acción no se puede deshacer.')) return;
-  if (!confirm('¿Estás seguro? Se eliminarán permanentemente.')) return;
-
-  const settings = JSON.parse(localStorage.getItem('vcfit_gcal_settings') || '{}');
-  const prefix = settings.prefix || 'VC Fit';
-
-  try {
-    const resp = await gapi.client.calendar.events.list({
-      calendarId: VCFIT_CALENDAR_ID,
-      q: prefix,
-      maxResults: 250,
-      singleEvents: true
-    });
-    const events = resp.result.items || [];
-    await Promise.all(events.map(e =>
-      gapi.client.calendar.events.delete({ calendarId: VCFIT_CALENDAR_ID, eventId: e.id }).catch(() => {})
-    ));
-    _calEvents = [];
-    renderCalView();
-    alert(`✅ ${events.length} eventos eliminados.`);
-  } catch(e) {
-    alert('Error: ' + (e.result?.error?.message || e.message));
-  }
-}
-
-async function calendarSync() {
-  if (_calSyncing) return;
-  _calSyncing = true;
-  const btn = document.getElementById('cal-sync-btn');
-  if (btn) btn.textContent = '⏳';
-  await calFetchEvents();
-  if (btn) btn.textContent = '🔄 Sync';
-  _calSyncing = false;
-}
-
-// ── Auto-sync al completar sesión ──
-function calAutoSyncSession(studentName, dateISO, duration, routineName) {
-  const settings = JSON.parse(localStorage.getItem('vcfit_gcal_settings') || '{}');
-  if (settings.autosync === false) return;
-  const token = localStorage.getItem('vcfit_gcal_token');
-  if (!token || !_gapiInited) return;
-  try {
-    const t = JSON.parse(token);
-    if (t.expires_at <= Date.now()) return;
-  } catch(e) { return; }
-
-  const prefix = settings.prefix || 'VC Fit';
-  const colorId = settings.colorId || '3';
-  const dur = duration || settings.defaultDuration || 60;
-  const startDT = new Date(`${dateISO}T09:00:00`);
-  const endDT   = new Date(startDT.getTime() + dur * 60000);
-
-  gapi.client.calendar.events.insert({
-    calendarId: VCFIT_CALENDAR_ID,
-    resource: {
-      summary:     `${prefix} · Sesión · ${studentName}`,
-      description: `Sesión completada. Rutina: ${routineName || '—'}`,
-      colorId,
-      start: { dateTime: startDT.toISOString(), timeZone: 'America/Argentina/Buenos_Aires' },
-      end:   { dateTime: endDT.toISOString(),   timeZone: 'America/Argentina/Buenos_Aires' },
-    }
-  }).catch(() => {});
-}
-
-function saveCalSettings() {
-  const settings = {
-    autosync:        document.getElementById('cset-autosync')?.value !== '0',
-    defaultDuration: parseInt(document.getElementById('cset-duration')?.value) || 60,
-    colorId:         document.getElementById('cset-color')?.value || '3',
-    prefix:          document.getElementById('cset-prefix')?.value.trim() || 'VC Fit',
-  };
-  localStorage.setItem('vcfit_gcal_settings', JSON.stringify(settings));
-}
-
 (async function init() {
   initTheme();
   initApiKeyUI();
@@ -10193,13 +10068,10 @@ function saveCalSettings() {
 
 <!-- PWA MANIFEST INLINE -->
 <script>
-// PWA: limpiar SWs viejos y registrar nuevo
+// PWA: register service worker si está disponible
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(regs => {
-    regs.forEach(reg => reg.unregister());
-  });
   const swCode = `
-    const CACHE = 'vcfit-v4';
+    const CACHE = 'vcfit-v1';
     const ASSETS = ['/'];
     self.addEventListener('install', e => {
       e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
@@ -10231,22 +10103,6 @@ const link = document.createElement('link');
 link.rel = 'manifest';
 link.href = manifestUrl;
 document.head.appendChild(link);
-</script>
-
-
-<!-- Google Calendar APIs — diferidas, no bloquean la app -->
-<script>
-setTimeout(function() {
-  var s1 = document.createElement('script');
-  s1.src = 'https://apis.google.com/js/api.js';
-  s1.onload = function() { if(typeof gapiLoaded==='function') gapiLoaded(); };
-  s1.onerror = function() { if(typeof gapiLoadError==='function') gapiLoadError(); };
-  document.body.appendChild(s1);
-  var s2 = document.createElement('script');
-  s2.src = 'https://accounts.google.com/gsi/client';
-  s2.onload = function() { if(typeof google!=='undefined'&&typeof gisLoaded==='function') gisLoaded(); };
-  document.body.appendChild(s2);
-}, 3000);
 </script>
 </body>
 </html>
