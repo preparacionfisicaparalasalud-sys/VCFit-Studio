@@ -8,8 +8,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="VC Fit">
 <title>VC Fit Studio</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js" defer></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -5034,7 +5035,6 @@ const firebaseConfig = {
   messagingSenderId: "738858575495",
   appId: "1:738858575495:web:691f1fe29a4bbc0e2a7a22"
 };
-window._firebaseConfig = firebaseConfig; // para carga diferida
 // ── Firebase init con fallback a localStorage ──
 let db = null;
 let STATE_DOC = null;
@@ -5110,12 +5110,36 @@ function mergePhotosFromLocal(fsState) {
 
 // ── loadState: Firestore primero, localStorage como fallback ──
 async function loadState() {
-  // Solo localStorage — Firebase carga en background después
+  // 1. Carga rápida desde localStorage
   try {
     const saved = localStorage.getItem('vcfit_state');
     if (saved) state = JSON.parse(saved);
   } catch(e) {}
-  setSyncStatus('offline');
+
+  // 2. Intentar Firestore solo si está disponible
+  if (!_firebaseAvailable || !STATE_DOC) {
+    setSyncStatus('offline');
+    return;
+  }
+
+  try {
+    setLoadingMsg('Conectando con Firebase...');
+    const doc = await STATE_DOC.get();
+    if (doc.exists) {
+      const merged = mergePhotosFromLocal(doc.data());
+      state = { ...merged, currentRole: null, currentStudentId: null };
+      localStorage.setItem('vcfit_state', JSON.stringify(state));
+    } else {
+      setLoadingMsg('Primer inicio: creando base de datos...');
+      await STATE_DOC.set(stateForFirestore());
+    }
+    syncEnabled = true;
+    setSyncStatus('ok');
+    initSync();
+  } catch(e) {
+    console.warn('Firebase no disponible, usando localStorage:', e.message);
+    setSyncStatus('offline');
+  }
 }
 
 // ── saveState: localStorage siempre + Firestore si disponible ──
@@ -5127,8 +5151,8 @@ function saveState() {
 
   savePhotosLocal();
 
-  if (syncEnabled && window._STATE_DOC) {
-    window._STATE_DOC.set(stateForFirestore()).then(() => {
+  if (syncEnabled && STATE_DOC) {
+    STATE_DOC.set(stateForFirestore()).then(() => {
       setSyncStatus('ok');
     }).catch(e => {
       console.warn('Error Firestore save:', e.message);
@@ -5139,9 +5163,9 @@ function saveState() {
 
 // ── onSnapshot: sincronización en tiempo real ──
 function initSync() {
-  if (!window._firebaseAvailable || !window._STATE_DOC) return;
+  if (!_firebaseAvailable || !STATE_DOC) return;
   if (syncUnsubscribe) syncUnsubscribe();
-  syncUnsubscribe = window._STATE_DOC.onSnapshot(doc => {
+  syncUnsubscribe = STATE_DOC.onSnapshot(doc => {
     if (!doc.exists || !doc.metadata.hasPendingWrites === false) return;
     // Solo aplicar cambios que vienen del servidor (no los nuestros)
     if (doc.metadata.hasPendingWrites) return;
@@ -5186,8 +5210,6 @@ function hideLoadingOverlay() {
   const el = document.getElementById('loading-overlay');
   if (el) el.style.display = 'none';
 }
-
-// (failsafe removido — hideLoadingOverlay() se llama en init())
 
 // ═══════════════════════════════════════════
 //  DEMO DATA — se carga solo si no hay datos previos
@@ -7159,6 +7181,7 @@ ${series.map(ser => `
   <span>Generado el ${now}</span>
 </div>
 
+
 </body>
 </html>`;
 
@@ -7265,6 +7288,7 @@ function exportStudentReport() {
   <div style="margin-top:40px;padding-top:16px;border-top:1px solid #eee;color:#999;font-size:11px;text-align:center">
     VC FIT STUDIO · ${state.trainerProfile?.name || 'Entrenador'} · ${state.trainerProfile?.specialty || ''} · Generado el ${now}
   </div>
+
 </body>
 </html>`;
 
@@ -10151,21 +10175,7 @@ function saveCalSettings() {
 (async function init() {
   initTheme();
   initApiKeyUI();
-
-  // Failsafe: si todo falla, la app igual arranca a los 10 segundos
-  const failsafe = setTimeout(() => {
-    hideLoadingOverlay();
-    showScreen('screen-login');
-  }, 10000);
-
-  try {
-    await loadState();
-  } catch(e) {
-    console.warn('Init error:', e);
-  }
-
-  clearTimeout(failsafe);
-
+  await loadState();
   if (!state.expenses) state.expenses = [];
   propagateRecurringExpenses();
   const now = new Date();
@@ -10176,20 +10186,18 @@ function saveCalSettings() {
   renderWorkoutsList();
   hideLoadingOverlay();
   showScreen('screen-login');
-  window._appReady = true; // Firebase puede sincronizar en background
 })();
 </script>
 
 <!-- PWA MANIFEST INLINE -->
 <script>
-// PWA: limpiar service workers viejos y registrar nuevo
+// PWA: limpiar SWs viejos y registrar nuevo
 if ('serviceWorker' in navigator) {
-  // Desregistrar SWs viejos para forzar cache fresco
   navigator.serviceWorker.getRegistrations().then(regs => {
     regs.forEach(reg => reg.unregister());
   });
   const swCode = `
-    const CACHE = 'vcfit-v3';
+    const CACHE = 'vcfit-v4';
     const ASSETS = ['/'];
     self.addEventListener('install', e => {
       e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
@@ -10223,98 +10231,20 @@ link.href = manifestUrl;
 document.head.appendChild(link);
 </script>
 
-<!-- Scripts externos — carga diferida, no bloquean la app -->
+
+<!-- Google Calendar APIs — diferidas, no bloquean la app -->
 <script>
-function loadExternalScripts() {
-  // Firebase
-  const fb1 = document.createElement('script');
-  fb1.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js';
-  fb1.onload = () => {
-    const fb2 = document.createElement('script');
-    fb2.src = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js';
-    fb2.onload = () => initFirebase();
-    fb2.onerror = () => console.warn('Firestore no disponible');
-    document.body.appendChild(fb2);
-  };
-  fb1.onerror = () => console.warn('Firebase App no disponible');
-  document.body.appendChild(fb1);
-
-  // Google Calendar APIs
-  const s1 = document.createElement('script');
+setTimeout(function() {
+  var s1 = document.createElement('script');
   s1.src = 'https://apis.google.com/js/api.js';
-  s1.async = true;
-  s1.onload = () => gapiLoaded();
-  s1.onerror = () => gapiLoadError();
+  s1.onload = function() { if(typeof gapiLoaded==='function') gapiLoaded(); };
+  s1.onerror = function() { if(typeof gapiLoadError==='function') gapiLoadError(); };
   document.body.appendChild(s1);
-
-  const s2 = document.createElement('script');
+  var s2 = document.createElement('script');
   s2.src = 'https://accounts.google.com/gsi/client';
-  s2.async = true;
-  s2.onload = () => { if (typeof google !== 'undefined') gisLoaded(); };
+  s2.onload = function() { if(typeof google!=='undefined'&&typeof gisLoaded==='function') gisLoaded(); };
   document.body.appendChild(s2);
-}
-
-// Firebase init — se llama cuando los scripts cargan
-function initFirebase() {
-  try {
-    if (typeof firebase !== 'undefined' && !firebase.apps.length) {
-      firebase.initializeApp(window._firebaseConfig);
-      window._db = firebase.firestore();
-      window._firebaseAvailable = true;
-      window._STATE_DOC = window._db.collection('vcfit').doc('state');
-      // Sincronizar en background si la app ya cargó
-      if (window._appReady) backgroundFirebaseSync();
-    }
-  } catch(e) {
-    console.warn('Firebase init error:', e);
-  }
-}
-
-function backgroundFirebaseSync() {
-  if (!window._STATE_DOC) return;
-  const withTimeout = (p, ms) => Promise.race([p, new Promise((_,r) => setTimeout(() => r(new Error('timeout')), ms))]);
-  withTimeout(window._STATE_DOC.get(), 8000).then(doc => {
-    if (doc && doc.exists) {
-      const data = doc.data();
-      // Solo sincronizar si Firestore tiene datos más recientes
-      if (data && data.students) {
-        const merged = mergePhotosFromLocal(data);
-        state = { ...merged, currentRole: null, currentStudentId: null };
-        localStorage.setItem('vcfit_state', JSON.stringify(state));
-        refreshTrainerDashboard();
-        renderStudentsList();
-        renderWorkoutsList();
-      }
-    } else if (doc) {
-      window._STATE_DOC.set(stateForFirestore()).catch(() => {});
-    }
-    syncEnabled = true;
-    setSyncStatus('ok');
-    initSync();
-  }).catch(e => {
-    console.warn('Firebase sync background error:', e.message);
-    setSyncStatus('offline');
-  });
-}
-
-function loadGoogleAPIs() {
-  const s1 = document.createElement('script');
-  s1.src = 'https://apis.google.com/js/api.js';
-  s1.async = true;
-  s1.defer = true;
-  s1.onload = () => gapiLoaded();
-  s1.onerror = () => gapiLoadError();
-  document.body.appendChild(s1);
-
-  const s2 = document.createElement('script');
-  s2.src = 'https://accounts.google.com/gsi/client';
-  s2.async = true;
-  s2.defer = true;
-  s2.onload = () => { if (typeof google !== 'undefined') gisLoaded(); };
-  document.body.appendChild(s2);
-}
-// Cargar Google APIs 2 segundos después de que cargue la app
-setTimeout(loadExternalScripts, 500); // carga Firebase + Google APIs diferido
+}, 3000);
 </script>
 </body>
 </html>
