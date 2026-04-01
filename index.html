@@ -9,8 +9,6 @@
 <meta name="apple-mobile-web-app-title" content="VC Fit">
 <title>VC Fit Studio</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-<script src="https://apis.google.com/js/api.js" async defer onload="gapiLoaded()" onerror="gapiLoadError()"></script>
-<script src="https://accounts.google.com/gsi/client" async defer onload="gisLoaded()"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -5213,6 +5211,9 @@ function hideLoadingOverlay() {
   if (el) el.style.display = 'none';
 }
 
+// Failsafe: si en 5 segundos no se ocultó, lo ocultamos igual
+setTimeout(() => hideLoadingOverlay(), 5000);
+
 // ═══════════════════════════════════════════
 //  DEMO DATA — se carga solo si no hay datos previos
 // ═══════════════════════════════════════════
@@ -10226,6 +10227,28 @@ const link = document.createElement('link');
 link.rel = 'manifest';
 link.href = manifestUrl;
 document.head.appendChild(link);
+</script>
+
+<!-- Google Calendar API — carga diferida, no bloquea la app -->
+<script>
+function loadGoogleAPIs() {
+  const s1 = document.createElement('script');
+  s1.src = 'https://apis.google.com/js/api.js';
+  s1.async = true;
+  s1.defer = true;
+  s1.onload = () => gapiLoaded();
+  s1.onerror = () => gapiLoadError();
+  document.body.appendChild(s1);
+
+  const s2 = document.createElement('script');
+  s2.src = 'https://accounts.google.com/gsi/client';
+  s2.async = true;
+  s2.defer = true;
+  s2.onload = () => { if (typeof google !== 'undefined') gisLoaded(); };
+  document.body.appendChild(s2);
+}
+// Cargar Google APIs 2 segundos después de que cargue la app
+setTimeout(loadGoogleAPIs, 2000);
 </script>
 </body>
 </html>
