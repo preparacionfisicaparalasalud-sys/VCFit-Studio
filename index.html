@@ -5211,8 +5211,7 @@ function hideLoadingOverlay() {
   if (el) el.style.display = 'none';
 }
 
-// Failsafe: si en 5 segundos no se ocultó, lo ocultamos igual
-setTimeout(() => hideLoadingOverlay(), 5000);
+// (failsafe removido — hideLoadingOverlay() se llama en init())
 
 // ═══════════════════════════════════════════
 //  DEMO DATA — se carga solo si no hay datos previos
