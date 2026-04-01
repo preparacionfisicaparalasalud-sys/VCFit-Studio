@@ -5110,28 +5110,33 @@ function mergePhotosFromLocal(fsState) {
 
 // ── loadState: Firestore primero, localStorage como fallback ──
 async function loadState() {
-  // 1. Carga rápida desde localStorage
+  // 1. Carga desde localStorage SIEMPRE primero — garantía de datos
   try {
     const saved = localStorage.getItem('vcfit_state');
     if (saved) state = JSON.parse(saved);
   } catch(e) {}
 
-  // 2. Intentar Firestore solo si está disponible
+  // 2. Intentar Firestore con timeout de 8 segundos
   if (!_firebaseAvailable || !STATE_DOC) {
     setSyncStatus('offline');
     return;
   }
 
+  const withTimeout = (promise, ms) => Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error('Firebase timeout')), ms))
+  ]);
+
   try {
     setLoadingMsg('Conectando con Firebase...');
-    const doc = await STATE_DOC.get();
+    const doc = await withTimeout(STATE_DOC.get(), 8000);
     if (doc.exists) {
       const merged = mergePhotosFromLocal(doc.data());
       state = { ...merged, currentRole: null, currentStudentId: null };
       localStorage.setItem('vcfit_state', JSON.stringify(state));
     } else {
       setLoadingMsg('Primer inicio: creando base de datos...');
-      await STATE_DOC.set(stateForFirestore());
+      await withTimeout(STATE_DOC.set(stateForFirestore()), 8000);
     }
     syncEnabled = true;
     setSyncStatus('ok');
@@ -5139,6 +5144,7 @@ async function loadState() {
   } catch(e) {
     console.warn('Firebase no disponible, usando localStorage:', e.message);
     setSyncStatus('offline');
+    // Datos del localStorage ya cargados en paso 1 — app funciona igual
   }
 }
 
@@ -10175,7 +10181,21 @@ function saveCalSettings() {
 (async function init() {
   initTheme();
   initApiKeyUI();
-  await loadState();
+
+  // Failsafe: si todo falla, la app igual arranca a los 10 segundos
+  const failsafe = setTimeout(() => {
+    hideLoadingOverlay();
+    showScreen('screen-login');
+  }, 10000);
+
+  try {
+    await loadState();
+  } catch(e) {
+    console.warn('Init error:', e);
+  }
+
+  clearTimeout(failsafe);
+
   if (!state.expenses) state.expenses = [];
   propagateRecurringExpenses();
   const now = new Date();
