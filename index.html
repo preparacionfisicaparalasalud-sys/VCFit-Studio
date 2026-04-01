@@ -9,6 +9,8 @@
 <meta name="apple-mobile-web-app-title" content="VC Fit">
 <title>VC Fit Studio</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://apis.google.com/js/api.js" async defer onload="gapiLoaded()" onerror="gapiLoadError()"></script>
+<script src="https://accounts.google.com/gsi/client" async defer onload="gisLoaded()"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -2159,7 +2161,116 @@ ALMUERZO
 </div>
 
 <!-- ═══════════════════════════════════════════
-     SCREEN: FINANZAS
+     SCREEN: GOOGLE CALENDAR
+═══════════════════════════════════════════ -->
+<div id="screen-calendar" class="screen">
+  <div class="topbar">
+    <button class="btn-back" onclick="showScreen('screen-trainer')">←</button>
+    <div style="flex:1"><div class="topbar-title">📅 Calendario</div></div>
+    <button class="btn btn-secondary btn-sm" id="cal-sync-btn" onclick="calendarSync()" style="display:none">🔄 Sync</button>
+  </div>
+  <div class="content">
+    <div id="cal-auth-section">
+      <div class="card" style="text-align:center;padding:2rem 1.5rem;margin-bottom:1rem">
+        <div style="font-size:3rem;margin-bottom:1rem">📅</div>
+        <div class="bold" style="font-size:1.1rem;margin-bottom:0.5rem;font-family:var(--font-label);letter-spacing:1px">Google Calendar</div>
+        <div class="text-small text-gray" style="line-height:1.7;margin-bottom:1.5rem">
+          Sincronizá sesiones completadas, vencimientos de pago y recordatorios con tu Google Calendar.
+        </div>
+        <button class="btn btn-primary btn-full" onclick="calendarSignIn()">
+          <span style="margin-right:0.5rem">🔑</span> Conectar con Google
+        </button>
+      </div>
+      <div class="card" style="margin-bottom:1rem">
+        <div class="card-title">¿Qué se sincroniza?</div>
+        <div class="progress-row"><span class="progress-label">✅ Sesiones completadas</span><span class="progress-value text-small">→ evento en Calendar</span></div>
+        <div class="progress-row"><span class="progress-label">💰 Vencimientos de pago</span><span class="progress-value text-small">→ recordatorio</span></div>
+        <div class="progress-row"><span class="progress-label">📥 Eventos de Calendar</span><span class="progress-value text-small">→ visible en app</span></div>
+        <div class="progress-row"><span class="progress-label">🔄 Bidireccional</span><span class="progress-value text-small">→ siempre actualizado</span></div>
+      </div>
+    </div>
+
+    <div id="cal-main-section" style="display:none">
+      <!-- Estado conexión -->
+      <div class="card" style="margin-bottom:1rem;border-color:var(--success)">
+        <div style="display:flex;align-items:center;gap:0.8rem">
+          <div style="width:10px;height:10px;border-radius:50%;background:var(--success);flex-shrink:0"></div>
+          <div style="flex:1">
+            <div class="bold text-small">Conectado</div>
+            <div class="text-small text-gray" id="cal-user-email">—</div>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="calendarSignOut()">Desconectar</button>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs" style="margin-bottom:1rem" id="cal-tabs">
+        <button class="tab active" onclick="switchCalTab('upcoming')">Próximos</button>
+        <button class="tab" onclick="switchCalTab('sync')">Sincronizar</button>
+        <button class="tab" onclick="switchCalTab('settings')">Config</button>
+      </div>
+
+      <div id="cal-view"></div>
+    </div>
+
+    <div id="cal-loading" style="display:none;text-align:center;padding:3rem 1rem">
+      <div style="font-size:2rem;animation:spin 1s linear infinite;display:inline-block">⚙️</div>
+      <div class="text-small text-gray" style="margin-top:0.8rem" id="cal-loading-msg">Conectando...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     MODAL: NUEVO EVENTO CALENDAR
+═══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-cal-event">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📅 Crear evento</div>
+
+    <div class="input-group">
+      <label class="input-label">Título</label>
+      <input type="text" class="input-field" id="cal-ev-title" placeholder="ej: Sesión con Juan Pérez">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem">
+      <div class="input-group">
+        <label class="input-label">Fecha</label>
+        <input type="date" class="input-field" id="cal-ev-date">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Hora inicio</label>
+        <input type="time" class="input-field" id="cal-ev-time" value="09:00">
+      </div>
+    </div>
+    <div class="input-group">
+      <label class="input-label">Duración</label>
+      <select class="input-field" id="cal-ev-duration">
+        <option value="30">30 minutos</option>
+        <option value="45">45 minutos</option>
+        <option value="60" selected>60 minutos</option>
+        <option value="90">90 minutos</option>
+      </select>
+    </div>
+    <div class="input-group">
+      <label class="input-label">Alumno (opcional)</label>
+      <select class="input-field" id="cal-ev-student">
+        <option value="">— Sin alumno —</option>
+      </select>
+    </div>
+    <div class="input-group">
+      <label class="input-label">Nota</label>
+      <input type="text" class="input-field" id="cal-ev-note" placeholder="ej: Traer ropa cómoda">
+    </div>
+
+    <div style="display:flex;gap:0.8rem;padding-bottom:1rem">
+      <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-cal-event')">Cancelar</button>
+      <button class="btn btn-primary" style="flex:1" onclick="calCreateEvent()">📅 Crear en Calendar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: GOOGLE CALENDAR
 ═══════════════════════════════════════════ -->
 <div id="screen-finance" class="screen">
   <div class="topbar">
@@ -5326,7 +5437,7 @@ applyLogo();
 // Pantallas exclusivas del entrenador
 const TRAINER_SCREENS = [
   'screen-trainer','screen-trainer-profile','screen-students','screen-student-detail',
-  'screen-workouts','screen-stats','screen-ai-chat','screen-finance'
+  'screen-workouts','screen-stats','screen-ai-chat','screen-finance','screen-calendar'
 ];
 
 function showScreen(id) {
@@ -6506,6 +6617,11 @@ function refreshTrainerDashboard() {
         <div class="nav-card-icon">💰</div>
         <div class="nav-card-label">Finanzas</div>
         <div class="nav-card-count" id="count-finance">→</div>
+      </div>
+      <div class="nav-card" onclick="openCalendarScreen()">
+        <div class="nav-card-icon">📅</div>
+        <div class="nav-card-label">Calendario</div>
+        <div class="nav-card-count" id="count-cal-events">→</div>
       </div>`;
   }
 
@@ -7472,6 +7588,9 @@ function completeWorkout() {
   // Reset checks
   if (checksKey) state.exerciseChecks[checksKey] = {};
   saveState();
+
+  // Auto-sync a Google Calendar si está configurado
+  calAutoSyncSession(s.name, entry.dateISO, entry.duration, entry.workoutName);
 
   document.getElementById('completed-message').textContent =
     `Rutina "${w ? w.name : ''}" registrada. ¡Seguí así, ${s.name.split(' ')[0]}!`;
@@ -9456,6 +9575,601 @@ function propagateRecurringExpenses() {
       });
     }
   });
+}
+
+// ═══════════════════════════════════════════
+// MÓDULO GOOGLE CALENDAR
+// ═══════════════════════════════════════════
+
+const GCAL_CLIENT_ID    = '738858575495-4uliefqj08a6kdmuuh8o43tkg0h3067e.apps.googleusercontent.com';
+const GCAL_SCOPES       = 'https://www.googleapis.com/auth/calendar';
+const GCAL_DISCOVERY    = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
+const VCFIT_CALENDAR_ID = 'primary';  // usar calendario principal
+
+let _gapiInited  = false;
+let _gisInited   = false;
+let _tokenClient = null;
+let _calTab      = 'upcoming';
+let _calEvents   = [];
+let _calSyncing  = false;
+
+// ── Inicialización GAPI ──
+function gapiLoaded() {
+  gapi.load('client', async () => {
+    try {
+      await gapi.client.init({ discoveryDocs: [GCAL_DISCOVERY] });
+      _gapiInited = true;
+      maybeEnableCalendar();
+    } catch(e) {
+      console.warn('GAPI init error:', e);
+    }
+  });
+}
+
+function gapiLoadError() {
+  console.warn('Google API no disponible — sin conexión o bloqueado.');
+}
+
+function gisLoaded() {
+  try {
+    _tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: GCAL_CLIENT_ID,
+      scope: GCAL_SCOPES,
+      callback: handleTokenResponse,
+    });
+    _gisInited = true;
+    maybeEnableCalendar();
+  } catch(e) {
+    console.warn('GIS init error:', e);
+  }
+}
+
+function maybeEnableCalendar() {
+  if (!_gapiInited || !_gisInited) return;
+  // Verificar si hay token guardado
+  const token = localStorage.getItem('vcfit_gcal_token');
+  if (token) {
+    try {
+      const t = JSON.parse(token);
+      if (t.expires_at > Date.now()) {
+        gapi.client.setToken(t);
+        calSetConnected(t.email || '');
+        return;
+      }
+    } catch(e) {}
+    localStorage.removeItem('vcfit_gcal_token');
+  }
+}
+
+function handleTokenResponse(resp) {
+  calHideLoading();
+  if (resp.error) {
+    console.warn('OAuth error:', resp.error);
+    alert('No se pudo conectar con Google: ' + resp.error);
+    return;
+  }
+  // Guardar token con expiración
+  const tokenData = {
+    ...gapi.client.getToken(),
+    expires_at: Date.now() + (resp.expires_in || 3600) * 1000,
+    email: ''  // se llena después
+  };
+  // Obtener email del usuario
+  fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+    headers: { Authorization: 'Bearer ' + tokenData.access_token }
+  }).then(r => r.json()).then(info => {
+    tokenData.email = info.email || '';
+    localStorage.setItem('vcfit_gcal_token', JSON.stringify(tokenData));
+    calSetConnected(tokenData.email);
+  }).catch(() => {
+    localStorage.setItem('vcfit_gcal_token', JSON.stringify(tokenData));
+    calSetConnected('');
+  });
+}
+
+// ── UI de pantalla Calendar ──
+function openCalendarScreen() {
+  showScreen('screen-calendar');
+  if (_gapiInited && _gisInited) {
+    const token = localStorage.getItem('vcfit_gcal_token');
+    if (token) {
+      try {
+        const t = JSON.parse(token);
+        if (t.expires_at > Date.now()) {
+          calSetConnected(t.email || '');
+          return;
+        }
+      } catch(e) {}
+    }
+  }
+  // Mostrar sección de login
+  document.getElementById('cal-auth-section').style.display = 'block';
+  document.getElementById('cal-main-section').style.display = 'none';
+  document.getElementById('cal-loading').style.display = 'none';
+}
+
+function calSetConnected(email) {
+  document.getElementById('cal-auth-section').style.display = 'none';
+  document.getElementById('cal-loading').style.display = 'none';
+  document.getElementById('cal-main-section').style.display = 'block';
+  document.getElementById('cal-sync-btn').style.display = 'inline-flex';
+  if (email) document.getElementById('cal-user-email').textContent = email;
+  _calTab = 'upcoming';
+  updateCalTabs();
+  calFetchEvents();
+}
+
+function calShowLoading(msg) {
+  document.getElementById('cal-auth-section').style.display = 'none';
+  document.getElementById('cal-main-section').style.display = 'none';
+  document.getElementById('cal-loading').style.display = 'block';
+  document.getElementById('cal-loading-msg').textContent = msg || 'Conectando...';
+}
+
+function calHideLoading() {
+  document.getElementById('cal-loading').style.display = 'none';
+}
+
+function calendarSignIn() {
+  if (!_gapiInited || !_gisInited || !_tokenClient) {
+    alert('Las librerías de Google aún se están cargando. Esperá un momento e intentá de nuevo.');
+    return;
+  }
+  calShowLoading('Conectando con Google...');
+  _tokenClient.requestAccessToken({ prompt: 'consent' });
+}
+
+function calendarSignOut() {
+  if (!confirm('¿Desconectar Google Calendar?')) return;
+  const token = gapi.client.getToken();
+  if (token) {
+    google.accounts.oauth2.revoke(token.access_token, () => {});
+    gapi.client.setToken('');
+  }
+  localStorage.removeItem('vcfit_gcal_token');
+  _calEvents = [];
+  document.getElementById('cal-auth-section').style.display = 'block';
+  document.getElementById('cal-main-section').style.display = 'none';
+  document.getElementById('cal-sync-btn').style.display = 'none';
+}
+
+// ── Tabs ──
+function switchCalTab(tab) {
+  _calTab = tab;
+  updateCalTabs();
+  renderCalView();
+}
+
+function updateCalTabs() {
+  const tabs = ['upcoming','sync','settings'];
+  document.querySelectorAll('#cal-tabs .tab').forEach((btn, i) => {
+    btn.classList.toggle('active', tabs[i] === _calTab);
+  });
+  renderCalView();
+}
+
+// ── Fetch eventos de Google Calendar ──
+async function calFetchEvents() {
+  if (!gapi.client.calendar) return;
+  try {
+    const now = new Date();
+    const timeMin = now.toISOString();
+    const timeMax = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
+    const resp = await gapi.client.calendar.events.list({
+      calendarId: VCFIT_CALENDAR_ID,
+      timeMin,
+      timeMax,
+      maxResults: 50,
+      singleEvents: true,
+      orderBy: 'startTime',
+      q: 'VC Fit'
+    });
+    _calEvents = resp.result.items || [];
+    renderCalView();
+    // Actualizar counter en dashboard
+    const counter = document.getElementById('count-cal-events');
+    if (counter) counter.textContent = _calEvents.length || '→';
+  } catch(e) {
+    console.warn('Error fetching calendar:', e);
+    if (e.status === 401) {
+      localStorage.removeItem('vcfit_gcal_token');
+      calendarSignOut();
+    }
+  }
+}
+
+// ── Renderizar vista ──
+function renderCalView() {
+  const el = document.getElementById('cal-view');
+  if (!el) return;
+  if (_calTab === 'upcoming')  el.innerHTML = renderCalUpcoming();
+  else if (_calTab === 'sync') el.innerHTML = renderCalSync();
+  else if (_calTab === 'settings') el.innerHTML = renderCalSettings();
+}
+
+function renderCalUpcoming() {
+  let html = `
+  <button class="btn btn-primary btn-full" style="margin-bottom:1rem" onclick="openCalEventModal()">
+    ➕ Nuevo evento
+  </button>`;
+
+  if (!_calEvents.length) {
+    html += `<div class="card"><div class="text-small text-gray" style="text-align:center;padding:1.5rem">
+      Sin eventos VC Fit en los próximos 30 días.
+    </div></div>`;
+    return html;
+  }
+
+  html += `<div class="card"><div class="card-title">Próximos 30 días</div>`;
+  _calEvents.forEach(ev => {
+    const start = ev.start?.dateTime || ev.start?.date;
+    const dateObj = start ? new Date(start) : null;
+    const dateStr = dateObj ? dateObj.toLocaleDateString('es-AR', {
+      weekday: 'short', day: 'numeric', month: 'short'
+    }) : '—';
+    const timeStr = ev.start?.dateTime ? dateObj.toLocaleTimeString('es-AR', {
+      hour: '2-digit', minute: '2-digit'
+    }) : 'Todo el día';
+
+    html += `
+    <div class="progress-row" style="padding:0.7rem 0;align-items:flex-start">
+      <div style="flex:1">
+        <div class="bold text-small">${ev.summary || 'Sin título'}</div>
+        <div class="text-small text-gray">${dateStr} · ${timeStr}</div>
+        ${ev.description ? `<div class="text-small" style="color:var(--gray-light);font-style:italic;margin-top:0.2rem">${ev.description.substring(0,80)}</div>` : ''}
+      </div>
+      <button class="btn btn-danger btn-sm" style="padding:0.2rem 0.5rem;font-size:0.7rem;flex-shrink:0"
+        onclick="calDeleteEvent('${ev.id}')">🗑️</button>
+    </div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
+function renderCalSync() {
+  const now = new Date();
+  const mesActual = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+
+  // Sesiones completadas este mes sin evento en Calendar
+  const sesiones = [];
+  state.students.forEach(s => {
+    (s.progressLog || []).forEach(e => {
+      const iso = e.dateISO || '';
+      if (iso.startsWith(mesActual)) {
+        sesiones.push({ alumno: s.name, fecha: e.date, iso, duracion: e.duration || 60 });
+      }
+    });
+  });
+
+  // Vencimientos de pago próximos (alumnos sin pago este mes)
+  const vencimientos = state.students.filter(s => {
+    const pagado = (s.payments || []).some(p => p.mes === mesActual);
+    const pack = (s.classPacks || []).some(p => p.restantes > 0);
+    return !pagado && !pack;
+  }).map(s => s.name);
+
+  let html = `
+  <div class="card" style="margin-bottom:1rem">
+    <div class="card-title">📤 Sesiones → Calendar</div>
+    <div class="text-small text-gray" style="margin-bottom:0.8rem;line-height:1.6">
+      Exportá las sesiones completadas este mes como eventos en tu Google Calendar.
+    </div>`;
+
+  if (!sesiones.length) {
+    html += `<div class="text-small text-gray">Sin sesiones registradas este mes.</div>`;
+  } else {
+    html += `<div style="max-height:200px;overflow-y:auto;margin-bottom:0.8rem">`;
+    sesiones.forEach(s => {
+      html += `<div class="progress-row" style="padding:0.4rem 0">
+        <span class="progress-label text-small">${s.alumno}</span>
+        <span class="progress-value text-small text-gray">${s.fecha} · ${s.duracion} min</span>
+      </div>`;
+    });
+    html += `</div>`;
+    html += `<button class="btn btn-primary btn-sm btn-full" onclick="calSyncSessions()">
+      📤 Exportar ${sesiones.length} sesión${sesiones.length !== 1 ? 'es' : ''} a Calendar
+    </button>`;
+  }
+  html += `</div>`;
+
+  html += `
+  <div class="card" style="margin-bottom:1rem">
+    <div class="card-title">💰 Recordatorios de pago</div>`;
+  if (!vencimientos.length) {
+    html += `<div class="text-small text-gray">Todos los alumnos están al día. 🎉</div>`;
+  } else {
+    html += `
+    <div class="text-small text-gray" style="margin-bottom:0.8rem">
+      ${vencimientos.length} alumno${vencimientos.length !== 1 ? 's' : ''} sin pago este mes:
+    </div>
+    <div style="margin-bottom:0.8rem">
+      ${vencimientos.map(n => `<div class="tag tag-danger" style="display:inline-block;margin:0.2rem;font-size:0.75rem">${n}</div>`).join('')}
+    </div>
+    <button class="btn btn-secondary btn-sm btn-full" onclick="calCreatePaymentReminders()">
+      🔔 Crear recordatorios en Calendar
+    </button>`;
+  }
+  html += `</div>`;
+
+  html += `
+  <div class="card">
+    <div class="card-title">📥 Importar desde Calendar</div>
+    <div class="text-small text-gray" style="margin-bottom:0.8rem;line-height:1.6">
+      Traé eventos de Google Calendar a la app como sesiones completadas.
+    </div>
+    <button class="btn btn-secondary btn-sm btn-full" onclick="calFetchEvents().then(renderCalView)">
+      🔄 Actualizar eventos
+    </button>
+  </div>`;
+
+  return html;
+}
+
+function renderCalSettings() {
+  const saved = JSON.parse(localStorage.getItem('vcfit_gcal_settings') || '{}');
+  return `
+  <div class="card" style="margin-bottom:1rem">
+    <div class="card-title">⚙️ Configuración de sincronización</div>
+
+    <div class="input-group">
+      <label class="input-label">Auto-sync al completar sesión</label>
+      <select class="input-field" id="cset-autosync" onchange="saveCalSettings()">
+        <option value="1" ${saved.autosync !== false ? 'selected' : ''}>✅ Activado</option>
+        <option value="0" ${saved.autosync === false ? 'selected' : ''}>❌ Desactivado</option>
+      </select>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Duración por defecto de sesión</label>
+      <select class="input-field" id="cset-duration" onchange="saveCalSettings()">
+        <option value="45" ${saved.defaultDuration === 45 ? 'selected' : ''}>45 min</option>
+        <option value="60" ${!saved.defaultDuration || saved.defaultDuration === 60 ? 'selected' : ''}>60 min</option>
+        <option value="75" ${saved.defaultDuration === 75 ? 'selected' : ''}>75 min</option>
+        <option value="90" ${saved.defaultDuration === 90 ? 'selected' : ''}>90 min</option>
+      </select>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Color de eventos en Calendar</label>
+      <select class="input-field" id="cset-color" onchange="saveCalSettings()">
+        <option value="1" ${saved.colorId === '1' ? 'selected' : ''}>🔵 Azul lavanda</option>
+        <option value="2" ${saved.colorId === '2' ? 'selected' : ''}>🟢 Salvia</option>
+        <option value="3" ${!saved.colorId || saved.colorId === '3' ? 'selected' : ''}>🟣 Uva</option>
+        <option value="6" ${saved.colorId === '6' ? 'selected' : ''}>🟠 Mandarina</option>
+        <option value="11" ${saved.colorId === '11' ? 'selected' : ''}>🔴 Tomate</option>
+      </select>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Prefijo de eventos</label>
+      <input type="text" class="input-field" id="cset-prefix" value="${saved.prefix || 'VC Fit'}"
+        onchange="saveCalSettings()" placeholder="ej: VC Fit">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🗑️ Zona peligrosa</div>
+    <div class="text-small text-gray" style="margin-bottom:0.8rem;line-height:1.5">
+      Eliminá todos los eventos VC Fit de tu Google Calendar (no se puede deshacer).
+    </div>
+    <button class="btn btn-danger btn-sm btn-full" onclick="calDeleteAllVCFit()">
+      🗑️ Eliminar todos los eventos VC Fit
+    </button>
+  </div>`;
+}
+
+// ── Acciones Calendar ──
+function openCalEventModal() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('cal-ev-title').value = '';
+  document.getElementById('cal-ev-date').value = today;
+  document.getElementById('cal-ev-time').value = '09:00';
+  document.getElementById('cal-ev-duration').value = '60';
+  document.getElementById('cal-ev-note').value = '';
+
+  // Poblar selector de alumnos
+  const sel = document.getElementById('cal-ev-student');
+  sel.innerHTML = '<option value="">— Sin alumno —</option>';
+  state.students.forEach(s => {
+    sel.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+  });
+
+  openModal('modal-cal-event');
+}
+
+async function calCreateEvent() {
+  const title    = document.getElementById('cal-ev-title').value.trim();
+  const date     = document.getElementById('cal-ev-date').value;
+  const time     = document.getElementById('cal-ev-time').value;
+  const duration = parseInt(document.getElementById('cal-ev-duration').value);
+  const note     = document.getElementById('cal-ev-note').value.trim();
+  const studentId = document.getElementById('cal-ev-student').value;
+
+  if (!title || !date) { alert('Completá título y fecha.'); return; }
+
+  const settings = JSON.parse(localStorage.getItem('vcfit_gcal_settings') || '{}');
+  const prefix = settings.prefix || 'VC Fit';
+  const colorId = settings.colorId || '3';
+
+  const startDT = new Date(`${date}T${time}:00`);
+  const endDT   = new Date(startDT.getTime() + duration * 60000);
+
+  const student = studentId ? state.students.find(s => s.id === studentId) : null;
+  const fullTitle = `${prefix} · ${title}${student ? ` · ${student.name}` : ''}`;
+
+  const event = {
+    summary: fullTitle,
+    description: note || (student ? `Sesión con ${student.name}` : ''),
+    colorId,
+    start: { dateTime: startDT.toISOString(), timeZone: 'America/Argentina/Buenos_Aires' },
+    end:   { dateTime: endDT.toISOString(),   timeZone: 'America/Argentina/Buenos_Aires' },
+  };
+
+  try {
+    await gapi.client.calendar.events.insert({ calendarId: VCFIT_CALENDAR_ID, resource: event });
+    closeModal('modal-cal-event');
+    await calFetchEvents();
+    alert('✅ Evento creado en Google Calendar.');
+  } catch(e) {
+    alert('Error al crear evento: ' + (e.result?.error?.message || e.message));
+  }
+}
+
+async function calDeleteEvent(eventId) {
+  if (!confirm('¿Eliminar este evento de Google Calendar?')) return;
+  try {
+    await gapi.client.calendar.events.delete({ calendarId: VCFIT_CALENDAR_ID, eventId });
+    await calFetchEvents();
+  } catch(e) {
+    alert('Error al eliminar: ' + (e.result?.error?.message || e.message));
+  }
+}
+
+async function calSyncSessions() {
+  if (!confirm('¿Crear eventos en Google Calendar para las sesiones de este mes?')) return;
+  const now = new Date();
+  const mesActual = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const settings = JSON.parse(localStorage.getItem('vcfit_gcal_settings') || '{}');
+  const prefix   = settings.prefix || 'VC Fit';
+  const colorId  = settings.colorId || '3';
+  const duration = settings.defaultDuration || 60;
+
+  let created = 0;
+  const promises = [];
+
+  state.students.forEach(s => {
+    (s.progressLog || []).forEach(e => {
+      const iso = e.dateISO || '';
+      if (!iso.startsWith(mesActual)) return;
+      const startDT = new Date(`${iso}T09:00:00`);
+      const endDT   = new Date(startDT.getTime() + (e.duration || duration) * 60000);
+      const event = {
+        summary:     `${prefix} · Sesión · ${s.name}`,
+        description: e.note || `Sesión completada. Rutina: ${e.routineName || '—'}`,
+        colorId,
+        start: { dateTime: startDT.toISOString(), timeZone: 'America/Argentina/Buenos_Aires' },
+        end:   { dateTime: endDT.toISOString(),   timeZone: 'America/Argentina/Buenos_Aires' },
+      };
+      promises.push(
+        gapi.client.calendar.events.insert({ calendarId: VCFIT_CALENDAR_ID, resource: event })
+          .then(() => created++)
+          .catch(() => {})
+      );
+    });
+  });
+
+  await Promise.all(promises);
+  await calFetchEvents();
+  alert(`✅ ${created} sesiones exportadas a Google Calendar.`);
+}
+
+async function calCreatePaymentReminders() {
+  if (!confirm('¿Crear recordatorios de pago en Google Calendar?')) return;
+  const now = new Date();
+  const mesActual = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const settings = JSON.parse(localStorage.getItem('vcfit_gcal_settings') || '{}');
+  const prefix = settings.prefix || 'VC Fit';
+
+  const pendientes = state.students.filter(s => {
+    const pagado = (s.payments || []).some(p => p.mes === mesActual);
+    const pack   = (s.classPacks || []).some(p => p.restantes > 0);
+    return !pagado && !pack;
+  });
+
+  if (!pendientes.length) { alert('Todos los alumnos están al día.'); return; }
+
+  // Crear recordatorio para el día 5 del mes siguiente
+  const next = new Date(now.getFullYear(), now.getMonth() + 1, 5);
+  const promises = pendientes.map(s => {
+    const event = {
+      summary:     `${prefix} · 💰 Pago pendiente · ${s.name}`,
+      description: `Recordatorio: ${s.name} no registró pago este mes.`,
+      colorId:     '11',  // rojo
+      start: { date: next.toISOString().split('T')[0] },
+      end:   { date: next.toISOString().split('T')[0] },
+    };
+    return gapi.client.calendar.events.insert({ calendarId: VCFIT_CALENDAR_ID, resource: event })
+      .catch(() => {});
+  });
+
+  await Promise.all(promises);
+  await calFetchEvents();
+  alert(`✅ ${pendientes.length} recordatorio${pendientes.length !== 1 ? 's' : ''} creado${pendientes.length !== 1 ? 's' : ''}.`);
+}
+
+async function calDeleteAllVCFit() {
+  if (!confirm('⚠️ ¿Eliminar TODOS los eventos VC Fit de Google Calendar? Esta acción no se puede deshacer.')) return;
+  if (!confirm('¿Estás seguro? Se eliminarán permanentemente.')) return;
+
+  const settings = JSON.parse(localStorage.getItem('vcfit_gcal_settings') || '{}');
+  const prefix = settings.prefix || 'VC Fit';
+
+  try {
+    const resp = await gapi.client.calendar.events.list({
+      calendarId: VCFIT_CALENDAR_ID,
+      q: prefix,
+      maxResults: 250,
+      singleEvents: true
+    });
+    const events = resp.result.items || [];
+    await Promise.all(events.map(e =>
+      gapi.client.calendar.events.delete({ calendarId: VCFIT_CALENDAR_ID, eventId: e.id }).catch(() => {})
+    ));
+    _calEvents = [];
+    renderCalView();
+    alert(`✅ ${events.length} eventos eliminados.`);
+  } catch(e) {
+    alert('Error: ' + (e.result?.error?.message || e.message));
+  }
+}
+
+async function calendarSync() {
+  if (_calSyncing) return;
+  _calSyncing = true;
+  const btn = document.getElementById('cal-sync-btn');
+  if (btn) btn.textContent = '⏳';
+  await calFetchEvents();
+  if (btn) btn.textContent = '🔄 Sync';
+  _calSyncing = false;
+}
+
+// ── Auto-sync al completar sesión ──
+function calAutoSyncSession(studentName, dateISO, duration, routineName) {
+  const settings = JSON.parse(localStorage.getItem('vcfit_gcal_settings') || '{}');
+  if (settings.autosync === false) return;
+  const token = localStorage.getItem('vcfit_gcal_token');
+  if (!token || !_gapiInited) return;
+  try {
+    const t = JSON.parse(token);
+    if (t.expires_at <= Date.now()) return;
+  } catch(e) { return; }
+
+  const prefix = settings.prefix || 'VC Fit';
+  const colorId = settings.colorId || '3';
+  const dur = duration || settings.defaultDuration || 60;
+  const startDT = new Date(`${dateISO}T09:00:00`);
+  const endDT   = new Date(startDT.getTime() + dur * 60000);
+
+  gapi.client.calendar.events.insert({
+    calendarId: VCFIT_CALENDAR_ID,
+    resource: {
+      summary:     `${prefix} · Sesión · ${studentName}`,
+      description: `Sesión completada. Rutina: ${routineName || '—'}`,
+      colorId,
+      start: { dateTime: startDT.toISOString(), timeZone: 'America/Argentina/Buenos_Aires' },
+      end:   { dateTime: endDT.toISOString(),   timeZone: 'America/Argentina/Buenos_Aires' },
+    }
+  }).catch(() => {});
+}
+
+function saveCalSettings() {
+  const settings = {
+    autosync:        document.getElementById('cset-autosync')?.value !== '0',
+    defaultDuration: parseInt(document.getElementById('cset-duration')?.value) || 60,
+    colorId:         document.getElementById('cset-color')?.value || '3',
+    prefix:          document.getElementById('cset-prefix')?.value.trim() || 'VC Fit',
+  };
+  localStorage.setItem('vcfit_gcal_settings', JSON.stringify(settings));
 }
 
 (async function init() {
