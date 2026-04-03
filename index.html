@@ -2355,9 +2355,44 @@ ALMUERZO
       <label class="input-label">Nota (opcional)</label>
       <input type="text" class="input-field" id="cal-ev-note" placeholder="ej: Traer ropa cómoda">
     </div>
+    <div class="input-group">
+      <label class="input-label">Repetición</label>
+      <select class="input-field" id="cal-ev-recurrence">
+        <option value="">Sin repetición</option>
+        <option value="WEEKLY">Semanal</option>
+        <option value="BIWEEKLY">Cada 2 semanas</option>
+        <option value="MONTHLY">Mensual</option>
+      </select>
+    </div>
     <div style="display:flex;gap:0.8rem;padding-bottom:1rem">
       <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-cal-event')">Cancelar</button>
       <button class="btn btn-primary" style="flex:1" onclick="calCreateEvent()">📅 Crear</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: IMPORTAR EVENTO CALENDAR → APP -->
+<div class="modal-overlay" id="modal-cal-import">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📥 Importar como sesión</div>
+    <div id="cal-import-event-info" style="background:var(--dark3);border-radius:8px;padding:0.8rem;margin-bottom:1rem">
+      <div class="bold text-small" id="cal-import-title">—</div>
+      <div class="text-small text-gray" id="cal-import-date">—</div>
+    </div>
+    <div class="input-group">
+      <label class="input-label">Alumno</label>
+      <select class="input-field" id="cal-import-student">
+        <option value="">— Seleccioná un alumno —</option>
+      </select>
+    </div>
+    <div class="input-group">
+      <label class="input-label">Nota</label>
+      <input type="text" class="input-field" id="cal-import-note" placeholder="ej: Sesión completada">
+    </div>
+    <div style="display:flex;gap:0.8rem;padding-bottom:1rem">
+      <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-cal-import')">Cancelar</button>
+      <button class="btn btn-primary" style="flex:1" onclick="calConfirmImport()">📥 Importar sesión</button>
     </div>
   </div>
 </div>
@@ -10244,6 +10279,9 @@ let _calTokenClient = null;
 let _calEvents     = [];
 let _calTab        = 'proximos';
 let _calLoading    = false;
+let _calViewMode   = 'list';   // 'list' | 'month'
+let _calFiltroAlumno = '';     // '' = todos
+let _calImportEvent  = null;   // evento pendiente de importar
 
 // ── Abrir pantalla Calendar ──
 function openCalendarScreen() {
@@ -10341,14 +10379,46 @@ function switchCalTab(tab) {
 
 // ── Tabs ──
 function renderCalProximos() {
-  let html = `<button class="btn btn-primary btn-full" style="margin-bottom:1rem" onclick="openCalEventModal()">➕ Nuevo evento</button>`;
+  // Filtro de alumnos
+  const alumnosConSesion = [...new Set(
+    _calEvents.map(ev => {
+      const m = (ev.summary || '').match(/· ([^·]+)$/);
+      return m ? m[1].trim() : null;
+    }).filter(Boolean)
+  )];
 
-  if (!_calEvents.length) {
+  let html = `
+  <div style="display:flex;gap:0.6rem;margin-bottom:1rem;align-items:center">
+    <button class="btn btn-primary btn-sm" style="flex:1" onclick="openCalEventModal()">➕ Nuevo evento</button>
+    <button class="btn btn-secondary btn-sm" onclick="toggleCalView()" title="Cambiar vista">
+      ${_calViewMode === 'list' ? '📅' : '☰'}
+    </button>
+  </div>`;
+
+  if (alumnosConSesion.length > 0) {
+    html += `<div style="margin-bottom:1rem">
+      <select class="input-field" style="font-size:0.8rem" onchange="_calFiltroAlumno=this.value;renderCalContent()">
+        <option value="" ${!_calFiltroAlumno?'selected':''}>👥 Todos los alumnos</option>
+        ${alumnosConSesion.map(a => `<option value="${a}" ${_calFiltroAlumno===a?'selected':''}>${a}</option>`).join('')}
+      </select>
+    </div>`;
+  }
+
+  const eventosFiltrados = _calFiltroAlumno
+    ? _calEvents.filter(ev => (ev.summary || '').includes(_calFiltroAlumno))
+    : _calEvents;
+
+  if (_calViewMode === 'month') {
+    return html + renderCalMesGrid(eventosFiltrados);
+  }
+
+  // Vista lista
+  if (!eventosFiltrados.length) {
     return html + `<div class="card"><div class="text-small text-gray" style="text-align:center;padding:1.5rem">Sin eventos VC Fit en los próximos 30 días.</div></div>`;
   }
 
   html += `<div class="card"><div class="card-title">Próximos 30 días</div>`;
-  _calEvents.forEach(ev => {
+  eventosFiltrados.forEach(ev => {
     const start = ev.start?.dateTime || ev.start?.date || '';
     const d = start ? new Date(start) : null;
     const dateStr = d ? d.toLocaleDateString('es-AR', {weekday:'short',day:'numeric',month:'short'}) : '—';
@@ -10359,10 +10429,101 @@ function renderCalProximos() {
         <div class="bold text-small">${ev.summary || 'Sin título'}</div>
         <div class="text-small text-gray">${dateStr} · ${timeStr}</div>
       </div>
-      <button class="btn btn-danger btn-sm" style="padding:0.2rem 0.5rem;font-size:0.7rem;flex-shrink:0" onclick="calDeleteEvent('${ev.id}')">🗑️</button>
+      <div style="display:flex;gap:0.4rem;flex-shrink:0">
+        <button class="btn btn-secondary btn-sm" style="padding:0.2rem 0.5rem;font-size:0.7rem" onclick="openCalImportModal('${ev.id}')" title="Importar como sesión">📥</button>
+        <button class="btn btn-danger btn-sm" style="padding:0.2rem 0.5rem;font-size:0.7rem" onclick="calDeleteEvent('${ev.id}')">🗑️</button>
+      </div>
     </div>`;
   });
   return html + `</div>`;
+}
+
+function toggleCalView() {
+  _calViewMode = _calViewMode === 'list' ? 'month' : 'list';
+  renderCalContent();
+}
+
+function renderCalMesGrid(eventos) {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const firstDay = new Date(year, month, 1).getDay(); // 0=dom
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const mesNombre = now.toLocaleDateString('es-AR', {month:'long', year:'numeric'});
+
+  // Mapear eventos por día
+  const eventsByDay = {};
+  eventos.forEach(ev => {
+    const start = ev.start?.dateTime || ev.start?.date || '';
+    if (!start) return;
+    const d = new Date(start);
+    if (d.getFullYear() === year && d.getMonth() === month) {
+      const day = d.getDate();
+      if (!eventsByDay[day]) eventsByDay[day] = [];
+      eventsByDay[day].push(ev);
+    }
+  });
+
+  const dias = ['Do','Lu','Ma','Mi','Ju','Vi','Sa'];
+  let html = `<div class="card">
+    <div class="card-title" style="text-align:center;text-transform:capitalize">${mesNombre}</div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:0.5rem">
+      ${dias.map(d => `<div style="text-align:center;font-size:0.65rem;color:var(--gray-light);padding:0.2rem;font-family:var(--font-label);font-weight:600">${d}</div>`).join('')}
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px">`;
+
+  // Celdas vacías iniciales
+  const startCol = firstDay; // domingo=0
+  for (let i = 0; i < startCol; i++) {
+    html += `<div style="min-height:36px"></div>`;
+  }
+
+  const todayDate = now.getDate();
+  for (let d = 1; d <= daysInMonth; d++) {
+    const hasEvents = eventsByDay[d]?.length > 0;
+    const isToday = d === todayDate;
+    const dotColor = hasEvents ? 'var(--orange)' : 'transparent';
+    html += `
+    <div style="min-height:36px;border-radius:6px;padding:0.2rem;text-align:center;cursor:${hasEvents?'pointer':'default'};
+      background:${isToday?'var(--orange-dim)':'transparent'};
+      border:${isToday?'1px solid var(--orange-border)':'1px solid transparent'}"
+      ${hasEvents ? `onclick="showCalDayEvents(${d})"` : ''}>
+      <div style="font-size:0.75rem;font-weight:${isToday?'700':'400'};color:${isToday?'var(--orange)':'var(--white-dim)'}">${d}</div>
+      <div style="width:5px;height:5px;border-radius:50%;background:${dotColor};margin:0 auto;margin-top:2px"></div>
+      ${hasEvents ? `<div style="font-size:0.55rem;color:var(--orange)">${eventsByDay[d].length}</div>` : ''}
+    </div>`;
+  }
+
+  html += `</div></div>`;
+
+  // Panel de día seleccionado (si hay)
+  if (window._calDaySelected && eventsByDay[window._calDaySelected]) {
+    html += `<div class="card" style="margin-top:0.8rem">
+      <div class="card-title">Día ${window._calDaySelected}</div>`;
+    eventsByDay[window._calDaySelected].forEach(ev => {
+      const start = ev.start?.dateTime || ev.start?.date || '';
+      const d2 = start ? new Date(start) : null;
+      const timeStr = ev.start?.dateTime ? d2.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}) : 'Todo el día';
+      html += `<div class="progress-row" style="padding:0.5rem 0">
+        <div style="flex:1">
+          <div class="bold text-small">${ev.summary||'Sin título'}</div>
+          <div class="text-small text-gray">${timeStr}</div>
+        </div>
+        <div style="display:flex;gap:0.3rem">
+          <button class="btn btn-secondary btn-sm" style="padding:0.2rem 0.4rem;font-size:0.65rem" onclick="openCalImportModal('${ev.id}')">📥</button>
+          <button class="btn btn-danger btn-sm" style="padding:0.2rem 0.4rem;font-size:0.65rem" onclick="calDeleteEvent('${ev.id}')">🗑️</button>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  return html;
+}
+
+function showCalDayEvents(day) {
+  window._calDaySelected = window._calDaySelected === day ? null : day;
+  renderCalContent();
 }
 
 function renderCalSincronizar() {
@@ -10412,8 +10573,18 @@ function renderCalSincronizar() {
     html += `<div class="text-small text-gray">Todos al día 🎉</div>`;
   } else {
     html += `<div class="text-small text-gray" style="margin-bottom:0.6rem">${pendientesPago.length} alumno${pendientesPago.length!==1?'s':''} sin pago:</div>
-    <div style="margin-bottom:0.8rem">${pendientesPago.map(s=>`<span class="tag tag-danger" style="display:inline-block;margin:0.2rem;font-size:0.75rem">${s.name}</span>`).join('')}</div>
-    <button class="btn btn-secondary btn-sm btn-full" onclick="calCreatePaymentReminders()">🔔 Crear recordatorios</button>`;
+    <div style="margin-bottom:0.8rem">`;
+    pendientesPago.forEach(s => {
+      const tel = (s.phone || '').replace(/\D/g,'');
+      const waText = encodeURIComponent(`Hola ${s.name.split(' ')[0]} 👋 Te recuerdo que tenés el pago de VC Fit pendiente este mes. Cualquier consulta avisame 🙌`);
+      const waLink = tel ? `https://wa.me/549${tel}?text=${waText}` : '';
+      html += `<div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.4rem">
+        <span class="tag tag-danger" style="flex:1;font-size:0.75rem">${s.name}</span>
+        ${waLink ? `<a href="${waLink}" target="_blank" class="btn btn-secondary btn-sm" style="padding:0.2rem 0.6rem;font-size:0.7rem;text-decoration:none">💬 WA</a>` : '<span class="text-small text-gray">sin tel</span>'}
+      </div>`;
+    });
+    html += `</div>
+    <button class="btn btn-secondary btn-sm btn-full" onclick="calCreatePaymentReminders()">🔔 Crear recordatorios en Calendar</button>`;
   }
   html += `</div>`;
   return html;
@@ -10518,6 +10689,62 @@ function calRefreshToken() {
   _calTokenClient.requestAccessToken({ prompt: '' }); // sin prompt = silencioso si hay sesión activa
 }
 
+// ── Importar evento Calendar → App ──
+function openCalImportModal(eventId) {
+  const ev = _calEvents.find(e => e.id === eventId);
+  if (!ev) return;
+  _calImportEvent = ev;
+
+  const start = ev.start?.dateTime || ev.start?.date || '';
+  const d = start ? new Date(start) : null;
+  const dateStr = d ? d.toLocaleDateString('es-AR', {weekday:'long',day:'numeric',month:'long'}) : '—';
+  const timeStr = ev.start?.dateTime ? d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}) : 'Todo el día';
+
+  document.getElementById('cal-import-title').textContent = ev.summary || 'Sin título';
+  document.getElementById('cal-import-date').textContent = `${dateStr} · ${timeStr}`;
+  document.getElementById('cal-import-note').value = '';
+
+  const sel = document.getElementById('cal-import-student');
+  sel.innerHTML = '<option value="">— Seleccioná un alumno —</option>';
+  state.students.forEach(s => {
+    // Pre-seleccionar si el nombre del alumno está en el título del evento
+    const match = (ev.summary || '').includes(s.name);
+    sel.innerHTML += `<option value="${s.id}" ${match?'selected':''}>${s.name}</option>`;
+  });
+
+  openModal('modal-cal-import');
+}
+
+async function calConfirmImport() {
+  const sid  = document.getElementById('cal-import-student').value;
+  const note = document.getElementById('cal-import-note').value.trim();
+  if (!sid) { alert('Seleccioná un alumno.'); return; }
+  if (!_calImportEvent) return;
+
+  const student = state.students.find(s => s.id === sid);
+  if (!student) return;
+
+  const start = _calImportEvent.start?.dateTime || _calImportEvent.start?.date || '';
+  const d = start ? new Date(start) : new Date();
+  const dateISO = d.toISOString().split('T')[0];
+  const dateLabel = d.toLocaleDateString('es-AR', {day:'numeric', month:'short', year:'numeric'});
+
+  if (!student.progressLog) student.progressLog = [];
+  student.progressLog.push({
+    id: 'cal_' + Date.now(),
+    date: dateLabel,
+    dateISO,
+    note: note || (_calImportEvent.summary || 'Sesión importada de Calendar'),
+    source: 'gcal',
+    gcalEventId: _calImportEvent.id,
+  });
+
+  await saveState();
+  closeModal('modal-cal-import');
+  _calImportEvent = null;
+  alert(`✅ Sesión importada para ${student.name}.`);
+}
+
 function maybeRestoreToken() {
   if (!_calGapiReady || !_calGisReady) return;
   const t = getCalToken();
@@ -10606,6 +10833,7 @@ function openCalEventModal() {
   document.getElementById('cal-ev-time').value = '09:00';
   document.getElementById('cal-ev-duration').value = '60';
   document.getElementById('cal-ev-note').value = '';
+  document.getElementById('cal-ev-recurrence').value = '';
   const sel = document.getElementById('cal-ev-student');
   sel.innerHTML = '<option value="">— Sin alumno —</option>';
   state.students.forEach(s => {
@@ -10621,6 +10849,7 @@ async function calCreateEvent() {
   const dur   = parseInt(document.getElementById('cal-ev-duration').value);
   const note  = document.getElementById('cal-ev-note').value.trim();
   const sid   = document.getElementById('cal-ev-student').value;
+  const recurrence = document.getElementById('cal-ev-recurrence').value;
   if (!title || !date) { alert('Completá título y fecha.'); return; }
 
   const s = JSON.parse(localStorage.getItem('vcfit_gcal_settings') || '{}');
@@ -10629,20 +10858,28 @@ async function calCreateEvent() {
   const startDT = new Date(`${date}T${time}:00`);
   const endDT   = new Date(startDT.getTime() + dur * 60000);
 
+  const rruleMap = {
+    'WEEKLY':    'RRULE:FREQ=WEEKLY',
+    'BIWEEKLY':  'RRULE:FREQ=WEEKLY;INTERVAL=2',
+    'MONTHLY':   'RRULE:FREQ=MONTHLY',
+  };
+
+  const resource = {
+    summary: `${prefix} · ${title}${student ? ' · '+student.name : ''}`,
+    description: note || '',
+    colorId: '3',
+    start: { dateTime: startDT.toISOString(), timeZone: 'America/Argentina/Buenos_Aires' },
+    end:   { dateTime: endDT.toISOString(),   timeZone: 'America/Argentina/Buenos_Aires' },
+  };
+  if (recurrence && rruleMap[recurrence]) {
+    resource.recurrence = [rruleMap[recurrence]];
+  }
+
   try {
-    await gapi.client.calendar.events.insert({
-      calendarId: 'primary',
-      resource: {
-        summary: `${prefix} · ${title}${student ? ' · '+student.name : ''}`,
-        description: note || '',
-        colorId: '3',
-        start: { dateTime: startDT.toISOString(), timeZone: 'America/Argentina/Buenos_Aires' },
-        end:   { dateTime: endDT.toISOString(),   timeZone: 'America/Argentina/Buenos_Aires' },
-      }
-    });
+    await gapi.client.calendar.events.insert({ calendarId: 'primary', resource });
     closeModal('modal-cal-event');
     await calFetchEvents();
-    alert('✅ Evento creado.');
+    alert('✅ Evento creado' + (recurrence ? ' (recurrente)' : '') + '.');
   } catch(e) {
     alert('Error: ' + (e.result?.error?.message || e.message));
   }
