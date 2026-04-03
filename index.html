@@ -10310,7 +10310,19 @@ function renderCalContent() {
       </div>
       <button class="btn btn-secondary btn-sm" onclick="calSignOut()">Desconectar</button>
     </div>
-  </div>
+  </div>`;
+
+  // Aviso token por vencer
+  if (token._expiring_soon) {
+    html += `<div class="card" style="margin-bottom:1rem;border-color:var(--orange);background:var(--orange-dim)">
+      <div style="display:flex;align-items:center;gap:0.8rem">
+        <div style="font-size:1.2rem">⚠️</div>
+        <div style="flex:1"><div class="bold text-small" style="color:var(--orange)">Sesión por vencer</div>
+        <div class="text-small text-gray">Reconectá para seguir sincronizando.</div></div>
+        <button class="btn btn-primary btn-sm" onclick="calRefreshToken()">Renovar</button>
+      </div>
+    </div>`;
+  }
   <div class="tabs" style="margin-bottom:1rem">
     ${tabs.map((t,i) => `<button class="tab${_calTab===t?' active':''}" onclick="switchCalTab('${t}')">${tabLabels[i]}</button>`).join('')}
   </div>`;
@@ -10493,8 +10505,17 @@ function getCalToken() {
       localStorage.removeItem('vcfit_gcal_token');
       return null;
     }
+    // Aviso si quedan menos de 10 minutos
+    if (t.expires_at && t.expires_at - Date.now() < 600000) {
+      t._expiring_soon = true;
+    }
     return t;
   } catch(e) { return null; }
+}
+
+function calRefreshToken() {
+  if (!_calGisReady || !_calTokenClient) return;
+  _calTokenClient.requestAccessToken({ prompt: '' }); // sin prompt = silencioso si hay sesión activa
 }
 
 function maybeRestoreToken() {
@@ -10645,18 +10666,38 @@ async function calSyncSessions() {
   const prefix = s.prefix || 'VC Fit';
   const dur    = s.dur || 60;
 
-  let created = 0;
+  // Obtener eventos existentes para deduplicar
+  let existingTitles = new Set();
+  try {
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    const lastDay  = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59).toISOString();
+    const existing = await gapi.client.calendar.events.list({
+      calendarId: 'primary', q: prefix,
+      timeMin: firstDay, timeMax: lastDay,
+      maxResults: 200, singleEvents: true
+    });
+    (existing.result.items || []).forEach(ev => {
+      const dateKey = (ev.start?.dateTime || ev.start?.date || '').substring(0,10);
+      existingTitles.add((ev.summary || '') + '|' + dateKey);
+    });
+  } catch(e) { /* si falla el chequeo, continúa igual */ }
+
+  let created = 0, skipped = 0;
   const promises = [];
   state.students.forEach(st => {
     (st.progressLog || []).forEach(e => {
       if (!(e.dateISO || '').startsWith(mesActual)) return;
-      const startDT = new Date(`${e.dateISO}T09:00:00`);
+      const sessionTitle = `${prefix} · Sesión · ${st.name}`;
+      const dedupeKey = sessionTitle + '|' + e.dateISO;
+      if (existingTitles.has(dedupeKey)) { skipped++; return; }
+      const hora = e.time || '09:00';
+      const startDT = new Date(`${e.dateISO}T${hora}:00`);
       const endDT   = new Date(startDT.getTime() + (e.duration || dur) * 60000);
       promises.push(
         gapi.client.calendar.events.insert({
           calendarId: 'primary',
           resource: {
-            summary: `${prefix} · Sesión · ${st.name}`,
+            summary: sessionTitle,
             description: e.note || '',
             colorId: '3',
             start: { dateTime: startDT.toISOString(), timeZone: 'America/Argentina/Buenos_Aires' },
@@ -10668,7 +10709,10 @@ async function calSyncSessions() {
   });
   await Promise.all(promises);
   await calFetchEvents();
-  alert(`✅ ${created} sesiones exportadas.`);
+  const msg = skipped > 0
+    ? `✅ ${created} sesiones exportadas. ${skipped} ya existían (sin duplicar).`
+    : `✅ ${created} sesiones exportadas.`;
+  alert(msg);
 }
 
 async function calCreatePaymentReminders() {
@@ -10733,14 +10777,15 @@ function saveCalSettings() {
 }
 
 // Auto-sync al completar sesión (si está configurado)
-function calAutoSync(studentName, dateISO, duration, routineName) {
+function calAutoSync(studentName, dateISO, duration, routineName, sessionTime) {
   const s = JSON.parse(localStorage.getItem('vcfit_gcal_settings') || '{}');
   if (s.autosync === false) return;
   const token = getCalToken();
   if (!token || !_calGapiReady || !gapi.client.calendar) return;
   const prefix = s.prefix || 'VC Fit';
   const dur    = duration || s.dur || 60;
-  const startDT = new Date(`${dateISO}T09:00:00`);
+  const hora   = sessionTime || '09:00';
+  const startDT = new Date(`${dateISO}T${hora}:00`);
   const endDT   = new Date(startDT.getTime() + dur * 60000);
   gapi.client.calendar.events.insert({
     calendarId: 'primary',
