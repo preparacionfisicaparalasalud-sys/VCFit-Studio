@@ -760,6 +760,20 @@
   .btn-complete:hover { transform: translateY(-1px); box-shadow: 0 5px 20px rgba(61,184,90,0.45); }
   .btn-complete:disabled { background: var(--dark3); color: var(--gray-light); box-shadow: none; cursor: default; transform: none; border: 1px solid var(--dark4); }
 
+  /* ── FEELING BUTTONS ── */
+  .feeling-btn {
+    font-size: 1.8rem;
+    background: var(--dark3);
+    border: 2px solid transparent;
+    border-radius: 12px;
+    padding: 0.4rem 0.5rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    line-height: 1;
+  }
+  .feeling-btn:hover { transform: scale(1.15); background: var(--dark4); }
+  .feeling-btn.selected { border-color: var(--orange); background: var(--orange-dim); transform: scale(1.2); }
+
   /* ── COMPLETED OVERLAY ── */
   .completed-overlay {
     display: none;
@@ -2574,12 +2588,52 @@ ALMUERZO
         <div id="session-progress-fill" style="height:100%;background:linear-gradient(90deg,var(--orange),var(--success));border-radius:2px;width:0%;transition:width 0.3s"></div>
       </div>
     </div>
-    <div style="display:flex;gap:0.6rem;margin-bottom:0.6rem;display:none" id="session-note-row">
-      <input type="text" class="input-field" id="session-note-input" placeholder="¿Cómo te sentiste hoy? (opcional)" style="font-size:0.85rem;padding:0.6rem 0.8rem">
-    </div>
-    <button class="btn-complete" id="complete-btn" onclick="completeWorkout()">
+    <button class="btn-complete" id="complete-btn" onclick="openCompleteModal()">
       ✅ Marcar como completada
     </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     MODAL: CONFIRMAR SESIÓN COMPLETADA
+═══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-complete-session">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" style="text-align:center">
+      ✅ ¿Terminaste el entrenamiento?
+    </div>
+
+    <!-- Sensación -->
+    <div style="margin-bottom:1.2rem">
+      <div class="input-label" style="text-align:center;margin-bottom:0.8rem">¿Cómo te sentiste?</div>
+      <div style="display:flex;justify-content:center;gap:0.5rem" id="feeling-selector">
+        <button class="feeling-btn" data-val="1" onclick="selectFeeling(1)" title="Muy difícil">😣</button>
+        <button class="feeling-btn" data-val="2" onclick="selectFeeling(2)" title="Difícil">😓</button>
+        <button class="feeling-btn" data-val="3" onclick="selectFeeling(3)" title="Regular">😐</button>
+        <button class="feeling-btn" data-val="4" onclick="selectFeeling(4)" title="Bien">😊</button>
+        <button class="feeling-btn" data-val="5" onclick="selectFeeling(5)" title="Excelente">💪</button>
+      </div>
+      <div id="feeling-label" style="text-align:center;font-size:0.8rem;color:var(--gray-light);margin-top:0.5rem;min-height:1.2rem"></div>
+    </div>
+
+    <!-- Nota rápida -->
+    <div class="input-group">
+      <label class="input-label">Nota de la sesión (opcional)</label>
+      <textarea class="input-field" id="session-note-input" rows="2"
+        placeholder="ej: Hoy me costó la sentadilla, llegué cansado..."
+        style="font-size:0.85rem;resize:none"></textarea>
+    </div>
+
+    <!-- Botones -->
+    <div style="display:flex;gap:0.8rem;padding-bottom:1rem;margin-top:0.5rem">
+      <button class="btn btn-secondary btn-sm" style="flex:1" onclick="closeModal('modal-complete-session')">
+        ✗ Cancelar
+      </button>
+      <button class="btn btn-success" style="flex:2" onclick="completeWorkout()">
+        ✅ Confirmar
+      </button>
+    </div>
   </div>
 </div>
 
@@ -2587,11 +2641,15 @@ ALMUERZO
      COMPLETED OVERLAY
 ═══════════════════════════════════════════ -->
 <div class="completed-overlay" id="completed-overlay">
-  <div class="completed-emoji">🏆</div>
+  <div class="completed-emoji" id="completed-emoji">🏆</div>
   <div class="completed-title">¡COMPLETADO!</div>
   <div class="completed-sub" id="completed-message">Excelente trabajo hoy.</div>
-  <button class="btn btn-success mt-2" onclick="document.getElementById('completed-overlay').classList.remove('show')">
+  <div id="completed-feeling-display" style="font-size:1.5rem;margin-top:-0.5rem"></div>
+  <button class="btn btn-success mt-2" onclick="closeCompletedOverlay()">
     Cerrar
+  </button>
+  <button class="btn btn-secondary btn-sm" style="margin-top:0.5rem;font-size:0.75rem;opacity:0.7" onclick="undoLastWorkout()">
+    ↩ Deshacer — me equivoqué
   </button>
 </div>
 
@@ -8071,8 +8129,7 @@ function updateCompleteButton(checksKey, total) {
     if (fill) fill.style.width = `${pctVal}%`;
   }
 
-  // Mostrar campo de nota siempre
-  if (noteRow) noteRow.style.display = 'flex';
+  // Nota: el campo de nota ahora está en el modal de confirmación
 
   if (btn) {
     if (total === 0) {
@@ -8085,6 +8142,40 @@ function updateCompleteButton(checksKey, total) {
         : '✅ Marcar como completada';
     }
   }
+}
+
+let _selectedFeeling = null;
+
+function openCompleteModal() {
+  _selectedFeeling = null;
+  const noteEl = document.getElementById('session-note-input');
+  if (noteEl) noteEl.value = '';
+  const labelEl = document.getElementById('feeling-label');
+  if (labelEl) labelEl.textContent = '';
+  document.querySelectorAll('.feeling-btn').forEach(b => b.classList.remove('selected'));
+  openModal('modal-complete-session');
+}
+
+const FEELING_LABELS = {
+  1: '😣 Muy difícil',
+  2: '😓 Me costó bastante',
+  3: '😐 Regular, como siempre',
+  4: '😊 Bien, me sentí bien',
+  5: '💪 Excelente, al 100%'
+};
+const FEELING_EMOJIS = { 1:'😣', 2:'😓', 3:'😐', 4:'😊', 5:'💪' };
+
+function selectFeeling(val) {
+  _selectedFeeling = val;
+  document.querySelectorAll('.feeling-btn').forEach(b => {
+    b.classList.toggle('selected', parseInt(b.dataset.val) === val);
+  });
+  const el = document.getElementById('feeling-label');
+  if (el) el.textContent = FEELING_LABELS[val] || '';
+}
+
+function closeCompletedOverlay() {
+  document.getElementById('completed-overlay').classList.remove('show');
 }
 
 function completeWorkout() {
@@ -8102,36 +8193,55 @@ function completeWorkout() {
   const entry = {
     date: new Date().toLocaleDateString('es-AR'),
     dateISO: new Date().toISOString().split('T')[0],
+    completedAt: Date.now(),
     workoutName: w ? w.name : '',
     weight: s.selfData?.weight || '',
     note: notes,
+    feeling: _selectedFeeling,
     duration: null,
-    feeling: null,
     exercises: checksKey ? Object.values(state.exerciseChecks[checksKey] || {}).filter(c => c.done).length : 0
   };
 
   if (!s.progressLog) s.progressLog = [];
   s.progressLog.push(entry);
-
-  // Marcar última vez completada (visible para el entrenador)
-  s.lastCompleted = {
-    date: entry.date,
-    workoutName: entry.workoutName
-  };
-
-  // Reset checks
+  s.lastCompleted = { date: entry.date, workoutName: entry.workoutName };
   if (checksKey) state.exerciseChecks[checksKey] = {};
   saveState();
-
-  // Auto-sync a Calendar si está conectado
   calAutoSync(s.name, entry.dateISO, entry.duration, entry.workoutName);
+  closeModal('modal-complete-session');
 
+  // Overlay celebración
+  document.getElementById('completed-emoji').textContent =
+    _selectedFeeling >= 4 ? '🏆' : _selectedFeeling >= 3 ? '💪' : '👊';
   document.getElementById('completed-message').textContent =
     `Rutina "${w ? w.name : ''}" registrada. ¡Seguí así, ${s.name.split(' ')[0]}!`;
+  document.getElementById('completed-feeling-display').textContent =
+    _selectedFeeling ? FEELING_LABELS[_selectedFeeling] : '';
   document.getElementById('completed-overlay').classList.add('show');
-
-  // Re-render
   renderTodayWorkout(s);
+}
+
+function undoLastWorkout() {
+  const s = state.students.find(x => x.id === state.currentStudentId);
+  if (!s || !s.progressLog || !s.progressLog.length) return;
+  const last = s.progressLog[s.progressLog.length - 1];
+  if (last.completedAt && Date.now() - last.completedAt > 60 * 60 * 1000) {
+    alert('Solo podés deshacer sesiones registradas hace menos de 60 minutos.');
+    return;
+  }
+  const min = last.completedAt ? Math.round((Date.now() - last.completedAt) / 60000) : null;
+  const msg = min !== null
+    ? `¿Deshacer la sesión "${last.workoutName || 'sin nombre'}" de hace ${min} min?`
+    : `¿Deshacer la última sesión "${last.workoutName || 'sin nombre'}"?`;
+  if (!confirm(msg)) return;
+  s.progressLog.pop();
+  s.lastCompleted = s.progressLog.length
+    ? { date: s.progressLog[s.progressLog.length-1].date, workoutName: s.progressLog[s.progressLog.length-1].workoutName }
+    : null;
+  saveState();
+  closeCompletedOverlay();
+  renderTodayWorkout(s);
+  alert('↩ Sesión deshecha correctamente.');
 }
 
 // ═══════════════════════════════════════════
