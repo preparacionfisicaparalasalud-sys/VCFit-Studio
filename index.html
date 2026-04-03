@@ -3379,6 +3379,27 @@ Plancha: 3x45seg"></textarea>
   <div id="loading-msg" style="font-family:var(--font-body);font-size:0.75rem;color:#555;margin-top:0.5rem"> </div>
 </div>
 
+<!-- SAFETY NET GLOBAL: independiente del script principal -->
+<script>
+(function() {
+  var MAX_WAIT = 8000;
+  var _safetyFired = false;
+  function forceUnlock() {
+    if (_safetyFired) return;
+    _safetyFired = true;
+    var ov = document.getElementById('loading-overlay');
+    if (ov) ov.style.display = 'none';
+    // Ocultar todas las screens y mostrar login
+    document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+    var login = document.getElementById('screen-login');
+    if (login) login.classList.add('active');
+    console.warn('[VC Fit] Safety net global activado tras ' + MAX_WAIT + 'ms');
+  }
+  window._safetyUnlock = function() { _safetyFired = true; };
+  setTimeout(forceUnlock, MAX_WAIT);
+})();
+</script>
+
 <script>
 // ═══════════════════════════════════════════
 //  ICONOS SVG PROFESIONALES
@@ -11165,6 +11186,7 @@ function calAutoSync(studentName, dateISO, duration, routineName, sessionTime) {
     console.warn('Error en init:', e);
   } finally {
     clearTimeout(safetyTimer);
+    if (window._safetyUnlock) window._safetyUnlock();
     hideLoadingOverlay();
     showScreen('screen-login');
   }
@@ -11176,10 +11198,19 @@ function calAutoSync(studentName, dateISO, duration, routineName, sessionTime) {
 // PWA: register service worker si está disponible
 if ('serviceWorker' in navigator) {
   const swCode = `
-    const CACHE = 'vcfit-v1';
+    const CACHE = 'vcfit-v3';
     const ASSETS = ['/'];
     self.addEventListener('install', e => {
       e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
+      self.skipWaiting();
+    });
+    self.addEventListener('activate', e => {
+      e.waitUntil(
+        caches.keys().then(keys =>
+          Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+        )
+      );
+      self.clients.claim();
     });
     self.addEventListener('fetch', e => {
       e.respondWith(
