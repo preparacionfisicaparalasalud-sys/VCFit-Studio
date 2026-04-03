@@ -2371,6 +2371,31 @@ ALMUERZO
   </div>
 </div>
 
+<!-- MODAL: ASIGNAR EVENTO CALENDAR A ALUMNO -->
+<div class="modal-overlay" id="modal-cal-assign">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">👤 Asignar clase a alumno</div>
+    <div id="cal-assign-event-info" style="background:var(--dark3);border-radius:8px;padding:0.8rem;margin-bottom:1rem">
+      <div class="bold text-small" id="cal-assign-title">—</div>
+      <div class="text-small text-gray" id="cal-assign-date">—</div>
+    </div>
+    <div class="input-group">
+      <label class="input-label">Alumno</label>
+      <select class="input-field" id="cal-assign-student">
+        <option value="">— Sin asignar —</option>
+      </select>
+    </div>
+    <div class="text-small text-gray" style="margin-bottom:1rem;line-height:1.5">
+      Esta asignación se guarda y el alumno verá esta clase en su pantalla.
+    </div>
+    <div style="display:flex;gap:0.8rem;padding-bottom:1rem">
+      <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-cal-assign')">Cancelar</button>
+      <button class="btn btn-primary" style="flex:1" onclick="calSaveAssignment()">👤 Guardar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: IMPORTAR EVENTO CALENDAR → APP -->
 <div class="modal-overlay" id="modal-cal-import">
   <div class="modal">
@@ -3826,48 +3851,77 @@ async function updateProximasSesionesFromCalendar(eventos) {
   if (!eventos?.length || !state.students?.length) return;
 
   const ahora = new Date();
+  const assignments = state.calAssignments || {};
+
+  // Normalizar texto para matching (quitar acentos, minúsculas)
+  const normalize = str => str.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, '');
+
   const eventosValidos = eventos.filter(ev => {
     const start = ev.start?.dateTime || ev.start?.date;
     return start && new Date(start) >= ahora;
   });
 
-  // Resetear proximasSesiones de todos los alumnos que tengan eventos Calendar
+  // Construir mapa evento → alumno (manual primero, automático después)
+  const eventoAlumno = {};
+
+  // 1. Asignaciones manuales
+  eventosValidos.forEach(ev => {
+    if (assignments[ev.id]) eventoAlumno[ev.id] = assignments[ev.id];
+  });
+
+  // 2. Matching automático por nombre (solo si no hay asignación manual)
+  eventosValidos.forEach(ev => {
+    if (eventoAlumno[ev.id]) return;
+    const tituloNorm = normalize(ev.summary || '');
+    state.students.forEach(st => {
+      if (eventoAlumno[ev.id]) return;
+      const partes = normalize(st.name).split(' ').filter(p => p.length > 2);
+      const match = partes.some(p => tituloNorm.includes(p));
+      if (match) eventoAlumno[ev.id] = st.id;
+    });
+  });
+
+  // Resetear y reconstruir proximasSesiones de cada alumno
   const alumnosActualizados = new Set();
+  state.students.forEach(st => st.proximasSesiones = []);
 
+  eventosValidos.forEach(ev => {
+    const sid = eventoAlumno[ev.id];
+    if (!sid) return;
+    const st = state.students.find(s => s.id === sid);
+    if (!st) return;
+
+    const start = ev.start?.dateTime || ev.start?.date || '';
+    const d = new Date(start);
+    const fechaISO = d.toISOString().split('T')[0];
+    const hora = ev.start?.dateTime
+      ? d.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'})
+      : 'Todo el día';
+    const dia = d.toLocaleDateString('es-AR', {weekday:'short', day:'numeric'}).replace('.','');
+    const mes = d.toLocaleDateString('es-AR', {month:'short'}).replace('.','');
+    const titulo = (ev.summary || '')
+      .replace(/^VC Fit\s*[·\-]\s*/i, '')
+      .replace(/^Sesi[oó]n\s*[·\-]\s*/i, '')
+      .replace(new RegExp(`[·\\-]?\\s*${st.name.split(' ')[0]}.*$`, 'i'), '')
+      .trim() || 'Clase';
+
+    if (!st.proximasSesiones) st.proximasSesiones = [];
+    st.proximasSesiones.push({ fechaISO, dia, mes, hora, titulo, eventId: ev.id });
+    alumnosActualizados.add(st.id);
+  });
+
+  // Ordenar por fecha
   state.students.forEach(st => {
-    const sesionesDelAlumno = eventosValidos.filter(ev => {
-      const titulo = ev.summary || '';
-      // Buscar nombre del alumno en el título (case insensitive, primero o último nombre)
-      const nombreParts = st.name.toLowerCase().split(' ');
-      const tituloLow = titulo.toLowerCase();
-      return nombreParts.some(part => part.length > 2 && tituloLow.includes(part));
-    }).map(ev => {
-      const start = ev.start?.dateTime || ev.start?.date || '';
-      const d = new Date(start);
-      const fechaISO = d.toISOString().split('T')[0];
-      const hora = ev.start?.dateTime
-        ? d.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'})
-        : 'Todo el día';
-      const dia = d.toLocaleDateString('es-AR', {weekday:'short', day:'numeric'}).replace('.','');
-      const mes = d.toLocaleDateString('es-AR', {month:'short'}).replace('.','');
-      // Limpiar título — quitar prefijo "VC Fit · Sesión ·"
-      const titulo = (ev.summary || '')
-        .replace(/^VC Fit\s*·\s*/i, '')
-        .replace(/^Sesión\s*·\s*/i, '')
-        .replace(new RegExp(`·?\\s*${st.name}\\s*$`, 'i'), '')
-        .trim() || 'Clase';
-      return { fechaISO, dia, mes, hora, titulo, eventId: ev.id };
-    }).sort((a,b) => a.fechaISO.localeCompare(b.fechaISO));
-
-    if (sesionesDelAlumno.length || st.proximasSesiones?.length) {
-      st.proximasSesiones = sesionesDelAlumno;
-      alumnosActualizados.add(st.id);
+    if (st.proximasSesiones?.length) {
+      st.proximasSesiones.sort((a,b) => a.fechaISO.localeCompare(b.fechaISO));
     }
   });
 
-  if (alumnosActualizados.size > 0) {
+  if (alumnosActualizados.size > 0 || eventos.length > 0) {
     saveState();
-    console.log(`✅ Próximas sesiones actualizadas para ${alumnosActualizados.size} alumno/s.`);
+    console.log(`✅ Próximas sesiones: ${alumnosActualizados.size} alumno/s con clases asignadas.`);
   }
 }
 
@@ -10584,13 +10638,17 @@ function renderCalProximos() {
     const d = start ? new Date(start) : null;
     const dateStr = d ? d.toLocaleDateString('es-AR', {weekday:'short',day:'numeric',month:'short'}) : '—';
     const timeStr = ev.start?.dateTime ? d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}) : 'Todo el día';
+    const assignedId = (state.calAssignments || {})[ev.id];
+    const assignedStudent = assignedId ? state.students.find(s => s.id === assignedId) : null;
     html += `
     <div class="progress-row" style="padding:0.7rem 0;align-items:flex-start">
       <div style="flex:1">
         <div class="bold text-small">${ev.summary || 'Sin título'}</div>
         <div class="text-small text-gray">${dateStr} · ${timeStr}</div>
+        ${assignedStudent ? `<div class="text-small" style="color:var(--orange);margin-top:0.2rem">👤 ${assignedStudent.name}</div>` : ''}
       </div>
       <div style="display:flex;gap:0.4rem;flex-shrink:0">
+        <button class="btn btn-secondary btn-sm" style="padding:0.2rem 0.5rem;font-size:0.7rem" onclick="openCalAssignModal('${ev.id}')" title="Asignar a alumno">👤</button>
         <button class="btn btn-secondary btn-sm" style="padding:0.2rem 0.5rem;font-size:0.7rem" onclick="openCalImportModal('${ev.id}')" title="Importar como sesión">📥</button>
         <button class="btn btn-danger btn-sm" style="padding:0.2rem 0.5rem;font-size:0.7rem" onclick="calDeleteEvent('${ev.id}')">🗑️</button>
       </div>
@@ -10848,6 +10906,51 @@ function getCalToken() {
 function calRefreshToken() {
   if (!_calGisReady || !_calTokenClient) return;
   _calTokenClient.requestAccessToken({ prompt: '' }); // sin prompt = silencioso si hay sesión activa
+}
+
+// ── Asignación manual evento → alumno ──
+function openCalAssignModal(eventId) {
+  const ev = _calEvents.find(e => e.id === eventId);
+  if (!ev) return;
+
+  const start = ev.start?.dateTime || ev.start?.date || '';
+  const d = start ? new Date(start) : null;
+  const dateStr = d ? d.toLocaleDateString('es-AR', {weekday:'long',day:'numeric',month:'long'}) : '—';
+  const timeStr = ev.start?.dateTime ? d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}) : 'Todo el día';
+
+  document.getElementById('cal-assign-title').textContent = ev.summary || 'Sin título';
+  document.getElementById('cal-assign-date').textContent = `${dateStr} · ${timeStr}`;
+  document.getElementById('cal-assign-title').dataset.eventId = eventId;
+
+  const sel = document.getElementById('cal-assign-student');
+  const currentAssignment = (state.calAssignments || {})[eventId] || '';
+  sel.innerHTML = '<option value="">— Sin asignar —</option>';
+  state.students.forEach(s => {
+    sel.innerHTML += `<option value="${s.id}" ${currentAssignment===s.id?'selected':''}>${s.name}</option>`;
+  });
+
+  openModal('modal-cal-assign');
+}
+
+async function calSaveAssignment() {
+  const eventId = document.getElementById('cal-assign-title').dataset.eventId;
+  const studentId = document.getElementById('cal-assign-student').value;
+  if (!eventId) return;
+
+  if (!state.calAssignments) state.calAssignments = {};
+  if (studentId) {
+    state.calAssignments[eventId] = studentId;
+  } else {
+    delete state.calAssignments[eventId];
+  }
+
+  await saveState();
+  updateProximasSesionesFromCalendar(_calEvents);
+  closeModal('modal-cal-assign');
+  renderCalContent();
+
+  const st = studentId ? state.students.find(s => s.id === studentId) : null;
+  if (st) alert(`✅ Clase asignada a ${st.name}. Ya puede verla en su pantalla.`);
 }
 
 // ── Importar evento Calendar → App ──
@@ -11220,9 +11323,14 @@ function calAutoSync(studentName, dateISO, duration, routineName, sessionTime) {
     const now = new Date();
     _financePeriod = { year: now.getFullYear(), month: now.getMonth() + 1 };
     loadDemoData();
+    if (!state.calAssignments) state.calAssignments = {};
     refreshTrainerDashboard();
     renderStudentsList();
     renderWorkoutsList();
+    // Si hay token Calendar guardado, cargar APIs en background automáticamente
+    if (localStorage.getItem('vcfit_gcal_token')) {
+      setTimeout(() => loadCalendarAPIs(), 3000);
+    }
   } catch(e) {
     console.warn('Error en init:', e);
   } finally {
