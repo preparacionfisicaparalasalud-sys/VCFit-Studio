@@ -10485,7 +10485,7 @@ function renderCalContent() {
       </div>
     </div>`;
   }
-  <div class="tabs" style="margin-bottom:1rem">
+  html += `<div class="tabs" style="margin-bottom:1rem">
     ${tabs.map((t,i) => `<button class="tab${_calTab===t?' active':''}" onclick="switchCalTab('${t}')">${tabLabels[i]}</button>`).join('')}
   </div>`;
 
