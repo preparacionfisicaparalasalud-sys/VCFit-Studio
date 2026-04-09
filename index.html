@@ -7724,6 +7724,35 @@ function enterAsStudent(studentId) {
   const s = state.students.find(x => x.id === studentId);
   if (!s) return;
 
+  // Reiniciar listener Firebase con rol ya seteado en 'student'
+  if (syncEnabled) initSync();
+
+  // Poll de respaldo: cada 2 minutos consulta Firebase directamente
+  // por si el onSnapshot se cortó o no está activo
+  if (window._studentPollInterval) clearInterval(window._studentPollInterval);
+  window._studentPollInterval = setInterval(async () => {
+    if (state.currentRole !== 'student' || !STATE_DOC || !syncEnabled) {
+      clearInterval(window._studentPollInterval);
+      return;
+    }
+    try {
+      const doc = await STATE_DOC.get();
+      if (!doc.exists) return;
+      const fsState = doc.data();
+      const sid = state.currentStudentId;
+      const merged = mergePhotosFromLocal(fsState);
+      state = { ...merged, currentRole: 'student', currentStudentId: sid };
+      const st = state.students.find(x => x.id === sid);
+      if (st) {
+        renderTodayWorkout(st);
+        renderRoutineUpdatedBanner(st);
+        renderStudentCycleBanner(st);
+        renderStudentProximasSesiones(st);
+        renderStudentPizarras(st);
+      }
+    } catch(e) { /* silencioso */ }
+  }, 2 * 60 * 1000);
+
   applyThemeForRole('student');
   document.getElementById('student-view-name').textContent = s.name;
   if (state.logoDataUrl) setLogoInEl('student-view-logo', state.logoDataUrl);
@@ -8811,6 +8840,10 @@ function logoutStudent() {
   state.currentRole = null;
   state.currentStudentId = null;
   saveState();
+  if (window._studentPollInterval) {
+    clearInterval(window._studentPollInterval);
+    window._studentPollInterval = null;
+  }
   pinCurrent = '';
   updatePinDisplay();
   document.getElementById('pin-error').textContent = '';
@@ -11495,7 +11528,11 @@ function calAutoSync(studentName, dateISO, duration, routineName, sessionTime) {
 //  MÓDULO ANAMNESIS EXTERNA
 // ═══════════════════════════════════════════
 
-const ANAMNESIS_FORM_URL = 'https://preparacionfisicaparalasalud-sys.github.io/VCFit-Studio/anamnesis-form.html';
+// URL del formulario de anamnesis — se calcula desde la URL actual
+const ANAMNESIS_FORM_URL = (() => {
+  const base = window.location.href.replace(/\/[^\/]*$/, '');
+  return base + '/anamnesis-form.html';
+})();
 let _pendingAnamnesis = [];
 let _reviewingAnamnesis = null;
 
