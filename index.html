@@ -2334,6 +2334,70 @@ ALMUERZO
 <!-- ═══════════════════════════════════════════
      SCREEN: CALENDAR
 ═══════════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════════
+     SCREEN: ANAMNESIS INBOX
+═══════════════════════════════════════════ -->
+<div id="screen-anamnesis-inbox" class="screen">
+  <div class="topbar">
+    <button class="btn-back" onclick="showScreen('screen-trainer')">←</button>
+    <div style="flex:1"><div class="topbar-title">📋 Anamnesis</div></div>
+    <button class="btn btn-secondary btn-sm" onclick="checkAnamnesisInbox()">🔄</button>
+  </div>
+  <div class="content">
+
+    <!-- Generar link -->
+    <div class="card" style="margin-bottom:1rem">
+      <div class="card-title">🔗 Enviar formulario</div>
+      <div class="text-small text-gray" style="margin-bottom:0.8rem;line-height:1.5">
+        Generá un link personalizado para que un alumno complete su anamnesis desde su celular.
+      </div>
+      <div class="input-group">
+        <label class="input-label">Alumno (existente o nuevo)</label>
+        <select class="input-field" id="anamnesis-link-student">
+          <option value="">— Nuevo alumno (sin perfil aún) —</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Nombre para el saludo (si es nuevo)</label>
+        <input type="text" class="input-field" id="anamnesis-link-name" placeholder="ej: Martín">
+      </div>
+      <div style="display:flex;gap:0.6rem;flex-wrap:wrap">
+        <button class="btn btn-primary btn-sm" style="flex:1" onclick="sendAnamnesisWhatsApp()">💬 Enviar por WhatsApp</button>
+        <button class="btn btn-secondary btn-sm" style="flex:1" onclick="sendAnamnesisEmail()">✉️ Enviar por Email</button>
+      </div>
+      <button class="btn btn-secondary btn-sm btn-full" style="margin-top:0.5rem" onclick="copyAnamnesisLink()">📋 Copiar link</button>
+    </div>
+
+    <!-- Pendientes -->
+    <div class="card">
+      <div class="card-title">📥 Formularios recibidos</div>
+      <div id="anamnesis-pending-list">
+        <div class="text-small text-gray" style="text-align:center;padding:1.5rem">Cargando...</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL: REVISAR ANAMNESIS RECIBIDA -->
+<div class="modal-overlay" id="modal-anamnesis-review">
+  <div class="modal" style="max-height:85vh;overflow-y:auto">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📋 Revisar anamnesis</div>
+    <div id="anamnesis-review-content" style="font-size:0.85rem;line-height:1.7;margin-bottom:1rem"></div>
+    <div class="input-group">
+      <label class="input-label">Importar a alumno</label>
+      <select class="input-field" id="anamnesis-import-student">
+        <option value="__new__">➕ Crear nuevo alumno</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:0.8rem;padding-bottom:1rem">
+      <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-anamnesis-review')">Cancelar</button>
+      <button class="btn btn-primary" style="flex:1" onclick="importAnamnesis()">✅ Importar al perfil</button>
+    </div>
+  </div>
+</div>
+
 <div id="screen-calendar" class="screen">
   <div class="topbar">
     <button class="btn-back" onclick="showScreen('screen-trainer')">←</button>
@@ -6001,9 +6065,11 @@ function initSync() {
   if (!_firebaseAvailable || !STATE_DOC) return;
   if (syncUnsubscribe) syncUnsubscribe();
   syncUnsubscribe = STATE_DOC.onSnapshot(doc => {
-    if (!doc.exists || !doc.metadata.hasPendingWrites === false) return;
-    // Solo aplicar cambios que vienen del servidor (no los nuestros)
+    // Bug fix: la condición original era incorrecta — evaluaba (!x === false) en vez de (x === false)
+    if (!doc.exists) return;
+    // Ignorar escrituras propias (vienen con hasPendingWrites = true)
     if (doc.metadata.hasPendingWrites) return;
+
     const fsState = doc.data();
     const merged = mergePhotosFromLocal(fsState);
     const prevRole = state.currentRole;
@@ -6011,11 +6077,25 @@ function initSync() {
     state = { ...merged, currentRole: prevRole, currentStudentId: prevStudentId };
     localStorage.setItem('vcfit_state', JSON.stringify({ ...state, currentRole: null, currentStudentId: null }));
     setSyncStatus('ok');
-    // Refrescar UI visible
+
+    // Refrescar UI visible según rol activo
     if (prevRole === 'trainer') {
       refreshTrainerDashboard();
       renderStudentsList();
       renderWorkoutsList();
+    } else if (prevRole === 'student' && prevStudentId) {
+      // El alumno recibe el update del entrenador → re-renderizar su pantalla
+      const s = state.students.find(x => x.id === prevStudentId);
+      if (s) {
+        renderTodayWorkout(s);
+        renderRoutineUpdatedBanner(s);
+        renderStudentCycleBanner(s);
+        renderStudentProximasSesiones(s);
+        renderStudentPizarras(s);
+        renderStudentWelcomeBanner(s);
+        renderStudentPaymentBanner(s);
+        console.log('[VC Fit] Pantalla del alumno actualizada desde Firebase.');
+      }
     }
   }, err => {
     console.warn('onSnapshot error:', err.message);
@@ -6271,7 +6351,8 @@ applyLogo();
 // Pantallas exclusivas del entrenador
 const TRAINER_SCREENS = [
   'screen-trainer','screen-trainer-profile','screen-students','screen-student-detail',
-  'screen-workouts','screen-stats','screen-ai-chat','screen-finance','screen-calendar'
+  'screen-workouts','screen-stats','screen-ai-chat','screen-finance','screen-calendar',
+  'screen-anamnesis-inbox'
 ];
 
 function showScreen(id) {
@@ -6397,6 +6478,7 @@ function checkTrainerPassword() {
     applyLogo();
     applyThemeForRole('trainer');
     loadApiKeyStatus();
+    checkInitialAnamnesisCount();
     showScreen('screen-trainer');
   } else {
     registerFail('trainer');
@@ -7523,6 +7605,11 @@ function refreshTrainerDashboard() {
         <div class="nav-card-icon">📅</div>
         <div class="nav-card-label">Calendario</div>
         <div class="nav-card-count" id="count-cal">→</div>
+      </div>
+      <div class="nav-card" onclick="openAnamnesisInbox()" id="nav-anamnesis-card">
+        <div class="nav-card-icon">📋</div>
+        <div class="nav-card-label">Anamnesis</div>
+        <div class="nav-card-count" id="count-anamnesis">→</div>
       </div>`;
   }
 
@@ -11402,6 +11489,326 @@ function calAutoSync(studentName, dateISO, duration, routineName, sessionTime) {
       end:   { dateTime: endDT.toISOString(),   timeZone: 'America/Argentina/Buenos_Aires' },
     }
   }).catch(() => {});
+}
+
+// ═══════════════════════════════════════════
+//  MÓDULO ANAMNESIS EXTERNA
+// ═══════════════════════════════════════════
+
+const ANAMNESIS_FORM_URL = 'https://preparacionfisicaparalasalud-sys.github.io/VCFit-Studio/anamnesis-form.html';
+let _pendingAnamnesis = [];
+let _reviewingAnamnesis = null;
+
+function getAnamnesisLink(studentId, studentName) {
+  const tid = encodeURIComponent('vcfit_trainer');
+  const sid = studentId ? encodeURIComponent(studentId) : '';
+  const name = encodeURIComponent(studentName || 'alumno');
+  let url = `${ANAMNESIS_FORM_URL}?trainer=${tid}`;
+  if (sid) url += `&student=${sid}`;
+  if (name) url += `&name=${name}`;
+  return url;
+}
+
+function getAnamnesisLinkFromForm() {
+  const sel = document.getElementById('anamnesis-link-student');
+  const nameInput = document.getElementById('anamnesis-link-name');
+  const sid = sel?.value || '';
+  let name = '';
+  if (sid) {
+    const st = state.students.find(s => s.id === sid);
+    name = st ? st.name.split(' ')[0] : '';
+  } else {
+    name = nameInput?.value.trim() || '';
+  }
+  return { url: getAnamnesisLink(sid, name), name };
+}
+
+function copyAnamnesisLink() {
+  const { url, name } = getAnamnesisLinkFromForm();
+  navigator.clipboard.writeText(url).then(() => {
+    alert(`✅ Link copiado${name ? ' para ' + name : ''}.\n\n${url}`);
+  }).catch(() => {
+    prompt('Copiá este link:', url);
+  });
+}
+
+function sendAnamnesisWhatsApp() {
+  const { url, name } = getAnamnesisLinkFromForm();
+  const p = state.trainerProfile || {};
+  const nombreEntrenador = p.name ? p.name.split(' ')[0] : 'Tu entrenador';
+  const saludo = name ? `Hola ${name}` : 'Hola';
+  const texto = encodeURIComponent(
+    `${saludo} 👋 Soy ${nombreEntrenador} de *VC Fit*.\n\n` +
+    `Para empezar a armar tu programa personalizado necesito que completes este breve formulario de evaluación inicial:\n\n` +
+    `${url}\n\n` +
+    `Solo te toma unos minutos. ¡Cualquier duda me avisás! 💪`
+  );
+  // Si el alumno existe y tiene teléfono, abrir directo
+  const sel = document.getElementById('anamnesis-link-student');
+  const sid = sel?.value || '';
+  const st = sid ? state.students.find(s => s.id === sid) : null;
+  const tel = (st?.anamnesis?.phone || st?.phone || '').replace(/\D/g,'');
+  const waUrl = tel
+    ? `https://wa.me/549${tel}?text=${texto}`
+    : `https://wa.me/?text=${texto}`;
+  window.open(waUrl, '_blank');
+}
+
+function sendAnamnesisEmail() {
+  const { url, name } = getAnamnesisLinkFromForm();
+  const p = state.trainerProfile || {};
+  const nombreEntrenador = p.name || 'Tu entrenador';
+  const saludo = name ? `Hola ${name}` : 'Hola';
+  const subject = encodeURIComponent('Formulario de evaluación inicial — VC Fit');
+  const body = encodeURIComponent(
+    `${saludo},\n\n` +
+    `Para comenzar tu programa de entrenamiento personalizado con ${nombreEntrenador} necesito que completes el siguiente formulario de evaluación inicial:\n\n` +
+    `${url}\n\n` +
+    `Solo te toma unos minutos. La información que compartís es confidencial.\n\n` +
+    `¡Cualquier consulta, avisame!\n\n` +
+    `${nombreEntrenador}\nVC Fit`
+  );
+  // Si el alumno existe y tiene email
+  const sel = document.getElementById('anamnesis-link-student');
+  const sid = sel?.value || '';
+  const st = sid ? state.students.find(s => s.id === sid) : null;
+  const email = st?.anamnesis?.email || st?.email || '';
+  window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
+}
+
+function openAnamnesisInbox() {
+  showScreen('screen-anamnesis-inbox');
+  // Poblar select de alumnos
+  const sel = document.getElementById('anamnesis-link-student');
+  if (sel) {
+    sel.innerHTML = '<option value="">— Nuevo alumno (sin perfil aún) —</option>';
+    state.students.forEach(s => {
+      sel.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+    });
+  }
+  checkAnamnesisInbox();
+}
+
+async function checkAnamnesisInbox() {
+  const listEl = document.getElementById('anamnesis-pending-list');
+  if (!listEl) return;
+  listEl.innerHTML = '<div class="text-small text-gray" style="text-align:center;padding:1.5rem">Buscando...</div>';
+
+  if (!db) {
+    listEl.innerHTML = '<div class="text-small text-gray" style="text-align:center;padding:1rem">Sin conexión a Firebase.</div>';
+    return;
+  }
+
+  try {
+    const snap = await db.collection('vcfit_anamnesis_pending')
+      .where('trainerId', '==', 'vcfit_trainer')
+      .orderBy('submittedAt', 'desc')
+      .limit(30)
+      .get();
+
+    _pendingAnamnesis = [];
+    snap.forEach(doc => _pendingAnamnesis.push({ id: doc.id, ...doc.data() }));
+
+    // Badge en dashboard
+    const pendientes = _pendingAnamnesis.filter(a => a.status === 'pending').length;
+    const counter = document.getElementById('count-anamnesis');
+    if (counter) counter.textContent = pendientes || '→';
+
+    if (!_pendingAnamnesis.length) {
+      listEl.innerHTML = '<div class="text-small text-gray" style="text-align:center;padding:1.5rem">No hay formularios recibidos aún.</div>';
+      return;
+    }
+
+    listEl.innerHTML = _pendingAnamnesis.map(a => {
+      const fecha = a.submittedAtISO ? new Date(a.submittedAtISO).toLocaleDateString('es-AR', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+      const isPending = a.status === 'pending';
+      return `<div class="progress-row" style="padding:0.8rem 0;align-items:flex-start">
+        <div style="flex:1">
+          <div class="bold text-small">${safe(a.name || '(sin nombre)')}</div>
+          <div class="text-small text-gray">${fecha} · ${a.goal || '—'}</div>
+          ${isPending ? '<span class="tag tag-orange" style="font-size:0.65rem;margin-top:0.3rem">PENDIENTE</span>' : '<span class="tag tag-green" style="font-size:0.65rem;margin-top:0.3rem">IMPORTADO</span>'}
+        </div>
+        ${isPending ? `<button class="btn btn-primary btn-sm" style="flex-shrink:0;font-size:0.75rem" onclick="openAnamnesisReview('${a.id}')">Revisar</button>` : ''}
+      </div>`;
+    }).join('');
+
+  } catch(e) {
+    // Si falla por falta de índice, intentar sin orderBy
+    try {
+      const snap2 = await db.collection('vcfit_anamnesis_pending')
+        .where('trainerId', '==', 'vcfit_trainer')
+        .get();
+      _pendingAnamnesis = [];
+      snap2.forEach(doc => _pendingAnamnesis.push({ id: doc.id, ...doc.data() }));
+      _pendingAnamnesis.sort((a,b) => (b.submittedAtISO||'').localeCompare(a.submittedAtISO||''));
+      const pendientes = _pendingAnamnesis.filter(a => a.status === 'pending').length;
+      const counter = document.getElementById('count-anamnesis');
+      if (counter) counter.textContent = pendientes || '→';
+      if (!_pendingAnamnesis.length) {
+        listEl.innerHTML = '<div class="text-small text-gray" style="text-align:center;padding:1.5rem">No hay formularios recibidos aún.</div>';
+      } else {
+        listEl.innerHTML = _pendingAnamnesis.map(a => {
+          const fecha = a.submittedAtISO ? new Date(a.submittedAtISO).toLocaleDateString('es-AR', {day:'numeric',month:'short'}) : '—';
+          const isPending = a.status === 'pending';
+          return `<div class="progress-row" style="padding:0.8rem 0;align-items:flex-start">
+            <div style="flex:1">
+              <div class="bold text-small">${safe(a.name || '(sin nombre)')}</div>
+              <div class="text-small text-gray">${fecha} · ${safe(a.goal || '—')}</div>
+              ${isPending ? '<span class="tag tag-orange" style="font-size:0.65rem;margin-top:0.3rem">PENDIENTE</span>' : '<span class="tag tag-green" style="font-size:0.65rem;margin-top:0.3rem">IMPORTADO</span>'}
+            </div>
+            ${isPending ? `<button class="btn btn-primary btn-sm" style="flex-shrink:0;font-size:0.75rem" onclick="openAnamnesisReview('${a.id}')">Revisar</button>` : ''}
+          </div>`;
+        }).join('');
+      }
+    } catch(e2) {
+      listEl.innerHTML = `<div class="text-small text-gray" style="text-align:center;padding:1rem">Error al cargar: ${e2.message}</div>`;
+    }
+  }
+}
+
+function openAnamnesisReview(anamnesisId) {
+  const a = _pendingAnamnesis.find(x => x.id === anamnesisId);
+  if (!a) return;
+  _reviewingAnamnesis = a;
+
+  const fields = [
+    ['Nombre', a.name], ['Edad', a.age], ['Sexo', a.sex],
+    ['Peso', a.weight ? a.weight + ' kg' : ''], ['Altura', a.height ? a.height + ' cm' : ''],
+    ['Teléfono', a.phone], ['Email', a.email], ['Ocupación', a.job],
+    ['Actividad laboral', a.jobType], ['Condición médica', a.medical],
+    ['Medicación', a.meds], ['Lesiones/cirugías', a.injuries],
+    ['Dolor crónico', a.pain], ['Cardiovascular', a.cardio],
+    ['¿Entrena?', a.trainsNow], ['Tipo de entrenamiento', a.trainType],
+    ['Días disponibles', a.days], ['Duración sesión', a.duration],
+    ['Lugar entrenamiento', a.location], ['Objetivo', a.goal],
+    ['Peso objetivo', a.goalWeight ? a.goalWeight + ' kg' : ''],
+    ['Motivación', a.motivation], ['Sueño', a.sleep],
+    ['Estrés', a.stress ? a.stress + '/10' : ''], ['Alimentación', a.diet],
+    ['Hidratación', a.hydration], ['Tabaco', a.smoke], ['Alcohol', a.alcohol],
+    ['Info adicional', a.extra],
+  ].filter(([,v]) => v);
+
+  const content = document.getElementById('anamnesis-review-content');
+  if (content) {
+    content.innerHTML = fields.map(([k, v]) =>
+      `<div style="margin-bottom:0.5rem"><span style="color:var(--orange);font-weight:600">${k}:</span> <span style="color:var(--white-dim)">${safe(String(v))}</span></div>`
+    ).join('');
+  }
+
+  // Poblar select de alumnos
+  const sel = document.getElementById('anamnesis-import-student');
+  if (sel) {
+    sel.innerHTML = '<option value="__new__">➕ Crear nuevo alumno</option>';
+    state.students.forEach(s => {
+      const preselect = a.studentId === s.id || (a.name && s.name.toLowerCase().includes(a.name.split(' ')[0].toLowerCase()));
+      sel.innerHTML += `<option value="${s.id}" ${preselect?'selected':''}>${s.name}</option>`;
+    });
+  }
+
+  openModal('modal-anamnesis-review');
+}
+
+async function importAnamnesis() {
+  if (!_reviewingAnamnesis) return;
+  const a = _reviewingAnamnesis;
+  const sel = document.getElementById('anamnesis-import-student');
+  const targetId = sel?.value || '__new__';
+
+  let student;
+
+  if (targetId === '__new__') {
+    // Crear nuevo alumno
+    const newId = 'st_' + Date.now();
+    student = {
+      id: newId,
+      name: a.name || 'Nuevo alumno',
+      pin: String(Math.floor(1000 + Math.random() * 9000)),
+      anamnesis: {},
+      metricsLog: [], progressLog: [], payments: [], trainerNotes: [],
+      classPacks: [], proximasSesiones: [],
+    };
+    state.students.push(student);
+  } else {
+    student = state.students.find(s => s.id === targetId);
+    if (!student) { alert('Alumno no encontrado.'); return; }
+  }
+
+  // Mapear campos al formato anamnesis de la app
+  if (!student.anamnesis) student.anamnesis = {};
+  const fillIfEmpty = (key, val) => { if (val && !student.anamnesis[key]) student.anamnesis[key] = val; };
+
+  fillIfEmpty('age', a.age);
+  fillIfEmpty('sex', a.sex);
+  fillIfEmpty('weight', a.weight);
+  fillIfEmpty('height', a.height);
+  fillIfEmpty('phone', a.phone);
+  fillIfEmpty('email', a.email);
+  fillIfEmpty('job', a.job);
+  fillIfEmpty('jobType', a.jobType);
+  fillIfEmpty('medical', a.medical);
+  fillIfEmpty('meds', a.meds);
+  fillIfEmpty('injuries', a.injuries);
+  fillIfEmpty('pain', a.pain);
+  fillIfEmpty('cardio', a.cardio);
+  fillIfEmpty('trainsNow', a.trainsNow);
+  fillIfEmpty('trainType', a.trainType);
+  fillIfEmpty('days', a.days);
+  fillIfEmpty('duration', a.duration);
+  fillIfEmpty('location', a.location);
+  fillIfEmpty('goal', a.goal);
+  fillIfEmpty('goalWeight', a.goalWeight);
+  fillIfEmpty('motivation', a.motivation);
+  fillIfEmpty('sleep', a.sleep);
+  fillIfEmpty('stress', a.stress);
+  fillIfEmpty('diet', a.diet);
+  fillIfEmpty('hydration', a.hydration);
+  fillIfEmpty('smoke', a.smoke);
+  fillIfEmpty('alcohol', a.alcohol);
+  fillIfEmpty('extra', a.extra);
+
+  if (a.weight && !student.metricsLog?.length) {
+    if (!student.metricsLog) student.metricsLog = [];
+    student.metricsLog.push({
+      id: 'met_' + Date.now(),
+      date: new Date().toLocaleDateString('es-AR'),
+      dateISO: new Date().toISOString().split('T')[0],
+      weight: parseFloat(a.weight) || 0,
+    });
+  }
+
+  // Marcar como importado en Firebase
+  if (db) {
+    try {
+      await db.collection('vcfit_anamnesis_pending').doc(a.id).update({ status: 'imported', importedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    } catch(e) { console.warn('Error marking imported:', e); }
+  }
+  _reviewingAnamnesis.status = 'imported';
+
+  await saveState();
+  closeModal('modal-anamnesis-review');
+  checkAnamnesisInbox();
+  renderStudentsList();
+
+  if (targetId === '__new__') {
+    alert(`✅ Anamnesis importada. Nuevo alumno creado: "${student.name}"\nPIN provisional: ${student.pin}\n\nPodés editarlo desde la ficha del alumno.`);
+  } else {
+    alert(`✅ Anamnesis importada en el perfil de ${student.name}.`);
+  }
+}
+
+// Chequeo inicial de pendientes al loguear como entrenador
+async function checkInitialAnamnesisCount() {
+  if (!db) return;
+  try {
+    const snap = await db.collection('vcfit_anamnesis_pending')
+      .where('trainerId', '==', 'vcfit_trainer')
+      .where('status', '==', 'pending')
+      .get();
+    const counter = document.getElementById('count-anamnesis');
+    if (counter && !snap.empty) counter.textContent = snap.size;
+  } catch(e) {
+    // Sin índice aún — ignorar silenciosamente
+  }
 }
 
 (async function init() {
