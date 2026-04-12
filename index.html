@@ -2398,122 +2398,6 @@ ALMUERZO
   </div>
 </div>
 
-<div id="screen-calendar" class="screen">
-  <div class="topbar">
-    <button class="btn-back" onclick="showScreen('screen-trainer')">←</button>
-    <div style="flex:1"><div class="topbar-title">📅 Calendario</div></div>
-    <button class="btn btn-secondary btn-sm" id="cal-sync-btn" onclick="calSync()" style="display:none">🔄</button>
-  </div>
-  <div class="content" id="cal-content">
-    <!-- Se renderiza dinámicamente -->
-  </div>
-</div>
-
-<!-- MODAL: NUEVO EVENTO CALENDAR -->
-<div class="modal-overlay" id="modal-cal-event">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title">📅 Nuevo evento</div>
-    <div class="input-group">
-      <label class="input-label">Título</label>
-      <input type="text" class="input-field" id="cal-ev-title" placeholder="ej: Sesión con Juan">
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem">
-      <div class="input-group">
-        <label class="input-label">Fecha</label>
-        <input type="date" class="input-field" id="cal-ev-date">
-      </div>
-      <div class="input-group">
-        <label class="input-label">Hora</label>
-        <input type="time" class="input-field" id="cal-ev-time" value="09:00">
-      </div>
-    </div>
-    <div class="input-group">
-      <label class="input-label">Duración</label>
-      <select class="input-field" id="cal-ev-duration">
-        <option value="30">30 min</option>
-        <option value="45">45 min</option>
-        <option value="60" selected>60 min</option>
-        <option value="90">90 min</option>
-      </select>
-    </div>
-    <div class="input-group">
-      <label class="input-label">Alumno</label>
-      <select class="input-field" id="cal-ev-student">
-        <option value="">— Sin alumno —</option>
-      </select>
-    </div>
-    <div class="input-group">
-      <label class="input-label">Nota (opcional)</label>
-      <input type="text" class="input-field" id="cal-ev-note" placeholder="ej: Traer ropa cómoda">
-    </div>
-    <div class="input-group">
-      <label class="input-label">Repetición</label>
-      <select class="input-field" id="cal-ev-recurrence">
-        <option value="">Sin repetición</option>
-        <option value="WEEKLY">Semanal</option>
-        <option value="BIWEEKLY">Cada 2 semanas</option>
-        <option value="MONTHLY">Mensual</option>
-      </select>
-    </div>
-    <div style="display:flex;gap:0.8rem;padding-bottom:1rem">
-      <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-cal-event')">Cancelar</button>
-      <button class="btn btn-primary" style="flex:1" onclick="calCreateEvent()">📅 Crear</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: ASIGNAR EVENTO CALENDAR A ALUMNO -->
-<div class="modal-overlay" id="modal-cal-assign">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title">👤 Asignar clase a alumno</div>
-    <div id="cal-assign-event-info" style="background:var(--dark3);border-radius:8px;padding:0.8rem;margin-bottom:1rem">
-      <div class="bold text-small" id="cal-assign-title">—</div>
-      <div class="text-small text-gray" id="cal-assign-date">—</div>
-    </div>
-    <div class="input-group">
-      <label class="input-label">Alumno</label>
-      <select class="input-field" id="cal-assign-student">
-        <option value="">— Sin asignar —</option>
-      </select>
-    </div>
-    <div class="text-small text-gray" style="margin-bottom:1rem;line-height:1.5">
-      Esta asignación se guarda y el alumno verá esta clase en su pantalla.
-    </div>
-    <div style="display:flex;gap:0.8rem;padding-bottom:1rem">
-      <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-cal-assign')">Cancelar</button>
-      <button class="btn btn-primary" style="flex:1" onclick="calSaveAssignment()">👤 Guardar</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: IMPORTAR EVENTO CALENDAR → APP -->
-<div class="modal-overlay" id="modal-cal-import">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title">📥 Importar como sesión</div>
-    <div id="cal-import-event-info" style="background:var(--dark3);border-radius:8px;padding:0.8rem;margin-bottom:1rem">
-      <div class="bold text-small" id="cal-import-title">—</div>
-      <div class="text-small text-gray" id="cal-import-date">—</div>
-    </div>
-    <div class="input-group">
-      <label class="input-label">Alumno</label>
-      <select class="input-field" id="cal-import-student">
-        <option value="">— Seleccioná un alumno —</option>
-      </select>
-    </div>
-    <div class="input-group">
-      <label class="input-label">Nota</label>
-      <input type="text" class="input-field" id="cal-import-note" placeholder="ej: Sesión completada">
-    </div>
-    <div style="display:flex;gap:0.8rem;padding-bottom:1rem">
-      <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-cal-import')">Cancelar</button>
-      <button class="btn btn-primary" style="flex:1" onclick="calConfirmImport()">📥 Importar sesión</button>
-    </div>
-  </div>
-</div>
-
 <!-- ═══════════════════════════════════════════
      SCREEN: FINANZAS
 ═══════════════════════════════════════════ -->
@@ -2645,6 +2529,9 @@ ALMUERZO
       <div class="topbar-title" id="student-view-name">—</div>
       <div class="topbar-sub">Mi entrenamiento</div>
     </div>
+    <button class="btn btn-secondary btn-sm" id="student-refresh-btn"
+      onclick="studentForceRefresh()" title="Actualizar"
+      style="font-size:0.9rem;padding:0.3rem 0.6rem;margin-right:0.3rem">🔄</button>
     <button class="theme-toggle-btn" id="theme-btn-student" onclick="toggleTheme('student')" title="Cambiar tema"></button>
     <button class="btn-logout" onclick="logoutStudent()">Salir</button>
   </div>
@@ -2662,7 +2549,6 @@ ALMUERZO
       <div id="student-payment-banner"></div>
       <div id="student-routine-updated-banner"></div>
       <div id="student-cycle-banner"></div>
-      <div id="student-proximas-sesiones"></div>
       <div id="student-pizarra-motivacion"></div>
       <div id="student-welcome-banner"></div>
       <div id="student-pizarra-bienvenida"></div>
@@ -3900,7 +3786,6 @@ function renderStudentCycleBanner(s) {
 //  PRÓXIMAS SESIONES (desde Google Calendar)
 // ═══════════════════════════════════════════
 function renderStudentProximasSesiones(s) {
-  const el = document.getElementById('student-proximas-sesiones');
   if (!el) return;
   const sesiones = (s.proximasSesiones || []).filter(ses => {
     // Solo mostrar sesiones futuras o de hoy
@@ -3945,7 +3830,6 @@ async function updateProximasSesionesFromCalendar(eventos) {
   if (!eventos?.length || !state.students?.length) return;
 
   const ahora = new Date();
-  const assignments = state.calAssignments || {};
 
   // Normalizar texto para matching (quitar acentos, minúsculas)
   const normalize = str => str.toLowerCase()
@@ -6051,7 +5935,11 @@ function saveState() {
   savePhotosLocal();
 
   if (syncEnabled && STATE_DOC) {
-    STATE_DOC.set(stateForFirestore()).then(() => {
+    const payload = stateForFirestore();
+    // _lastUpdate fuerza que el onSnapshot siempre dispare en otros dispositivos
+    // aunque el contenido parezca igual (evita que Firebase filtre el update)
+    payload._lastUpdate = Date.now();
+    STATE_DOC.set(payload).then(() => {
       setSyncStatus('ok');
     }).catch(e => {
       console.warn('Error Firestore save:', e.message);
@@ -6064,42 +5952,43 @@ function saveState() {
 function initSync() {
   if (!_firebaseAvailable || !STATE_DOC) return;
   if (syncUnsubscribe) syncUnsubscribe();
-  syncUnsubscribe = STATE_DOC.onSnapshot(doc => {
-    // Bug fix: la condición original era incorrecta — evaluaba (!x === false) en vez de (x === false)
+  syncUnsubscribe = STATE_DOC.onSnapshot({ includeMetadataChanges: false }, doc => {
     if (!doc.exists) return;
-    // Ignorar escrituras propias (vienen con hasPendingWrites = true)
+    // Ignorar escrituras propias — cuando hasPendingWrites=true es nuestra propia escritura
     if (doc.metadata.hasPendingWrites) return;
 
     const fsState = doc.data();
-    const merged = mergePhotosFromLocal(fsState);
+    if (!fsState) return;
+
     const prevRole = state.currentRole;
     const prevStudentId = state.currentStudentId;
+    const merged = mergePhotosFromLocal(fsState);
     state = { ...merged, currentRole: prevRole, currentStudentId: prevStudentId };
     localStorage.setItem('vcfit_state', JSON.stringify({ ...state, currentRole: null, currentStudentId: null }));
     setSyncStatus('ok');
 
-    // Refrescar UI visible según rol activo
+    // Refrescar UI según rol activo
     if (prevRole === 'trainer') {
       refreshTrainerDashboard();
       renderStudentsList();
       renderWorkoutsList();
     } else if (prevRole === 'student' && prevStudentId) {
-      // El alumno recibe el update del entrenador → re-renderizar su pantalla
       const s = state.students.find(x => x.id === prevStudentId);
       if (s) {
         renderTodayWorkout(s);
         renderRoutineUpdatedBanner(s);
         renderStudentCycleBanner(s);
-        renderStudentProximasSesiones(s);
         renderStudentPizarras(s);
         renderStudentWelcomeBanner(s);
         renderStudentPaymentBanner(s);
-        console.log('[VC Fit] Pantalla del alumno actualizada desde Firebase.');
+        console.log('[VC Fit] ✅ Pantalla del alumno actualizada desde Firebase.');
       }
     }
   }, err => {
     console.warn('onSnapshot error:', err.message);
     setSyncStatus('offline');
+    // Reintentar en 10 segundos si el listener se cae
+    setTimeout(() => { if (syncEnabled) initSync(); }, 10000);
   });
 }
 
@@ -6351,8 +6240,7 @@ applyLogo();
 // Pantallas exclusivas del entrenador
 const TRAINER_SCREENS = [
   'screen-trainer','screen-trainer-profile','screen-students','screen-student-detail',
-  'screen-workouts','screen-stats','screen-ai-chat','screen-finance','screen-calendar',
-  'screen-anamnesis-inbox'
+  'screen-workouts','screen-stats','screen-ai-chat','screen-finance',  'screen-anamnesis-inbox'
 ];
 
 function showScreen(id) {
@@ -7601,11 +7489,6 @@ function refreshTrainerDashboard() {
         <div class="nav-card-label">Finanzas</div>
         <div class="nav-card-count" id="count-finance">→</div>
       </div>
-      <div class="nav-card" onclick="openCalendarScreen()">
-        <div class="nav-card-icon">📅</div>
-        <div class="nav-card-label">Calendario</div>
-        <div class="nav-card-count" id="count-cal">→</div>
-      </div>
       <div class="nav-card" onclick="openAnamnesisInbox()" id="nav-anamnesis-card">
         <div class="nav-card-icon">📋</div>
         <div class="nav-card-label">Anamnesis</div>
@@ -7724,34 +7607,12 @@ function enterAsStudent(studentId) {
   const s = state.students.find(x => x.id === studentId);
   if (!s) return;
 
-  // Reiniciar listener Firebase con rol ya seteado en 'student'
+  // Reiniciar listener Firebase con rol ya seteado
   if (syncEnabled) initSync();
 
-  // Poll de respaldo: cada 2 minutos consulta Firebase directamente
-  // por si el onSnapshot se cortó o no está activo
+  // Poll agresivo cada 30 segundos — fallback si onSnapshot falla
   if (window._studentPollInterval) clearInterval(window._studentPollInterval);
-  window._studentPollInterval = setInterval(async () => {
-    if (state.currentRole !== 'student' || !STATE_DOC || !syncEnabled) {
-      clearInterval(window._studentPollInterval);
-      return;
-    }
-    try {
-      const doc = await STATE_DOC.get();
-      if (!doc.exists) return;
-      const fsState = doc.data();
-      const sid = state.currentStudentId;
-      const merged = mergePhotosFromLocal(fsState);
-      state = { ...merged, currentRole: 'student', currentStudentId: sid };
-      const st = state.students.find(x => x.id === sid);
-      if (st) {
-        renderTodayWorkout(st);
-        renderRoutineUpdatedBanner(st);
-        renderStudentCycleBanner(st);
-        renderStudentProximasSesiones(st);
-        renderStudentPizarras(st);
-      }
-    } catch(e) { /* silencioso */ }
-  }, 2 * 60 * 1000);
+  window._studentPollInterval = setInterval(() => studentForceRefresh(true), 30000);
 
   applyThemeForRole('student');
   document.getElementById('student-view-name').textContent = s.name;
@@ -7766,10 +7627,56 @@ function enterAsStudent(studentId) {
   renderStudentPaymentBanner(s);
   renderRoutineUpdatedBanner(s);
   renderStudentCycleBanner(s);
-  renderStudentProximasSesiones(s);
   renderStudentPizarras(s);
   switchTab('tab-today', 'student');
   showScreen('screen-student-view');
+}
+
+// Fuerza una lectura de Firebase y actualiza la pantalla del alumno
+async function studentForceRefresh(silent) {
+  const sid = state.currentStudentId;
+  if (!sid || state.currentRole !== 'student') return;
+
+  const btn = document.getElementById('student-refresh-btn');
+  if (btn && !silent) {
+    btn.textContent = '⏳';
+    btn.disabled = true;
+  }
+
+  try {
+    if (STATE_DOC && syncEnabled) {
+      const doc = await STATE_DOC.get({ source: 'server' }); // forzar desde servidor, ignorar caché
+      if (doc.exists) {
+        const merged = mergePhotosFromLocal(doc.data());
+        state = { ...merged, currentRole: 'student', currentStudentId: sid };
+        localStorage.setItem('vcfit_state', JSON.stringify({ ...state, currentRole: null, currentStudentId: null }));
+      }
+    }
+  } catch(e) {
+    // Si falla el server, intentar con caché
+    try {
+      const doc = await STATE_DOC.get();
+      if (doc.exists) {
+        const merged = mergePhotosFromLocal(doc.data());
+        state = { ...merged, currentRole: 'student', currentStudentId: sid };
+      }
+    } catch(e2) { /* sin conexión — usar localStorage */ }
+  }
+
+  const st = state.students.find(x => x.id === sid);
+  if (st) {
+    renderTodayWorkout(st);
+    renderRoutineUpdatedBanner(st);
+    renderStudentCycleBanner(st);
+    renderStudentPizarras(st);
+    renderStudentWelcomeBanner(st);
+    renderStudentPaymentBanner(st);
+  }
+
+  if (btn && !silent) {
+    btn.textContent = '✅';
+    setTimeout(() => { btn.textContent = '🔄'; btn.disabled = false; }, 1500);
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -8634,7 +8541,6 @@ function completeWorkout() {
   s.lastCompleted = { date: entry.date, workoutName: entry.workoutName };
   if (checksKey) state.exerciseChecks[checksKey] = {};
   saveState();
-  calAutoSync(s.name, entry.dateISO, entry.duration, entry.workoutName);
   closeModal('modal-complete-session');
 
   // Overlay celebración
@@ -10658,873 +10564,6 @@ function propagateRecurringExpenses() {
 }
 
 // ═══════════════════════════════════════════
-// MÓDULO GOOGLE CALENDAR
-// Estrategia: Google APIs se cargan SOLO cuando
-// el usuario abre la pantalla Calendar por primera vez.
-// No tocan Firebase ni el init de la app.
-// ═══════════════════════════════════════════
-
-const GCAL_CLIENT_ID = '738858575495-4uliefqj08a6kdmuuh8o43tkg0h3067e.apps.googleusercontent.com';
-const GCAL_SCOPES    = 'https://www.googleapis.com/auth/calendar';
-const GCAL_DISCO     = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
-
-let _calGapiReady  = false;
-let _calGisReady   = false;
-let _calToken      = null;
-let _calTokenClient = null;
-let _calEvents     = [];
-let _calTab        = 'proximos';
-let _calLoading    = false;
-let _calViewMode   = 'list';
-let _calFiltroAlumno = '';
-let _calImportEvent  = null;
-let _calAutoSyncInterval = null;
-
-// ── Auto-sync en background cada 20 minutos ──
-function startCalBackgroundSync() {
-  if (_calAutoSyncInterval) return; // ya corriendo
-  _calAutoSyncInterval = setInterval(async () => {
-    const token = getCalToken();
-    if (!token || !_calGapiReady || !gapi?.client?.calendar) return;
-    try {
-      const now = new Date();
-      const resp = await gapi.client.calendar.events.list({
-        calendarId: 'primary',
-        timeMin: now.toISOString(),
-        timeMax: new Date(now.getTime() + 30*24*60*60*1000).toISOString(),
-        maxResults: 50,
-        singleEvents: true,
-        orderBy: 'startTime',
-        q: 'VC Fit'
-      });
-      _calEvents = resp.result.items || [];
-      const counter = document.getElementById('count-cal');
-      if (counter) counter.textContent = _calEvents.length || '→';
-      updateProximasSesionesFromCalendar(_calEvents);
-      console.log('[VC Fit] Background Calendar sync OK —', _calEvents.length, 'eventos');
-    } catch(e) {
-      if (e.status === 401) { calSignOut(); stopCalBackgroundSync(); }
-      console.warn('[VC Fit] Background Calendar sync error:', e);
-    }
-  }, 20 * 60 * 1000); // cada 20 minutos
-}
-
-function stopCalBackgroundSync() {
-  if (_calAutoSyncInterval) {
-    clearInterval(_calAutoSyncInterval);
-    _calAutoSyncInterval = null;
-  }
-}
-
-// ── Abrir pantalla Calendar ──
-function openCalendarScreen() {
-  showScreen('screen-calendar');
-  renderCalContent();
-  // Cargar Google APIs si es la primera vez
-  if (!_calGapiReady || !_calGisReady) {
-    loadCalendarAPIs();
-  }
-}
-
-function renderCalContent() {
-  const el = document.getElementById('cal-content');
-  if (!el) return;
-
-  const token = getCalToken();
-
-  if (!_calGapiReady || !_calGisReady) {
-    el.innerHTML = `
-      <div class="card" style="text-align:center;padding:2rem 1.5rem;margin-bottom:1rem">
-        <div style="font-size:2.5rem;margin-bottom:1rem">📅</div>
-        <div class="bold" style="font-family:var(--font-label);letter-spacing:1px;margin-bottom:0.5rem">Google Calendar</div>
-        <div class="text-small text-gray" style="line-height:1.7;margin-bottom:1.5rem">
-          Cargando librerías de Google...
-        </div>
-        <div style="font-size:1.5rem;animation:spin 1s linear infinite;display:inline-block">⚙️</div>
-      </div>`;
-    return;
-  }
-
-  if (!token) {
-    el.innerHTML = `
-      <div class="card" style="text-align:center;padding:2rem 1.5rem;margin-bottom:1rem">
-        <div style="font-size:2.5rem;margin-bottom:1rem">📅</div>
-        <div class="bold" style="font-family:var(--font-label);letter-spacing:1px;margin-bottom:0.5rem">Google Calendar</div>
-        <div class="text-small text-gray" style="line-height:1.7;margin-bottom:1.5rem">
-          Conectá tu cuenta de Google para sincronizar sesiones y recordatorios de pago.
-        </div>
-        <button class="btn btn-primary btn-full" onclick="calSignIn()">
-          🔑 Conectar con Google
-        </button>
-      </div>
-      <div class="card">
-        <div class="card-title">¿Qué sincroniza?</div>
-        <div class="progress-row"><span class="progress-label">✅ Sesiones completadas</span><span class="progress-value text-small">→ evento</span></div>
-        <div class="progress-row"><span class="progress-label">💰 Vencimientos de pago</span><span class="progress-value text-small">→ recordatorio</span></div>
-        <div class="progress-row"><span class="progress-label">📥 Eventos del calendario</span><span class="progress-value text-small">→ visible</span></div>
-      </div>`;
-    return;
-  }
-
-  // Conectado — mostrar tabs
-  const tabs = ['proximos','sincronizar','ajustes'];
-  const tabLabels = ['Próximos','Sincronizar','Ajustes'];
-  document.getElementById('cal-sync-btn').style.display = 'inline-flex';
-
-  let html = `
-  <div class="card" style="margin-bottom:1rem;border-color:var(--success)">
-    <div style="display:flex;align-items:center;gap:0.8rem">
-      <div style="width:8px;height:8px;border-radius:50%;background:var(--success);flex-shrink:0"></div>
-      <div style="flex:1">
-        <div class="bold text-small">Conectado</div>
-        <div class="text-small text-gray">${token.email || 'Google Calendar'}</div>
-      </div>
-      <button class="btn btn-secondary btn-sm" onclick="calSignOut()">Desconectar</button>
-    </div>
-  </div>`;
-
-  // Aviso token por vencer
-  if (token._expiring_soon) {
-    html += `<div class="card" style="margin-bottom:1rem;border-color:var(--orange);background:var(--orange-dim)">
-      <div style="display:flex;align-items:center;gap:0.8rem">
-        <div style="font-size:1.2rem">⚠️</div>
-        <div style="flex:1"><div class="bold text-small" style="color:var(--orange)">Sesión por vencer</div>
-        <div class="text-small text-gray">Reconectá para seguir sincronizando.</div></div>
-        <button class="btn btn-primary btn-sm" onclick="calRefreshToken()">Renovar</button>
-      </div>
-    </div>`;
-  }
-  html += `<div class="tabs" style="margin-bottom:1rem">
-    ${tabs.map((t,i) => `<button class="tab${_calTab===t?' active':''}" onclick="switchCalTab('${t}')">${tabLabels[i]}</button>`).join('')}
-  </div>`;
-
-  if (_calTab === 'proximos')    html += renderCalProximos();
-  else if (_calTab === 'sincronizar') html += renderCalSincronizar();
-  else html += renderCalAjustes();
-
-  el.innerHTML = html;
-}
-
-function switchCalTab(tab) {
-  _calTab = tab;
-  renderCalContent();
-}
-
-// ── Tabs ──
-function renderCalProximos() {
-  // Filtro de alumnos
-  const alumnosConSesion = [...new Set(
-    _calEvents.map(ev => {
-      const m = (ev.summary || '').match(/· ([^·]+)$/);
-      return m ? m[1].trim() : null;
-    }).filter(Boolean)
-  )];
-
-  let html = `
-  <div style="display:flex;gap:0.6rem;margin-bottom:1rem;align-items:center">
-    <button class="btn btn-primary btn-sm" style="flex:1" onclick="openCalEventModal()">➕ Nuevo evento</button>
-    <button class="btn btn-secondary btn-sm" onclick="toggleCalView()" title="Cambiar vista">
-      ${_calViewMode === 'list' ? '📅' : '☰'}
-    </button>
-  </div>`;
-
-  if (alumnosConSesion.length > 0) {
-    html += `<div style="margin-bottom:1rem">
-      <select class="input-field" style="font-size:0.8rem" onchange="_calFiltroAlumno=this.value;renderCalContent()">
-        <option value="" ${!_calFiltroAlumno?'selected':''}>👥 Todos los alumnos</option>
-        ${alumnosConSesion.map(a => `<option value="${a}" ${_calFiltroAlumno===a?'selected':''}>${a}</option>`).join('')}
-      </select>
-    </div>`;
-  }
-
-  const eventosFiltrados = _calFiltroAlumno
-    ? _calEvents.filter(ev => (ev.summary || '').includes(_calFiltroAlumno))
-    : _calEvents;
-
-  if (_calViewMode === 'month') {
-    return html + renderCalMesGrid(eventosFiltrados);
-  }
-
-  // Vista lista
-  if (!eventosFiltrados.length) {
-    return html + `<div class="card"><div class="text-small text-gray" style="text-align:center;padding:1.5rem">Sin eventos VC Fit en los próximos 30 días.</div></div>`;
-  }
-
-  html += `<div class="card"><div class="card-title">Próximos 30 días</div>`;
-  eventosFiltrados.forEach(ev => {
-    const start = ev.start?.dateTime || ev.start?.date || '';
-    const d = start ? new Date(start) : null;
-    const dateStr = d ? d.toLocaleDateString('es-AR', {weekday:'short',day:'numeric',month:'short'}) : '—';
-    const timeStr = ev.start?.dateTime ? d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}) : 'Todo el día';
-    const assignedId = (state.calAssignments || {})[ev.id];
-    const assignedStudent = assignedId ? state.students.find(s => s.id === assignedId) : null;
-    html += `
-    <div class="progress-row" style="padding:0.7rem 0;align-items:flex-start">
-      <div style="flex:1">
-        <div class="bold text-small">${ev.summary || 'Sin título'}</div>
-        <div class="text-small text-gray">${dateStr} · ${timeStr}</div>
-        ${assignedStudent ? `<div class="text-small" style="color:var(--orange);margin-top:0.2rem">👤 ${assignedStudent.name}</div>` : ''}
-      </div>
-      <div style="display:flex;gap:0.4rem;flex-shrink:0">
-        <button class="btn btn-secondary btn-sm" style="padding:0.2rem 0.5rem;font-size:0.7rem" onclick="openCalAssignModal('${ev.id}')" title="Asignar a alumno">👤</button>
-        <button class="btn btn-secondary btn-sm" style="padding:0.2rem 0.5rem;font-size:0.7rem" onclick="openCalImportModal('${ev.id}')" title="Importar como sesión">📥</button>
-        <button class="btn btn-danger btn-sm" style="padding:0.2rem 0.5rem;font-size:0.7rem" onclick="calDeleteEvent('${ev.id}')">🗑️</button>
-      </div>
-    </div>`;
-  });
-  return html + `</div>`;
-}
-
-function toggleCalView() {
-  _calViewMode = _calViewMode === 'list' ? 'month' : 'list';
-  renderCalContent();
-}
-
-function renderCalMesGrid(eventos) {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const firstDay = new Date(year, month, 1).getDay(); // 0=dom
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const mesNombre = now.toLocaleDateString('es-AR', {month:'long', year:'numeric'});
-
-  // Mapear eventos por día
-  const eventsByDay = {};
-  eventos.forEach(ev => {
-    const start = ev.start?.dateTime || ev.start?.date || '';
-    if (!start) return;
-    const d = new Date(start);
-    if (d.getFullYear() === year && d.getMonth() === month) {
-      const day = d.getDate();
-      if (!eventsByDay[day]) eventsByDay[day] = [];
-      eventsByDay[day].push(ev);
-    }
-  });
-
-  const dias = ['Do','Lu','Ma','Mi','Ju','Vi','Sa'];
-  let html = `<div class="card">
-    <div class="card-title" style="text-align:center;text-transform:capitalize">${mesNombre}</div>
-    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:0.5rem">
-      ${dias.map(d => `<div style="text-align:center;font-size:0.65rem;color:var(--gray-light);padding:0.2rem;font-family:var(--font-label);font-weight:600">${d}</div>`).join('')}
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px">`;
-
-  // Celdas vacías iniciales
-  const startCol = firstDay; // domingo=0
-  for (let i = 0; i < startCol; i++) {
-    html += `<div style="min-height:36px"></div>`;
-  }
-
-  const todayDate = now.getDate();
-  for (let d = 1; d <= daysInMonth; d++) {
-    const hasEvents = eventsByDay[d]?.length > 0;
-    const isToday = d === todayDate;
-    const dotColor = hasEvents ? 'var(--orange)' : 'transparent';
-    html += `
-    <div style="min-height:36px;border-radius:6px;padding:0.2rem;text-align:center;cursor:${hasEvents?'pointer':'default'};
-      background:${isToday?'var(--orange-dim)':'transparent'};
-      border:${isToday?'1px solid var(--orange-border)':'1px solid transparent'}"
-      ${hasEvents ? `onclick="showCalDayEvents(${d})"` : ''}>
-      <div style="font-size:0.75rem;font-weight:${isToday?'700':'400'};color:${isToday?'var(--orange)':'var(--white-dim)'}">${d}</div>
-      <div style="width:5px;height:5px;border-radius:50%;background:${dotColor};margin:0 auto;margin-top:2px"></div>
-      ${hasEvents ? `<div style="font-size:0.55rem;color:var(--orange)">${eventsByDay[d].length}</div>` : ''}
-    </div>`;
-  }
-
-  html += `</div></div>`;
-
-  // Panel de día seleccionado (si hay)
-  if (window._calDaySelected && eventsByDay[window._calDaySelected]) {
-    html += `<div class="card" style="margin-top:0.8rem">
-      <div class="card-title">Día ${window._calDaySelected}</div>`;
-    eventsByDay[window._calDaySelected].forEach(ev => {
-      const start = ev.start?.dateTime || ev.start?.date || '';
-      const d2 = start ? new Date(start) : null;
-      const timeStr = ev.start?.dateTime ? d2.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}) : 'Todo el día';
-      html += `<div class="progress-row" style="padding:0.5rem 0">
-        <div style="flex:1">
-          <div class="bold text-small">${ev.summary||'Sin título'}</div>
-          <div class="text-small text-gray">${timeStr}</div>
-        </div>
-        <div style="display:flex;gap:0.3rem">
-          <button class="btn btn-secondary btn-sm" style="padding:0.2rem 0.4rem;font-size:0.65rem" onclick="openCalImportModal('${ev.id}')">📥</button>
-          <button class="btn btn-danger btn-sm" style="padding:0.2rem 0.4rem;font-size:0.65rem" onclick="calDeleteEvent('${ev.id}')">🗑️</button>
-        </div>
-      </div>`;
-    });
-    html += `</div>`;
-  }
-
-  return html;
-}
-
-function showCalDayEvents(day) {
-  window._calDaySelected = window._calDaySelected === day ? null : day;
-  renderCalContent();
-}
-
-function renderCalSincronizar() {
-  const now = new Date();
-  const mesActual = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-
-  const sesiones = [];
-  state.students.forEach(s => {
-    (s.progressLog || []).forEach(e => {
-      if ((e.dateISO || '').startsWith(mesActual))
-        sesiones.push({ alumno: s.name, fecha: e.date, iso: e.dateISO, dur: e.duration || 60 });
-    });
-  });
-
-  const pendientesPago = state.students.filter(s => {
-    const pagado = (s.payments || []).some(p => p.mes === mesActual);
-    const pack   = (s.classPacks || []).some(p => p.restantes > 0);
-    return !pagado && !pack;
-  });
-
-  let html = `
-  <div class="card" style="margin-bottom:1rem">
-    <div class="card-title">📤 Sesiones → Calendar</div>
-    <div class="text-small text-gray" style="margin-bottom:0.8rem;line-height:1.6">Exportar sesiones completadas este mes como eventos.</div>`;
-
-  if (!sesiones.length) {
-    html += `<div class="text-small text-gray">Sin sesiones este mes.</div>`;
-  } else {
-    html += `<div style="max-height:180px;overflow-y:auto;margin-bottom:0.8rem">`;
-    sesiones.forEach(s => {
-      html += `<div class="progress-row" style="padding:0.3rem 0">
-        <span class="progress-label text-small">${s.alumno}</span>
-        <span class="progress-value text-small text-gray">${s.fecha}</span>
-      </div>`;
-    });
-    html += `</div>
-    <button class="btn btn-primary btn-sm btn-full" onclick="calSyncSessions()">
-      📤 Exportar ${sesiones.length} sesión${sesiones.length!==1?'es':''} a Calendar
-    </button>`;
-  }
-  html += `</div>`;
-
-  html += `
-  <div class="card">
-    <div class="card-title">💰 Recordatorios de pago</div>`;
-  if (!pendientesPago.length) {
-    html += `<div class="text-small text-gray">Todos al día 🎉</div>`;
-  } else {
-    html += `<div class="text-small text-gray" style="margin-bottom:0.6rem">${pendientesPago.length} alumno${pendientesPago.length!==1?'s':''} sin pago:</div>
-    <div style="margin-bottom:0.8rem">`;
-    pendientesPago.forEach(s => {
-      const tel = (s.anamnesis?.phone || s.phone || '').replace(/\D/g,'');
-      const waText = encodeURIComponent(`Hola ${s.name.split(' ')[0]} 👋 Te recuerdo que tenés el pago de VC Fit pendiente este mes. Cualquier consulta avisame 🙌`);
-      const waLink = tel ? `https://wa.me/549${tel}?text=${waText}` : '';
-      html += `<div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.4rem">
-        <span class="tag tag-danger" style="flex:1;font-size:0.75rem">${s.name}</span>
-        ${waLink ? `<a href="${waLink}" target="_blank" class="btn btn-secondary btn-sm" style="padding:0.2rem 0.6rem;font-size:0.7rem;text-decoration:none">💬 WA</a>` : '<span class="text-small text-gray">sin tel</span>'}
-      </div>`;
-    });
-    html += `</div>
-    <button class="btn btn-secondary btn-sm btn-full" onclick="calCreatePaymentReminders()">🔔 Crear recordatorios en Calendar</button>`;
-  }
-  html += `</div>`;
-  return html;
-}
-
-function renderCalAjustes() {
-  const s = JSON.parse(localStorage.getItem('vcfit_gcal_settings') || '{}');
-  return `
-  <div class="card" style="margin-bottom:1rem">
-    <div class="card-title">⚙️ Configuración</div>
-    <div class="input-group">
-      <label class="input-label">Auto-sync al completar sesión</label>
-      <select class="input-field" id="cset-auto" onchange="saveCalSettings()">
-        <option value="1" ${s.autosync!==false?'selected':''}>✅ Activado</option>
-        <option value="0" ${s.autosync===false?'selected':''}>❌ Desactivado</option>
-      </select>
-    </div>
-    <div class="input-group">
-      <label class="input-label">Duración por defecto</label>
-      <select class="input-field" id="cset-dur" onchange="saveCalSettings()">
-        <option value="45" ${s.dur===45?'selected':''}>45 min</option>
-        <option value="60" ${!s.dur||s.dur===60?'selected':''}>60 min</option>
-        <option value="75" ${s.dur===75?'selected':''}>75 min</option>
-        <option value="90" ${s.dur===90?'selected':''}>90 min</option>
-      </select>
-    </div>
-    <div class="input-group">
-      <label class="input-label">Prefijo de eventos</label>
-      <input type="text" class="input-field" id="cset-prefix" value="${s.prefix||'VC Fit'}" onchange="saveCalSettings()">
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-title">🗑️ Zona peligrosa</div>
-    <div class="text-small text-gray" style="margin-bottom:0.8rem">Eliminar todos los eventos VC Fit del calendario.</div>
-    <button class="btn btn-danger btn-sm btn-full" onclick="calDeleteAllVCFit()">🗑️ Eliminar todos los eventos VC Fit</button>
-  </div>`;
-}
-
-// ── Google APIs — carga bajo demanda ──
-function loadCalendarAPIs() {
-  if (_calLoading) return;
-  _calLoading = true;
-
-  // GAPI
-  if (!document.getElementById('gapi-script')) {
-    const s = document.createElement('script');
-    s.id = 'gapi-script';
-    s.src = 'https://apis.google.com/js/api.js';
-    s.onload = function() {
-      gapi.load('client', function() {
-        gapi.client.init({ discoveryDocs: [GCAL_DISCO] }).then(function() {
-          _calGapiReady = true;
-          renderCalContent();
-          maybeRestoreToken();
-        }).catch(function(e) { console.warn('GAPI init:', e); });
-      });
-    };
-    s.onerror = function() { console.warn('GAPI no disponible'); };
-    document.body.appendChild(s);
-  }
-
-  // GIS
-  if (!document.getElementById('gis-script')) {
-    const s2 = document.createElement('script');
-    s2.id = 'gis-script';
-    s2.src = 'https://accounts.google.com/gsi/client';
-    s2.onload = function() {
-      _calTokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: GCAL_CLIENT_ID,
-        scope: GCAL_SCOPES,
-        callback: handleCalToken,
-      });
-      _calGisReady = true;
-      renderCalContent();
-      maybeRestoreToken();
-    };
-    s2.onerror = function() { console.warn('GIS no disponible'); };
-    document.body.appendChild(s2);
-  }
-}
-
-// ── Token management ──
-function getCalToken() {
-  try {
-    const raw = localStorage.getItem('vcfit_gcal_token');
-    if (!raw) return null;
-    const t = JSON.parse(raw);
-    if (t.expires_at && t.expires_at < Date.now()) {
-      localStorage.removeItem('vcfit_gcal_token');
-      return null;
-    }
-    // Aviso si quedan menos de 10 minutos
-    if (t.expires_at && t.expires_at - Date.now() < 600000) {
-      t._expiring_soon = true;
-    }
-    return t;
-  } catch(e) { return null; }
-}
-
-function calRefreshToken() {
-  if (!_calGisReady || !_calTokenClient) return;
-  _calTokenClient.requestAccessToken({ prompt: '' }); // sin prompt = silencioso si hay sesión activa
-}
-
-// ── Asignación manual evento → alumno ──
-function openCalAssignModal(eventId) {
-  const ev = _calEvents.find(e => e.id === eventId);
-  if (!ev) return;
-
-  const start = ev.start?.dateTime || ev.start?.date || '';
-  const d = start ? new Date(start) : null;
-  const dateStr = d ? d.toLocaleDateString('es-AR', {weekday:'long',day:'numeric',month:'long'}) : '—';
-  const timeStr = ev.start?.dateTime ? d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}) : 'Todo el día';
-
-  document.getElementById('cal-assign-title').textContent = ev.summary || 'Sin título';
-  document.getElementById('cal-assign-date').textContent = `${dateStr} · ${timeStr}`;
-  document.getElementById('cal-assign-title').dataset.eventId = eventId;
-
-  const sel = document.getElementById('cal-assign-student');
-  const currentAssignment = (state.calAssignments || {})[eventId] || '';
-  sel.innerHTML = '<option value="">— Sin asignar —</option>';
-  state.students.forEach(s => {
-    sel.innerHTML += `<option value="${s.id}" ${currentAssignment===s.id?'selected':''}>${s.name}</option>`;
-  });
-
-  openModal('modal-cal-assign');
-}
-
-async function calSaveAssignment() {
-  const eventId = document.getElementById('cal-assign-title').dataset.eventId;
-  const studentId = document.getElementById('cal-assign-student').value;
-  if (!eventId) return;
-
-  if (!state.calAssignments) state.calAssignments = {};
-  if (studentId) {
-    state.calAssignments[eventId] = studentId;
-  } else {
-    delete state.calAssignments[eventId];
-  }
-
-  await saveState();
-  updateProximasSesionesFromCalendar(_calEvents);
-  closeModal('modal-cal-assign');
-  renderCalContent();
-
-  const st = studentId ? state.students.find(s => s.id === studentId) : null;
-  if (st) alert(`✅ Clase asignada a ${st.name}. Ya puede verla en su pantalla.`);
-}
-
-// ── Importar evento Calendar → App ──
-function openCalImportModal(eventId) {
-  const ev = _calEvents.find(e => e.id === eventId);
-  if (!ev) return;
-  _calImportEvent = ev;
-
-  const start = ev.start?.dateTime || ev.start?.date || '';
-  const d = start ? new Date(start) : null;
-  const dateStr = d ? d.toLocaleDateString('es-AR', {weekday:'long',day:'numeric',month:'long'}) : '—';
-  const timeStr = ev.start?.dateTime ? d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}) : 'Todo el día';
-
-  document.getElementById('cal-import-title').textContent = ev.summary || 'Sin título';
-  document.getElementById('cal-import-date').textContent = `${dateStr} · ${timeStr}`;
-  document.getElementById('cal-import-note').value = '';
-
-  const sel = document.getElementById('cal-import-student');
-  sel.innerHTML = '<option value="">— Seleccioná un alumno —</option>';
-  state.students.forEach(s => {
-    // Pre-seleccionar si el nombre del alumno está en el título del evento
-    const match = (ev.summary || '').includes(s.name);
-    sel.innerHTML += `<option value="${s.id}" ${match?'selected':''}>${s.name}</option>`;
-  });
-
-  openModal('modal-cal-import');
-}
-
-async function calConfirmImport() {
-  const sid  = document.getElementById('cal-import-student').value;
-  const note = document.getElementById('cal-import-note').value.trim();
-  if (!sid) { alert('Seleccioná un alumno.'); return; }
-  if (!_calImportEvent) return;
-
-  const student = state.students.find(s => s.id === sid);
-  if (!student) return;
-
-  const start = _calImportEvent.start?.dateTime || _calImportEvent.start?.date || '';
-  const d = start ? new Date(start) : new Date();
-  const dateISO = d.toISOString().split('T')[0];
-  const dateLabel = d.toLocaleDateString('es-AR', {day:'numeric', month:'short', year:'numeric'});
-
-  if (!student.progressLog) student.progressLog = [];
-  student.progressLog.push({
-    id: 'cal_' + Date.now(),
-    date: dateLabel,
-    dateISO,
-    note: note || (_calImportEvent.summary || 'Sesión importada de Calendar'),
-    source: 'gcal',
-    gcalEventId: _calImportEvent.id,
-  });
-
-  await saveState();
-  closeModal('modal-cal-import');
-  _calImportEvent = null;
-  alert(`✅ Sesión importada para ${student.name}.`);
-}
-
-function maybeRestoreToken() {
-  if (!_calGapiReady || !_calGisReady) return;
-  const t = getCalToken();
-  if (t) {
-    gapi.client.setToken({ access_token: t.access_token });
-    calFetchEvents();
-    startCalBackgroundSync();
-  }
-}
-
-function handleCalToken(resp) {
-  if (resp.error) { alert('Error al conectar: ' + resp.error); return; }
-  const tokenData = gapi.client.getToken();
-  // Obtener email
-  fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-    headers: { Authorization: 'Bearer ' + tokenData.access_token }
-  }).then(r => r.json()).then(info => {
-    const toSave = {
-      access_token: tokenData.access_token,
-      email: info.email || '',
-      expires_at: Date.now() + 3500000 // ~58 min
-    };
-    localStorage.setItem('vcfit_gcal_token', JSON.stringify(toSave));
-    calFetchEvents();
-    startCalBackgroundSync();
-  }).catch(() => {
-    localStorage.setItem('vcfit_gcal_token', JSON.stringify({
-      access_token: tokenData.access_token,
-      email: '',
-      expires_at: Date.now() + 3500000
-    }));
-    calFetchEvents();
-    startCalBackgroundSync();
-  });
-}
-
-function calSignIn() {
-  if (!_calGisReady || !_calTokenClient) {
-    alert('Las librerías de Google aún cargan. Esperá unos segundos.');
-    return;
-  }
-  _calTokenClient.requestAccessToken({ prompt: 'consent' });
-}
-
-function calSignOut() {
-  if (!confirm('¿Desconectar Google Calendar?')) return;
-  const t = getCalToken();
-  if (t && typeof google !== 'undefined') {
-    google.accounts.oauth2.revoke(t.access_token, () => {});
-  }
-  if (typeof gapi !== 'undefined') gapi.client.setToken('');
-  localStorage.removeItem('vcfit_gcal_token');
-  _calEvents = [];
-  stopCalBackgroundSync();
-  document.getElementById('cal-sync-btn').style.display = 'none';
-  renderCalContent();
-}
-
-// ── Operaciones Calendar ──
-async function calFetchEvents() {
-  if (!_calGapiReady || !gapi.client.calendar) return;
-  try {
-    const now = new Date();
-    const resp = await gapi.client.calendar.events.list({
-      calendarId: 'primary',
-      timeMin: now.toISOString(),
-      timeMax: new Date(now.getTime() + 30*24*60*60*1000).toISOString(),
-      maxResults: 50,
-      singleEvents: true,
-      orderBy: 'startTime',
-      q: 'VC Fit'
-    });
-    _calEvents = resp.result.items || [];
-    const counter = document.getElementById('count-cal');
-    if (counter) counter.textContent = _calEvents.length || '→';
-    renderCalContent();
-    // Actualizar próximas sesiones de cada alumno en Firebase
-    updateProximasSesionesFromCalendar(_calEvents);
-  } catch(e) {
-    if (e.status === 401) { calSignOut(); }
-    console.warn('Calendar fetch error:', e);
-  }
-}
-
-function calSync() {
-  calFetchEvents();
-}
-
-function openCalEventModal() {
-  document.getElementById('cal-ev-title').value = '';
-  document.getElementById('cal-ev-date').value = new Date().toISOString().split('T')[0];
-  document.getElementById('cal-ev-time').value = '09:00';
-  document.getElementById('cal-ev-duration').value = '60';
-  document.getElementById('cal-ev-note').value = '';
-  document.getElementById('cal-ev-recurrence').value = '';
-  const sel = document.getElementById('cal-ev-student');
-  sel.innerHTML = '<option value="">— Sin alumno —</option>';
-  state.students.forEach(s => {
-    sel.innerHTML += `<option value="${s.id}">${s.name}</option>`;
-  });
-  openModal('modal-cal-event');
-}
-
-async function calCreateEvent() {
-  const title = document.getElementById('cal-ev-title').value.trim();
-  const date  = document.getElementById('cal-ev-date').value;
-  const time  = document.getElementById('cal-ev-time').value;
-  const dur   = parseInt(document.getElementById('cal-ev-duration').value);
-  const note  = document.getElementById('cal-ev-note').value.trim();
-  const sid   = document.getElementById('cal-ev-student').value;
-  const recurrence = document.getElementById('cal-ev-recurrence').value;
-  if (!title || !date) { alert('Completá título y fecha.'); return; }
-
-  const s = JSON.parse(localStorage.getItem('vcfit_gcal_settings') || '{}');
-  const prefix = s.prefix || 'VC Fit';
-  const student = sid ? state.students.find(x => x.id === sid) : null;
-  const startDT = new Date(`${date}T${time}:00`);
-  const endDT   = new Date(startDT.getTime() + dur * 60000);
-
-  const rruleMap = {
-    'WEEKLY':    'RRULE:FREQ=WEEKLY',
-    'BIWEEKLY':  'RRULE:FREQ=WEEKLY;INTERVAL=2',
-    'MONTHLY':   'RRULE:FREQ=MONTHLY',
-  };
-
-  const resource = {
-    summary: `${prefix} · ${title}${student ? ' · '+student.name : ''}`,
-    description: note || '',
-    colorId: '3',
-    start: { dateTime: startDT.toISOString(), timeZone: 'America/Argentina/Buenos_Aires' },
-    end:   { dateTime: endDT.toISOString(),   timeZone: 'America/Argentina/Buenos_Aires' },
-  };
-  if (recurrence && rruleMap[recurrence]) {
-    resource.recurrence = [rruleMap[recurrence]];
-  }
-
-  try {
-    await gapi.client.calendar.events.insert({ calendarId: 'primary', resource });
-    closeModal('modal-cal-event');
-    await calFetchEvents();
-    alert('✅ Evento creado' + (recurrence ? ' (recurrente)' : '') + '.');
-  } catch(e) {
-    alert('Error: ' + (e.result?.error?.message || e.message));
-  }
-}
-
-async function calDeleteEvent(eventId) {
-  if (!confirm('¿Eliminar este evento?')) return;
-  try {
-    await gapi.client.calendar.events.delete({ calendarId: 'primary', eventId });
-    await calFetchEvents();
-  } catch(e) {
-    alert('Error: ' + (e.result?.error?.message || e.message));
-  }
-}
-
-async function calSyncSessions() {
-  if (!confirm('¿Crear eventos en Calendar para las sesiones de este mes?')) return;
-  const now = new Date();
-  const mesActual = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-  const s = JSON.parse(localStorage.getItem('vcfit_gcal_settings') || '{}');
-  const prefix = s.prefix || 'VC Fit';
-  const dur    = s.dur || 60;
-
-  // Obtener eventos existentes para deduplicar
-  let existingTitles = new Set();
-  try {
-    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-    const lastDay  = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59).toISOString();
-    const existing = await gapi.client.calendar.events.list({
-      calendarId: 'primary', q: prefix,
-      timeMin: firstDay, timeMax: lastDay,
-      maxResults: 200, singleEvents: true
-    });
-    (existing.result.items || []).forEach(ev => {
-      const dateKey = (ev.start?.dateTime || ev.start?.date || '').substring(0,10);
-      existingTitles.add((ev.summary || '') + '|' + dateKey);
-    });
-  } catch(e) { /* si falla el chequeo, continúa igual */ }
-
-  let created = 0, skipped = 0;
-  const promises = [];
-  state.students.forEach(st => {
-    (st.progressLog || []).forEach(e => {
-      if (!(e.dateISO || '').startsWith(mesActual)) return;
-      const sessionTitle = `${prefix} · Sesión · ${st.name}`;
-      const dedupeKey = sessionTitle + '|' + e.dateISO;
-      if (existingTitles.has(dedupeKey)) { skipped++; return; }
-      const hora = e.time || '09:00';
-      const startDT = new Date(`${e.dateISO}T${hora}:00`);
-      const endDT   = new Date(startDT.getTime() + (e.duration || dur) * 60000);
-      promises.push(
-        gapi.client.calendar.events.insert({
-          calendarId: 'primary',
-          resource: {
-            summary: sessionTitle,
-            description: e.note || '',
-            colorId: '3',
-            start: { dateTime: startDT.toISOString(), timeZone: 'America/Argentina/Buenos_Aires' },
-            end:   { dateTime: endDT.toISOString(),   timeZone: 'America/Argentina/Buenos_Aires' },
-          }
-        }).then(() => created++).catch(() => {})
-      );
-    });
-  });
-  await Promise.all(promises);
-  await calFetchEvents();
-  const msg = skipped > 0
-    ? `✅ ${created} sesiones exportadas. ${skipped} ya existían (sin duplicar).`
-    : `✅ ${created} sesiones exportadas.`;
-  alert(msg);
-}
-
-async function calCreatePaymentReminders() {
-  if (!confirm('¿Crear recordatorios de pago en Calendar?')) return;
-  const now = new Date();
-  const mesActual = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-  const s = JSON.parse(localStorage.getItem('vcfit_gcal_settings') || '{}');
-  const prefix = s.prefix || 'VC Fit';
-
-  const pendientes = state.students.filter(st => {
-    const pagado = (st.payments || []).some(p => p.mes === mesActual);
-    const pack   = (st.classPacks || []).some(p => p.restantes > 0);
-    return !pagado && !pack;
-  });
-  if (!pendientes.length) { alert('Todos al día.'); return; }
-
-  const next5 = new Date(now.getFullYear(), now.getMonth() + 1, 5).toISOString().split('T')[0];
-  await Promise.all(pendientes.map(st =>
-    gapi.client.calendar.events.insert({
-      calendarId: 'primary',
-      resource: {
-        summary: `${prefix} · 💰 Pago pendiente · ${st.name}`,
-        description: `${st.name} no registró pago este mes.`,
-        colorId: '11',
-        start: { date: next5 },
-        end:   { date: next5 },
-      }
-    }).catch(() => {})
-  ));
-  await calFetchEvents();
-  alert(`✅ ${pendientes.length} recordatorio${pendientes.length!==1?'s':''} creado${pendientes.length!==1?'s':''}.`);
-}
-
-async function calDeleteAllVCFit() {
-  if (!confirm('⚠️ ¿Eliminar TODOS los eventos VC Fit? No se puede deshacer.')) return;
-  if (!confirm('¿Confirmás?')) return;
-  const s = JSON.parse(localStorage.getItem('vcfit_gcal_settings') || '{}');
-  const prefix = s.prefix || 'VC Fit';
-  try {
-    const resp = await gapi.client.calendar.events.list({
-      calendarId: 'primary', q: prefix, maxResults: 250, singleEvents: true
-    });
-    const evs = resp.result.items || [];
-    await Promise.all(evs.map(e =>
-      gapi.client.calendar.events.delete({ calendarId: 'primary', eventId: e.id }).catch(() => {})
-    ));
-    _calEvents = [];
-    renderCalContent();
-    alert(`✅ ${evs.length} eventos eliminados.`);
-  } catch(e) {
-    alert('Error: ' + (e.result?.error?.message || e.message));
-  }
-}
-
-function saveCalSettings() {
-  const settings = {
-    autosync: document.getElementById('cset-auto')?.value !== '0',
-    dur:      parseInt(document.getElementById('cset-dur')?.value) || 60,
-    prefix:   document.getElementById('cset-prefix')?.value.trim() || 'VC Fit',
-  };
-  localStorage.setItem('vcfit_gcal_settings', JSON.stringify(settings));
-}
-
-// Auto-sync al completar sesión (si está configurado)
-function calAutoSync(studentName, dateISO, duration, routineName, sessionTime) {
-  const s = JSON.parse(localStorage.getItem('vcfit_gcal_settings') || '{}');
-  if (s.autosync === false) return;
-  const token = getCalToken();
-  if (!token || !_calGapiReady || !gapi.client.calendar) return;
-  const prefix = s.prefix || 'VC Fit';
-  const dur    = duration || s.dur || 60;
-  const hora   = sessionTime || '09:00';
-  const startDT = new Date(`${dateISO}T${hora}:00`);
-  const endDT   = new Date(startDT.getTime() + dur * 60000);
-  gapi.client.calendar.events.insert({
-    calendarId: 'primary',
-    resource: {
-      summary: `${prefix} · Sesión · ${studentName}`,
-      description: routineName ? `Rutina: ${routineName}` : '',
-      colorId: '3',
-      start: { dateTime: startDT.toISOString(), timeZone: 'America/Argentina/Buenos_Aires' },
-      end:   { dateTime: endDT.toISOString(),   timeZone: 'America/Argentina/Buenos_Aires' },
-    }
-  }).catch(() => {});
-}
-
-// ═══════════════════════════════════════════
 //  MÓDULO ANAMNESIS EXTERNA
 // ═══════════════════════════════════════════
 
@@ -11865,13 +10904,11 @@ async function checkInitialAnamnesisCount() {
     const now = new Date();
     _financePeriod = { year: now.getFullYear(), month: now.getMonth() + 1 };
     loadDemoData();
-    if (!state.calAssignments) state.calAssignments = {};
     refreshTrainerDashboard();
     renderStudentsList();
     renderWorkoutsList();
     // Si hay token Calendar guardado, cargar APIs en background automáticamente
     if (localStorage.getItem('vcfit_gcal_token')) {
-      setTimeout(() => loadCalendarAPIs(), 3000);
     }
   } catch(e) {
     console.warn('Error en init:', e);
