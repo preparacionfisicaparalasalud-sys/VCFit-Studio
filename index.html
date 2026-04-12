@@ -6240,7 +6240,7 @@ applyLogo();
 // Pantallas exclusivas del entrenador
 const TRAINER_SCREENS = [
   'screen-trainer','screen-trainer-profile','screen-students','screen-student-detail',
-  'screen-workouts','screen-stats','screen-ai-chat','screen-finance',  'screen-anamnesis-inbox'
+  'screen-workouts','screen-stats','screen-ai-chat','screen-finance','screen-anamnesis-inbox'
 ];
 
 function showScreen(id) {
@@ -10907,9 +10907,6 @@ async function checkInitialAnamnesisCount() {
     refreshTrainerDashboard();
     renderStudentsList();
     renderWorkoutsList();
-    // Si hay token Calendar guardado, cargar APIs en background automáticamente
-    if (localStorage.getItem('vcfit_gcal_token')) {
-    }
   } catch(e) {
     console.warn('Error en init:', e);
   } finally {
@@ -10926,7 +10923,7 @@ async function checkInitialAnamnesisCount() {
 // PWA: register service worker si está disponible
 if ('serviceWorker' in navigator) {
   const swCode = `
-    const CACHE = 'vcfit-v3';
+    const CACHE = 'vcfit-v4';
     const ASSETS = ['/'];
     self.addEventListener('install', e => {
       e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
