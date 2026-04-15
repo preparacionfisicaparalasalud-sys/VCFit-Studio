@@ -7143,13 +7143,31 @@ function saveEditWorkout() {
   if (!w) return;
   const name = document.getElementById('ew-name').value.trim();
   if (!name) { alert('El nombre es obligatorio.'); return; }
+
+  const contentChanged = w.content !== document.getElementById('ew-content').value.trim();
+
   w.name = name;
   w.desc = document.getElementById('ew-desc').value.trim();
   w.content = document.getElementById('ew-content').value.trim();
+
+  // Si cambió el contenido, actualizar todos los alumnos que tienen esta rutina
+  if (contentChanged) {
+    state.students.forEach(s => {
+      if (s.assignedWorkoutId === id) {
+        // Limpiar personalización del alumno — el entrenador actualizó la rutina
+        s.customWorkoutContent = null;
+        s.routineUpdated = true;
+      }
+    });
+  }
+
   saveState();
   closeModal('modal-edit-workout');
   renderWorkoutsList();
-  alert('Rutina actualizada ✅');
+  const afectados = contentChanged
+    ? state.students.filter(s => s.assignedWorkoutId === id).length
+    : 0;
+  alert(`Rutina actualizada ✅${afectados > 0 ? `\n${afectados} alumno${afectados!==1?'s':''} notificado${afectados!==1?'s':''}.` : ''}`);
 }
 
 function saveNewWorkout() {
@@ -7320,7 +7338,9 @@ function saveWorkoutFromStudentTab() {
     s.exclusiveWorkout = { name, desc, content };
     const anterior = s.assignedWorkoutId;
     s.assignedWorkoutId = '__exclusive__';
+    s.customWorkoutContent = null; // limpiar personalización anterior
     if (anterior !== '__exclusive__') s.routineUpdated = true;
+    else s.routineUpdated = true; // aunque ya era exclusiva, el contenido cambió
     saveState();
     renderAssignTab(s);
     renderTodayWorkout(s);
@@ -7395,7 +7415,10 @@ function assignWorkout() {
   if (!s) return;
   const anterior = s.assignedWorkoutId;
   s.assignedWorkoutId = id || null;
-  if (id && id !== anterior) s.routineUpdated = true; // flag para banner alumno
+  if (id && id !== anterior) {
+    s.routineUpdated = true;
+    s.customWorkoutContent = null; // limpiar personalización al cambiar rutina
+  }
   saveState();
   renderAssignTab(s);
   renderTodayWorkout(s);
