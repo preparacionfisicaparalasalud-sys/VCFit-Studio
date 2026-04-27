@@ -3671,6 +3671,83 @@ function exportStatsReport() {
   <style>body{font-family:Arial,sans-serif;padding:32px;color:#111;font-size:13px}
   h1{color:#FF6B00;font-size:22px}h2{font-size:14px;color:#FF6B00;border-bottom:2px solid #FF6B00;padding-bottom:4px;margin:20px 0 10px}
   .footer{margin-top:32px;padding-top:12px;border-top:1px solid #eee;font-size:10px;color:#aaa;display:flex;justify-content:space-between}
+  /* ============================================================
+   VC FIT NUTRICION - Overrides de 7 temas v1
+   Subbloque 4.7 — solo agrega esto a los estilos del shell
+   Selectores: vcmd- (Mi Día) | vceq- (Cambiar Equiv) | vcad- (Adherencia)
+   ============================================================ */
+
+/* ---- TEMA: carbono (default) ---- sin overrides, ya usa el palette base ---- */
+
+/* ---- TEMA: azul ---- */
+[data-theme="azul"] .vcmd-toggle.activo,
+[data-theme="azul"] .vceq-alt-top,
+[data-theme="azul"] .vceq-badge             { border-color:#2563eb; background:#EFF6FF; color:#2563eb; }
+[data-theme="azul"] .vcmd-toggle.activo     { color:#2563eb; }
+[data-theme="azul"] .vcmd-macros-bloque,
+[data-theme="azul"] .vcad-q1               { background:#1e3a5f; }
+[data-theme="azul"] .vcmd-macro.vcmd-prot .vcmd-macro-val,
+[data-theme="azul"] .vcmd-kcal,
+[data-theme="azul"] .vceq-kcal,
+[data-theme="azul"] .vcad-qpct             { color:#2563eb; }
+[data-theme="azul"] .vceq-badge            { background:#2563eb; color:#fff; }
+[data-theme="azul"] .vceq-btn-elegir:hover { background:#2563eb; }
+[data-theme="azul"] .vcad-entreno          { background:#2563eb; }
+
+/* ---- TEMA: verde ---- */
+[data-theme="verde"] .vcmd-toggle.activo   { border-color:#16a34a; background:#F0FDF4; color:#16a34a; }
+[data-theme="verde"] .vceq-alt-top         { border-color:#16a34a; background:#F0FDF4; }
+[data-theme="verde"] .vceq-badge           { background:#16a34a; color:#fff; border-color:#16a34a; }
+[data-theme="verde"] .vcmd-macro.vcmd-prot .vcmd-macro-val,
+[data-theme="verde"] .vcmd-kcal,
+[data-theme="verde"] .vceq-kcal            { color:#16a34a; }
+[data-theme="verde"] .vceq-btn-elegir:hover{ background:#16a34a; }
+[data-theme="verde"] .vcad-entreno         { background:#16a34a; }
+
+/* ---- TEMA: rojo ---- */
+[data-theme="rojo"] .vcmd-toggle.activo    { border-color:#dc2626; background:#FEF2F2; color:#dc2626; }
+[data-theme="rojo"] .vceq-alt-top          { border-color:#dc2626; background:#FEF2F2; }
+[data-theme="rojo"] .vceq-badge            { background:#dc2626; color:#fff; border-color:#dc2626; }
+[data-theme="rojo"] .vcmd-macro.vcmd-prot .vcmd-macro-val,
+[data-theme="rojo"] .vcmd-kcal,
+[data-theme="rojo"] .vceq-kcal             { color:#dc2626; }
+[data-theme="rojo"] .vceq-btn-elegir:hover { background:#dc2626; }
+[data-theme="rojo"] .vcad-entreno          { background:#dc2626; }
+
+/* ---- TEMA: violeta ---- */
+[data-theme="violeta"] .vcmd-toggle.activo { border-color:#7c3aed; background:#F5F3FF; color:#7c3aed; }
+[data-theme="violeta"] .vceq-alt-top       { border-color:#7c3aed; background:#F5F3FF; }
+[data-theme="violeta"] .vceq-badge         { background:#7c3aed; color:#fff; border-color:#7c3aed; }
+[data-theme="violeta"] .vcmd-macro.vcmd-prot .vcmd-macro-val,
+[data-theme="violeta"] .vcmd-kcal,
+[data-theme="violeta"] .vceq-kcal          { color:#7c3aed; }
+[data-theme="violeta"] .vceq-btn-elegir:hover{ background:#7c3aed; }
+[data-theme="violeta"] .vcad-entreno       { background:#7c3aed; }
+
+/* ---- TEMA: teal ---- */
+[data-theme="teal"] .vcmd-toggle.activo    { border-color:#0d9488; background:#F0FDFA; color:#0d9488; }
+[data-theme="teal"] .vceq-alt-top          { border-color:#0d9488; background:#F0FDFA; }
+[data-theme="teal"] .vceq-badge            { background:#0d9488; color:#fff; border-color:#0d9488; }
+[data-theme="teal"] .vcmd-macro.vcmd-prot .vcmd-macro-val,
+[data-theme="teal"] .vcmd-kcal,
+[data-theme="teal"] .vceq-kcal             { color:#0d9488; }
+[data-theme="teal"] .vceq-btn-elegir:hover { background:#0d9488; }
+[data-theme="teal"] .vcad-entreno          { background:#0d9488; }
+
+/* ---- TEMA: rosa ---- */
+[data-theme="rosa"] .vcmd-toggle.activo    { border-color:#db2777; background:#FDF2F8; color:#db2777; }
+[data-theme="rosa"] .vceq-alt-top          { border-color:#db2777; background:#FDF2F8; }
+[data-theme="rosa"] .vceq-badge            { background:#db2777; color:#fff; border-color:#db2777; }
+[data-theme="rosa"] .vcmd-macro.vcmd-prot .vcmd-macro-val,
+[data-theme="rosa"] .vcmd-kcal,
+[data-theme="rosa"] .vceq-kcal             { color:#db2777; }
+[data-theme="rosa"] .vceq-btn-elegir:hover { background:#db2777; }
+[data-theme="rosa"] .vcad-entreno          { background:#db2777; }
+
+/* ---- Modo oscuro universal (macros bloque y score circulo ya son dark) ---- */
+/* El vcmd-macros-bloque y vceq-btn-elegir usan #1a2332 que es el color base oscuro
+   de VC Fit → no necesita override en ningún tema claro */
+
   </style></head><body>
   <h1>VC FIT STUDIO — Estadísticas</h1>
   <div style="color:#888;font-size:11px;margin-bottom:20px">${p.name || ''} · ${now}</div>
@@ -5805,7 +5882,7 @@ function applyThemeForRole(role) {
 // ═══════════════════════════════════════════
 const firebaseConfig = {
   apiKey: "AIzaSyDbyCfESCLU1ut5t6AExXRedalFAuf83JI",
-  authDomain: "vcfit-studio.firebaseapp.com",
+
   projectId: "vcfit-studio",
   storageBucket: "vcfit-studio.firebasestorage.app",
   messagingSenderId: "738858575495",
@@ -10911,6 +10988,14 @@ async function checkInitialAnamnesisCount() {
 }
 
 (async function init() {
+  // ── Nutrición: cargar BD ──────────────────────────────
+  try {
+    await VCFitNutri.load();
+    console.log('[VC Fit] BD nutricional lista');
+  } catch (err) {
+    console.warn('[VC Fit] BD nutricional no disponible:', err);
+  }
+  // ─────────────────────────────────────────────────────
   // Safety net: si algo falla, la pantalla nunca queda colgada
   const safetyTimer = setTimeout(() => {
     console.warn('Init safety net activado — forzando pantalla de login');
@@ -10987,6 +11072,1741 @@ const link = document.createElement('link');
 link.rel = 'manifest';
 link.href = manifestUrl;
 document.head.appendChild(link);
+// ============================================================
+// VC FIT NUTRICION - Bloque 4 (v1)
+// Módulos: loader, engine, wizard, mi_dia, cambiar_equiv, adherencia
+// ============================================================// ============================================================
+// VC FIT NUTRICION - Loader v1.1
+// Carga nutricion_db.json con cache offline y fallback localStorage.
+// v1.1: agrega tagsCatalogo(), categoriasCatalogo() y momentosCatalogo()
+// para que el wizard 4.3 acceda a los catalogos sin hacks.
+// ============================================================
+window.VCFitNutri = (function() {
+  const DB_URL = './nutricion_db.json';
+  const LS_KEY = 'vcfit_nutricion_db_v1';
+  let DB = null;
+
+  async function load() {
+    if (DB) return DB;
+    try {
+      const res = await fetch(DB_URL, { cache: 'no-cache' });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      DB = await res.json();
+      localStorage.setItem(LS_KEY, JSON.stringify(DB));
+      console.log("[VCFitNutri] BD cargada: " + DB._meta.counts.alimentos + " alimentos, " + DB._meta.counts.combos + " combos");
+      return DB;
+    } catch (err) {
+      console.warn('[VCFitNutri] fetch fallo, intentando localStorage:', err);
+      const cached = localStorage.getItem(LS_KEY);
+      if (!cached) throw new Error('BD no disponible (sin red, sin cache)');
+      DB = JSON.parse(cached);
+      return DB;
+    }
+  }
+
+  // === Lookups directos ===
+  const getAlimento  = id => DB?.alimentos[id] || null;
+  const getCombo     = id => DB?.combos[id] || null;
+  const getCategoria = id => DB?.categorias[id] || null;
+  const getTag       = id => DB?.tags_restriccion[id] || null;
+
+  // === Listados activos ===
+  const allAlimentos = () => Object.values(DB.alimentos).filter(a => a.activo);
+  const allCombos    = () => Object.values(DB.combos).filter(c => c.activo);
+
+  // === Catalogos completos (para wizards / pickers) ===
+  const tagsCatalogo       = () => ({ ...(DB?.tags_restriccion || {}) });
+  const categoriasCatalogo = () => ({ ...(DB?.categorias || {}) });
+  const momentosCatalogo   = () => Object.keys(DB?.indices?.alimentos_por_momento || {});
+  const ciclosCatalogo     = () => Object.keys(DB?.indices?.combos_por_ciclo || {});
+
+  // === Filtros por indice ===
+  const alimentosPorCategoria = cat =>
+    (DB.indices.alimentos_por_categoria[cat] || []).map(getAlimento);
+  const combosPorMomento = mom =>
+    (DB.indices.combos_por_momento[mom] || []).map(getCombo);
+  const combosPorCiclo = ciclo =>
+    (DB.indices.combos_por_ciclo[ciclo] || []).map(getCombo);
+
+  // === Filtro por restricciones del alumno ===
+  function filtrarPorRestricciones(items, tagsRequeridos) {
+    if (!tagsRequeridos?.length) return items;
+    return items.filter(item =>
+      tagsRequeridos.every(t => item.tags_restriccion.includes(t))
+    );
+  }
+
+  // === Busqueda por nombre (alimentos + combos) ===
+  function buscar(query) {
+    const q = query.toLowerCase().trim();
+    if (!q) return { alimentos: [], combos: [] };
+    return {
+      alimentos: allAlimentos().filter(a =>
+        a.nombre.toLowerCase().includes(q) ||
+        (a.nombre_alt && a.nombre_alt.toLowerCase().includes(q))
+      ),
+      combos: allCombos().filter(c => c.nombre.toLowerCase().includes(q))
+    };
+  }
+
+  return {
+    load,
+    getAlimento, getCombo, getCategoria, getTag,
+    allAlimentos, allCombos,
+    tagsCatalogo, categoriasCatalogo, momentosCatalogo, ciclosCatalogo,
+    alimentosPorCategoria, combosPorMomento, combosPorCiclo,
+    filtrarPorRestricciones, buscar,
+    get meta() { return DB?._meta; }
+  };
+})();
+// ============================================================
+// VC FIT NUTRICION - Motor de calculo v1
+// Funciones puras, sin DOM, testeables en consola.
+// Depende de window.VCFitNutri (loader 4.1) para acceso a la BD.
+// ============================================================
+window.VCFitNutriEngine = (function() {
+
+  // ============================================================
+  // 1. TMB (Tasa Metabolica Basal) - Mifflin-St Jeor
+  // ============================================================
+  // Si hay %grasa cargado, usa Katch-McArdle (mas preciso para LBM).
+  // Si no, usa Mifflin-St Jeor (default, no requiere %grasa).
+  // ============================================================
+  function calcTMB({ peso_kg, altura_cm, edad, sexo, grasa_pct = null }) {
+    if (grasa_pct != null && grasa_pct > 0) {
+      // Katch-McArdle: usa masa magra
+      const lbm = peso_kg * (1 - grasa_pct / 100);
+      return Math.round(370 + 21.6 * lbm);
+    }
+    // Mifflin-St Jeor (default)
+    const base = 10 * peso_kg + 6.25 * altura_cm - 5 * edad;
+    return Math.round(sexo === 'M' ? base + 5 : base - 161);
+  }
+
+  // ============================================================
+  // 2. TDEE (Total Daily Energy Expenditure)
+  // Factor de actividad estandar Harris-Benedict
+  // ============================================================
+  const FACTORES_ACTIVIDAD = {
+    sedentario:    1.2,    // oficina, sin entreno
+    ligero:        1.375,  // entreno 1-3x/sem
+    moderado:      1.55,   // entreno 3-5x/sem  <- default VC Fit +40
+    activo:        1.725,  // entreno 6-7x/sem
+    muy_activo:    1.9     // atleta, doble turno
+  };
+
+  function calcTDEE(tmb, factor = 'ligero') {
+    const f = FACTORES_ACTIVIDAD[factor] || 1.375;
+    return Math.round(tmb * f);
+  }
+
+  // ============================================================
+  // 3. Objetivo calorico segun fase
+  // ============================================================
+  // recomposicion: TDEE +0% (base)
+  // hipertrofia:   TDEE +10%
+  // deficit_leve:  TDEE -10%
+  // deficit_moderado: TDEE -20%
+  // ============================================================
+  const AJUSTE_FASE = {
+    recomposicion:    0.00,
+    hipertrofia:     +0.10,
+    deficit_leve:    -0.10,
+    deficit_moderado:-0.20
+  };
+
+  function calcObjetivoKcal(tdee, fase = 'recomposicion') {
+    const ajuste = AJUSTE_FASE[fase] ?? 0;
+    return Math.round(tdee * (1 + ajuste));
+  }
+
+  // ============================================================
+  // 4. Ciclado calorico (dia entreno vs dia NEAT)
+  // ============================================================
+  // Filosofia VC Fit:
+  //   - Proteina constante ambos dias
+  //   - Dia entreno: +15% carbo, -15% grasa (mas glucogeno)
+  //   - Dia NEAT:    -15% carbo, +15% grasa (mas saciedad)
+  // El total kcal varia ligeramente entre dias.
+  // ============================================================
+  function ciclarKcal(kcalBase, tipoJornada) {
+    // tipoJornada: 'entreno' | 'NEAT'
+    const ajuste = tipoJornada === 'entreno' ? +0.05 : -0.05;
+    return Math.round(kcalBase * (1 + ajuste));
+  }
+
+  // ============================================================
+  // 5. Split de macros (g por dia)
+  // ============================================================
+  // Inputs:
+  //   kcal_dia: calorias objetivo del dia (ya ciclado)
+  //   peso_kg:  peso del alumno
+  //   grasa_pct: opcional, si esta calcula proteina por LBM
+  //   tipoJornada: 'entreno' | 'NEAT' (afecta ratio carbo/grasa)
+  //
+  // Logica:
+  //   - Proteina: 2g/kg LBM si hay %grasa, sino 1.8g/kg peso total
+  //   - Grasa:    25% kcal en entreno, 35% en NEAT (mas saciedad)
+  //   - Carbo:    el resto
+  // ============================================================
+  function calcMacros({ kcal_dia, peso_kg, grasa_pct = null, tipoJornada }) {
+    // Proteina
+    let prot_g;
+    if (grasa_pct != null && grasa_pct > 0) {
+      const lbm = peso_kg * (1 - grasa_pct / 100);
+      prot_g = Math.round(lbm * 2.0);
+    } else {
+      prot_g = Math.round(peso_kg * 1.8);
+    }
+    const prot_kcal = prot_g * 4;
+
+    // Grasa (% del kcal_dia)
+    // Dia entreno 30%, dia NEAT 35% (mas saciedad sin entreno)
+    const grasa_pct_kcal = tipoJornada === 'entreno' ? 0.30 : 0.35;
+    const grasa_kcal = kcal_dia * grasa_pct_kcal;
+    const grasa_g = Math.round(grasa_kcal / 9);
+
+    // Carbo (resto)
+    const carbo_kcal = kcal_dia - prot_kcal - grasa_kcal;
+    const carbo_g = Math.max(0, Math.round(carbo_kcal / 4));
+
+    return {
+      kcal: kcal_dia,
+      prot: prot_g,
+      carbo: carbo_g,
+      grasa: grasa_g,
+      // metadata para debug
+      _check_kcal_calc: prot_g * 4 + carbo_g * 4 + grasa_g * 9
+    };
+  }
+
+  // ============================================================
+  // 6. Generar plan completo (un dia entreno + un dia NEAT)
+  // ============================================================
+  function generarPlan(perfil) {
+    const tmb = calcTMB(perfil);
+    const tdee = calcTDEE(tmb, perfil.actividad);
+    const kcalBase = calcObjetivoKcal(tdee, perfil.fase);
+
+    const kcalEntreno = ciclarKcal(kcalBase, 'entreno');
+    const kcalNEAT    = ciclarKcal(kcalBase, 'NEAT');
+
+    return {
+      perfil_calculado: { tmb, tdee, kcal_base: kcalBase },
+      dia_entreno: calcMacros({
+        kcal_dia: kcalEntreno,
+        peso_kg: perfil.peso_kg,
+        grasa_pct: perfil.grasa_pct,
+        tipoJornada: 'entreno'
+      }),
+      dia_NEAT: calcMacros({
+        kcal_dia: kcalNEAT,
+        peso_kg: perfil.peso_kg,
+        grasa_pct: perfil.grasa_pct,
+        tipoJornada: 'NEAT'
+      })
+    };
+  }
+
+  // ============================================================
+  // 7. Combos sugeridos para un dia
+  // ============================================================
+  // Devuelve combos validos para el tipo de jornada,
+  // filtrados por las restricciones del alumno.
+  // ============================================================
+  function combosParaJornada(tipoJornada, tagsAlumno = []) {
+    const ciclo = tipoJornada; // 'entreno' o 'NEAT' coincide con BD
+    // En BD: 'ambos' sirve para cualquier dia
+    const combosCiclo = VCFitNutri.combosPorCiclo(ciclo);
+    const combosAmbos = VCFitNutri.combosPorCiclo('ambos');
+    const todos = [...combosCiclo, ...combosAmbos];
+    return VCFitNutri.filtrarPorRestricciones(todos, tagsAlumno);
+  }
+
+  // ============================================================
+  // 8. Matcher de equivalentes (swap de combo)
+  // ============================================================
+  // Cuando alumno quiere cambiar un combo, sugerimos top 3:
+  //   - Mismo momento del dia
+  //   - Mismo ciclo (o "ambos")
+  //   - Macros similares (score por distancia euclidea normalizada)
+  //   - Compatible con restricciones del alumno
+  // ============================================================
+  function buscarEquivalentes(comboId, opciones = {}) {
+    const { tagsAlumno = [], topN = 3 } = opciones;
+    const original = VCFitNutri.getCombo(comboId);
+    if (!original) return [];
+
+    const cicloOk = c =>
+      c.momento_ciclo === original.momento_ciclo ||
+      c.momento_ciclo === 'ambos' ||
+      original.momento_ciclo === 'ambos';
+
+    const candidatos = VCFitNutri.allCombos()
+      .filter(c => c.id !== comboId)
+      .filter(c => c.momento === original.momento)
+      .filter(cicloOk);
+
+    const filtrados = VCFitNutri.filtrarPorRestricciones(candidatos, tagsAlumno);
+
+    // Score: distancia euclidea ponderada en macros (0 = identico)
+    // Proteina pesa x2 (es la macro critica para recomposicion)
+    const PESO_PROT = 2.0;
+    const scored = filtrados.map(c => {
+      const a = original.macros_total;
+      const b = c.macros_total;
+      const dKcal  = (b.kcal  - a.kcal)  / Math.max(a.kcal, 1);
+      const dProt  = (b.prot  - a.prot)  / Math.max(a.prot, 1);
+      const dCarbo = (b.carbo - a.carbo) / Math.max(a.carbo, 1);
+      const dGrasa = (b.grasa - a.grasa) / Math.max(a.grasa, 1);
+      const score = Math.sqrt(
+        dKcal*dKcal +
+        (PESO_PROT * dProt) * (PESO_PROT * dProt) +
+        dCarbo*dCarbo +
+        dGrasa*dGrasa
+      );
+      return { combo: c, score };
+    });
+
+    scored.sort((x, y) => x.score - y.score);
+    return scored.slice(0, topN);
+  }
+
+  // ============================================================
+  // 9. Adherencia nutricional
+  // ============================================================
+  // Por dia: comparar macros consumidos vs objetivo del dia.
+  // Tolerancia: ±15% en kcal y proteina = "dia OK"
+  // ============================================================
+  function evaluarDia(consumido, objetivo, tolerancia = 0.10) {
+    const r = m => Math.abs((consumido[m] - objetivo[m]) / objetivo[m]);
+    const okKcal = r('kcal') <= tolerancia;
+    const okProt = r('prot') <= tolerancia;
+    return {
+      ok: okKcal && okProt,
+      desvio_kcal_pct: Math.round(r('kcal') * 100),
+      desvio_prot_pct: Math.round(r('prot') * 100),
+      detalle: {
+        kcal:  { consumido: consumido.kcal,  objetivo: objetivo.kcal,  ok: okKcal },
+        prot:  { consumido: consumido.prot,  objetivo: objetivo.prot,  ok: okProt },
+        carbo: { consumido: consumido.carbo, objetivo: objetivo.carbo },
+        grasa: { consumido: consumido.grasa, objetivo: objetivo.grasa }
+      }
+    };
+  }
+
+  // ============================================================
+  // 10. Adherencia semanal + matriz 2x2 nutri x entreno
+  // ============================================================
+  // diasSemana: array de objetos { fecha, nutri_ok, entreno_ok }
+  // Retorna matriz 2x2 + score global
+  // ============================================================
+  function calcAdherenceMatriz(diasSemana) {
+    const matriz = {
+      ambos_ok:    0,  // nutri OK + entreno OK
+      solo_nutri:  0,  // nutri OK + entreno FAIL
+      solo_entreno:0,  // nutri FAIL + entreno OK
+      ambos_fail:  0   // nutri FAIL + entreno FAIL
+    };
+    diasSemana.forEach(d => {
+      if (d.nutri_ok && d.entreno_ok) matriz.ambos_ok++;
+      else if (d.nutri_ok)            matriz.solo_nutri++;
+      else if (d.entreno_ok)          matriz.solo_entreno++;
+      else                            matriz.ambos_fail++;
+    });
+    const total = diasSemana.length || 1;
+    const score_global = Math.round((matriz.ambos_ok / total) * 100);
+    return { matriz, total_dias: diasSemana.length, score_global_pct: score_global };
+  }
+
+  // ============================================================
+  // 11. Suma de macros desde lista de items consumidos
+  // ============================================================
+  // items: [{ tipo: 'combo'|'alimento'|'manual', id?, cantidad_g?, macros? }]
+  // ============================================================
+  function sumarMacrosConsumidos(items) {
+    const total = { kcal: 0, prot: 0, carbo: 0, grasa: 0 };
+    items.forEach(it => {
+      if (it.tipo === 'combo') {
+        const c = VCFitNutri.getCombo(it.id);
+        if (!c) return;
+        ['kcal','prot','carbo','grasa'].forEach(m => total[m] += c.macros_total[m]);
+      } else if (it.tipo === 'alimento') {
+        const a = VCFitNutri.getAlimento(it.id);
+        if (!a) return;
+        const factor = it.cantidad_g / 100;
+        ['kcal','prot','carbo','grasa'].forEach(m => total[m] += a.macros_100g[m] * factor);
+      } else if (it.tipo === 'manual') {
+        ['kcal','prot','carbo','grasa'].forEach(m => total[m] += (it.macros[m] || 0));
+      }
+    });
+    // Redondeo final
+    Object.keys(total).forEach(k => total[k] = Math.round(total[k] * 10) / 10);
+    return total;
+  }
+
+  // ============================================================
+  // API publica
+  // ============================================================
+  return {
+    // Calculo de plan
+    calcTMB, calcTDEE, calcObjetivoKcal, ciclarKcal, calcMacros, generarPlan,
+    // Sugerencias y swap
+    combosParaJornada, buscarEquivalentes,
+    // Adherencia
+    evaluarDia, calcAdherenceMatriz,
+    // Utilidades
+    sumarMacrosConsumidos,
+    // Constantes (lectura)
+    FACTORES_ACTIVIDAD, AJUSTE_FASE
+  };
+})();
+
+// ============================================================
+// VC FIT NUTRICION - Wizard "Asignar Plan" (rol coach) v1
+// Wizard de 3 pasos + integracion Haiku + persistencia.
+// Depende de: VCFitNutri (loader 4.1) + VCFitNutriEngine (motor 4.2)
+// ============================================================
+window.VCFitNutriPlan = (function() {
+
+  // ============================================================
+  // STATE INTERNO
+  // ============================================================
+  let state = null;
+
+  function initState({ container, alumnoId, alumnoNombre, datosIniciales, onSave, onCancel }) {
+    state = {
+      container,
+      alumnoId,
+      alumnoNombre: alumnoNombre || 'Alumno',
+      paso: 1,
+      datos: {
+        peso_kg:   datosIniciales?.peso_kg   ?? '',
+        altura_cm: datosIniciales?.altura_cm ?? '',
+        edad:      datosIniciales?.edad      ?? '',
+        sexo:      datosIniciales?.sexo      ?? 'M',
+        grasa_pct: datosIniciales?.grasa_pct ?? ''
+      },
+      contexto: {
+        actividad:     datosIniciales?.actividad     || 'ligero',
+        fase:          datosIniciales?.fase          || 'recomposicion',
+        restricciones: datosIniciales?.restricciones || []
+      },
+      plan: null,
+      observacionesIA: null,
+      cargandoIA: false,
+      errorIA: null,
+      errorValidacion: null,
+      onSave, onCancel
+    };
+  }
+
+  // ============================================================
+  // ENTRYPOINT (lo llamas desde la app)
+  // ============================================================
+  function abrir(opts) {
+    if (!window.VCFitNutri || !window.VCFitNutriEngine) {
+      console.error('[VCFitNutriPlan] Loader o motor no disponibles');
+      alert('Error: BD nutricional no cargada. Recargá la pagina.');
+      return;
+    }
+    initState(opts);
+    render();
+  }
+
+  // ============================================================
+  // RENDER PRINCIPAL (despacha por paso)
+  // ============================================================
+  function render() {
+    if (!state || !state.container) return;
+    const html = `
+      <div class="vcfn-wizard">
+        ${renderHeader()}
+        ${renderProgreso()}
+        ${state.paso === 1 ? vistaPaso1()
+        : state.paso === 2 ? vistaPaso2()
+        : state.paso === 3 ? vistaPaso3()
+        : ''}
+        ${renderEstilos()}
+      </div>
+    `;
+    state.container.innerHTML = html;
+    bindHandlers();
+  }
+
+  function renderHeader() {
+    return `
+      <div class="vcfn-header">
+        <h2>Asignar Plan Nutricional</h2>
+        <div class="vcfn-alumno">${esc(state.alumnoNombre)}</div>
+        <button class="vcfn-cerrar" onclick="VCFitNutriPlan._cancelar()">×</button>
+      </div>`;
+  }
+
+  function renderProgreso() {
+    const pasos = ['Datos', 'Contexto', 'Plan'];
+    return `
+      <div class="vcfn-progreso">
+        ${pasos.map((nombre, i) => `
+          <div class="vcfn-paso ${i+1 === state.paso ? 'activo' : ''} ${i+1 < state.paso ? 'completo' : ''}">
+            <span class="vcfn-paso-num">${i+1}</span>
+            <span class="vcfn-paso-nombre">${nombre}</span>
+          </div>
+        `).join('')}
+      </div>`;
+  }
+
+  // ============================================================
+  // VISTA PASO 1: Datos basicos
+  // ============================================================
+  function vistaPaso1() {
+    const d = state.datos;
+    const err = state.errorValidacion;
+    return `
+      <div class="vcfn-cuerpo">
+        <h3>Datos básicos</h3>
+        <p class="vcfn-help">Si ya hay anamnesis previa, autorrellena. Verificá y ajustá.</p>
+
+        <div class="vcfn-grid-2">
+          <div class="vcfn-campo">
+            <label>Peso (kg)</label>
+            <input type="number" step="0.1" min="30" max="250"
+              value="${d.peso_kg}" id="vcfn-peso">
+          </div>
+          <div class="vcfn-campo">
+            <label>Altura (cm)</label>
+            <input type="number" min="120" max="220"
+              value="${d.altura_cm}" id="vcfn-altura">
+          </div>
+          <div class="vcfn-campo">
+            <label>Edad</label>
+            <input type="number" min="18" max="90"
+              value="${d.edad}" id="vcfn-edad">
+          </div>
+          <div class="vcfn-campo">
+            <label>Sexo</label>
+            <select id="vcfn-sexo">
+              <option value="M" ${d.sexo==='M'?'selected':''}>Masculino</option>
+              <option value="F" ${d.sexo==='F'?'selected':''}>Femenino</option>
+            </select>
+          </div>
+          <div class="vcfn-campo vcfn-full">
+            <label>% Grasa corporal <span class="vcfn-opt">(opcional, si lo medís pasa a fórmula Katch-McArdle)</span></label>
+            <input type="number" step="0.1" min="3" max="60"
+              value="${d.grasa_pct}" id="vcfn-grasa" placeholder="Dejar vacío si no se midió">
+          </div>
+        </div>
+
+        ${err ? `<div class="vcfn-error">${esc(err)}</div>` : ''}
+
+        <div class="vcfn-acciones">
+          <button class="vcfn-btn-sec" onclick="VCFitNutriPlan._cancelar()">Cancelar</button>
+          <button class="vcfn-btn-pri" onclick="VCFitNutriPlan._siguiente()">Siguiente →</button>
+        </div>
+      </div>`;
+  }
+
+  // ============================================================
+  // VISTA PASO 2: Contexto y objetivo
+  // ============================================================
+  function vistaPaso2() {
+    const c = state.contexto;
+    const tags = Object.entries(window.VCFitNutri.tagsCatalogo());
+    return `
+      <div class="vcfn-cuerpo">
+        <h3>Contexto y objetivo</h3>
+        <p class="vcfn-help">Ajustá nivel de actividad, fase del ciclo y restricciones alimentarias.</p>
+
+        <div class="vcfn-campo">
+          <label>Nivel de actividad</label>
+          <select id="vcfn-actividad">
+            <option value="sedentario" ${c.actividad==='sedentario'?'selected':''}>Sedentario (sin entreno)</option>
+            <option value="ligero"     ${c.actividad==='ligero'?'selected':''}>Ligero (1-3 entrenos/sem)</option>
+            <option value="moderado"   ${c.actividad==='moderado'?'selected':''}>Moderado (3-5 entrenos/sem)</option>
+            <option value="activo"     ${c.actividad==='activo'?'selected':''}>Activo (6-7 entrenos/sem)</option>
+            <option value="muy_activo" ${c.actividad==='muy_activo'?'selected':''}>Muy activo (atleta)</option>
+          </select>
+        </div>
+
+        <div class="vcfn-campo">
+          <label>Fase / Objetivo</label>
+          <select id="vcfn-fase">
+            <option value="recomposicion"    ${c.fase==='recomposicion'?'selected':''}>Recomposición (TDEE base)</option>
+            <option value="hipertrofia"      ${c.fase==='hipertrofia'?'selected':''}>Hipertrofia (+10%)</option>
+            <option value="deficit_leve"     ${c.fase==='deficit_leve'?'selected':''}>Déficit leve (-10%)</option>
+            <option value="deficit_moderado" ${c.fase==='deficit_moderado'?'selected':''}>Déficit moderado (-20%)</option>
+          </select>
+        </div>
+
+        <div class="vcfn-campo">
+          <label>Restricciones alimentarias</label>
+          <p class="vcfn-help">Marcá las que apliquen al alumno. La app filtra combos automáticamente.</p>
+          <div class="vcfn-tags">
+            ${tags.map(([id, desc]) => `
+              <label class="vcfn-tag">
+                <input type="checkbox" value="${id}"
+                  ${c.restricciones.includes(id) ? 'checked' : ''}>
+                <span>${esc(desc)}</span>
+              </label>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="vcfn-acciones">
+          <button class="vcfn-btn-sec" onclick="VCFitNutriPlan._anterior()">← Atrás</button>
+          <button class="vcfn-btn-pri" onclick="VCFitNutriPlan._siguiente()">Generar plan →</button>
+        </div>
+      </div>`;
+  }
+
+  // ============================================================
+  // VISTA PASO 3: Plan generado
+  // ============================================================
+  function vistaPaso3() {
+    const p = state.plan;
+    if (!p) return `<div class="vcfn-cuerpo"><div class="vcfn-error">Plan no generado todavía</div></div>`;
+
+    const fmtMacros = m => `${m.kcal} kcal · P${m.prot} / C${m.carbo} / G${m.grasa}`;
+
+    // Sugerencias de combos
+    const tags = state.contexto.restricciones;
+    const combosE = window.VCFitNutriEngine.combosParaJornada('entreno', tags);
+    const combosN = window.VCFitNutriEngine.combosParaJornada('NEAT', tags);
+
+    return `
+      <div class="vcfn-cuerpo">
+        <h3>Plan generado</h3>
+
+        <div class="vcfn-bloque">
+          <div class="vcfn-bloque-titulo">📊 Cálculo metabólico</div>
+          <div class="vcfn-metricas">
+            <div><strong>TMB</strong>: ${p.perfil_calculado.tmb} kcal</div>
+            <div><strong>TDEE</strong>: ${p.perfil_calculado.tdee} kcal</div>
+            <div><strong>Objetivo base</strong>: ${p.perfil_calculado.kcal_base} kcal</div>
+          </div>
+        </div>
+
+        <div class="vcfn-grid-2-igual">
+          <div class="vcfn-bloque vcfn-entreno">
+            <div class="vcfn-bloque-titulo">💪 Día ENTRENO</div>
+            <div class="vcfn-macros-big">${fmtMacros(p.dia_entreno)}</div>
+            <div class="vcfn-help">${combosE.length} combos compatibles</div>
+          </div>
+          <div class="vcfn-bloque vcfn-neat">
+            <div class="vcfn-bloque-titulo">🚶 Día NEAT</div>
+            <div class="vcfn-macros-big">${fmtMacros(p.dia_NEAT)}</div>
+            <div class="vcfn-help">${combosN.length} combos compatibles</div>
+          </div>
+        </div>
+
+        <div class="vcfn-bloque">
+          <div class="vcfn-bloque-titulo">🤖 Observaciones IA <span class="vcfn-opt">(opcional, ~$0,01)</span></div>
+          ${state.observacionesIA
+            ? `<div class="vcfn-observaciones">${esc(state.observacionesIA)}</div>
+               <button class="vcfn-btn-sec vcfn-mini" onclick="VCFitNutriPlan._pedirIA()">Pedir de nuevo</button>`
+            : state.cargandoIA
+              ? `<div class="vcfn-loading">Consultando Claude Haiku...</div>`
+              : state.errorIA
+                ? `<div class="vcfn-error">${esc(state.errorIA)}</div>
+                   <button class="vcfn-btn-sec vcfn-mini" onclick="VCFitNutriPlan._pedirIA()">Reintentar</button>`
+                : `<button class="vcfn-btn-sec" onclick="VCFitNutriPlan._pedirIA()">🤖 Pedir observaciones contextuales</button>
+                   <p class="vcfn-help">Los números del plan NO se modifican. La IA sólo agrega contexto cualitativo.</p>`
+          }
+        </div>
+
+        <div class="vcfn-acciones">
+          <button class="vcfn-btn-sec" onclick="VCFitNutriPlan._anterior()">← Atrás</button>
+          <button class="vcfn-btn-pri" onclick="VCFitNutriPlan._guardar()">💾 Guardar plan</button>
+        </div>
+      </div>`;
+  }
+
+  // ============================================================
+  // BIND HANDLERS (input changes)
+  // ============================================================
+  function bindHandlers() {
+    if (state.paso === 1) {
+      const map = { 'vcfn-peso':'peso_kg', 'vcfn-altura':'altura_cm',
+                    'vcfn-edad':'edad', 'vcfn-sexo':'sexo', 'vcfn-grasa':'grasa_pct' };
+      Object.entries(map).forEach(([id, field]) => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', e => state.datos[field] = e.target.value);
+      });
+    } else if (state.paso === 2) {
+      const act = document.getElementById('vcfn-actividad');
+      const fas = document.getElementById('vcfn-fase');
+      if (act) act.addEventListener('change', e => state.contexto.actividad = e.target.value);
+      if (fas) fas.addEventListener('change', e => state.contexto.fase = e.target.value);
+      document.querySelectorAll('.vcfn-tag input[type=checkbox]').forEach(cb => {
+        cb.addEventListener('change', e => {
+          const v = e.target.value;
+          if (e.target.checked) {
+            if (!state.contexto.restricciones.includes(v)) state.contexto.restricciones.push(v);
+          } else {
+            state.contexto.restricciones = state.contexto.restricciones.filter(t => t !== v);
+          }
+        });
+      });
+    }
+  }
+
+  // ============================================================
+  // VALIDACIONES
+  // ============================================================
+  function validarPaso1() {
+    const d = state.datos;
+    const errores = [];
+    const peso   = parseFloat(d.peso_kg);
+    const altura = parseFloat(d.altura_cm);
+    const edad   = parseInt(d.edad);
+    if (!(peso >= 30 && peso <= 250))     errores.push('Peso fuera de rango (30-250 kg)');
+    if (!(altura >= 120 && altura <= 220)) errores.push('Altura fuera de rango (120-220 cm)');
+    if (!(edad >= 18 && edad <= 90))      errores.push('Edad fuera de rango (18-90)');
+    if (!['M','F'].includes(d.sexo))      errores.push('Sexo inválido');
+    if (d.grasa_pct !== '' && d.grasa_pct != null) {
+      const g = parseFloat(d.grasa_pct);
+      if (!(g >= 3 && g <= 60)) errores.push('% grasa fuera de rango (3-60%)');
+    }
+    return errores;
+  }
+
+  // ============================================================
+  // ACCIONES (publicas via _underscore)
+  // ============================================================
+  function _siguiente() {
+    state.errorValidacion = null;
+    if (state.paso === 1) {
+      const errs = validarPaso1();
+      if (errs.length) {
+        state.errorValidacion = errs.join(' · ');
+        render();
+        return;
+      }
+      state.paso = 2;
+    } else if (state.paso === 2) {
+      _calcularPlan();
+      state.paso = 3;
+    }
+    render();
+  }
+
+  function _anterior() {
+    if (state.paso > 1) state.paso--;
+    state.errorValidacion = null;
+    render();
+  }
+
+  function _cancelar() {
+    if (state.onCancel) state.onCancel();
+    if (state.container) state.container.innerHTML = '';
+    state = null;
+  }
+
+  function _calcularPlan() {
+    const d = state.datos, c = state.contexto;
+    const perfil = {
+      peso_kg:   parseFloat(d.peso_kg),
+      altura_cm: parseFloat(d.altura_cm),
+      edad:      parseInt(d.edad),
+      sexo:      d.sexo,
+      grasa_pct: d.grasa_pct === '' || d.grasa_pct == null ? null : parseFloat(d.grasa_pct),
+      actividad: c.actividad,
+      fase:      c.fase
+    };
+    state.plan = window.VCFitNutriEngine.generarPlan(perfil);
+    state.observacionesIA = null;
+    state.errorIA = null;
+  }
+
+  // ============================================================
+  // INTEGRACION HAIKU (con doble validacion)
+  // ============================================================
+  async function _pedirIA() {
+    const apiKey = getApiKey();
+    if (!apiKey) {
+      state.errorIA = 'No hay API key de Anthropic configurada en localStorage (clave: anthropic_api_key).';
+      render();
+      return;
+    }
+    state.cargandoIA = true;
+    state.errorIA = null;
+    render();
+
+    try {
+      const prompt = construirPromptIA();
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 500,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+      if (!res.ok) {
+        const errTxt = await res.text();
+        throw new Error(`HTTP ${res.status}: ${errTxt.substring(0, 200)}`);
+      }
+      const data = await res.json();
+      const texto = data.content?.[0]?.text || '';
+      // DOBLE VALIDACION: si la IA mencionó números de macros, los descartamos
+      // y dejamos solo texto libre. El plan numérico ya está calculado por el motor.
+      const textoLimpio = sanitizarObservaciones(texto);
+      state.observacionesIA = textoLimpio;
+    } catch (err) {
+      state.errorIA = `Error consultando Haiku: ${err.message}`;
+      console.error('[VCFitNutriPlan] Haiku error:', err);
+    } finally {
+      state.cargandoIA = false;
+      render();
+    }
+  }
+
+  function construirPromptIA() {
+    const d = state.datos, c = state.contexto, p = state.plan;
+    return `Sos nutricionista deportivo experto, asesorando a un coach VC Fit (especialista en adultos +40, recomposición corporal).
+
+Te paso un plan ya CALCULADO matemáticamente por nuestro motor determinístico. Tu tarea es SOLO agregar observaciones cualitativas y consejos contextuales, en máximo 150 palabras. NO modifiques los números (kcal, macros) ni propongas otros: ya están definidos.
+
+DATOS DEL ALUMNO:
+- ${d.sexo === 'M' ? 'Hombre' : 'Mujer'}, ${d.edad} años, ${d.peso_kg} kg, ${d.altura_cm} cm${d.grasa_pct ? `, ${d.grasa_pct}% grasa` : ''}
+- Actividad: ${c.actividad}
+- Fase: ${c.fase}
+- Restricciones: ${c.restricciones.length ? c.restricciones.join(', ') : 'ninguna'}
+
+PLAN CALCULADO:
+- TMB: ${p.perfil_calculado.tmb} kcal · TDEE: ${p.perfil_calculado.tdee} kcal · Base: ${p.perfil_calculado.kcal_base} kcal
+- Día ENTRENO: ${p.dia_entreno.kcal} kcal | P${p.dia_entreno.prot} / C${p.dia_entreno.carbo} / G${p.dia_entreno.grasa}
+- Día NEAT: ${p.dia_NEAT.kcal} kcal | P${p.dia_NEAT.prot} / C${p.dia_NEAT.carbo} / G${p.dia_NEAT.grasa}
+
+Devolveme observaciones prácticas para el coach: timing de comidas, ajustes según perfil endo/meso/ecto, consejos de adherencia, banderas a vigilar. Texto plano, sin listas largas, sin Markdown.`;
+  }
+
+  function sanitizarObservaciones(texto) {
+    // Sacamos saltos de linea triples, limites de tokens raros
+    return texto.trim().replace(/\n{3,}/g, '\n\n').substring(0, 1500);
+  }
+
+  // ============================================================
+  // GUARDAR PLAN (callback al integrador)
+  // ============================================================
+  async function _guardar() {
+    if (!state.plan) {
+      alert('Primero generá el plan');
+      return;
+    }
+    const planParaGuardar = {
+      version: '1.0',
+      generado: new Date().toISOString(),
+      perfil: { ...state.datos, ...state.contexto },
+      perfil_calculado: state.plan.perfil_calculado,
+      dia_entreno: state.plan.dia_entreno,
+      dia_NEAT: state.plan.dia_NEAT,
+      observaciones_ia: state.observacionesIA || null
+    };
+    if (state.onSave) {
+      try {
+        await state.onSave(state.alumnoId, planParaGuardar);
+        alert('Plan guardado ✓');
+        _cancelar();
+      } catch (err) {
+        alert('Error guardando: ' + err.message);
+        console.error('[VCFitNutriPlan] guardar error:', err);
+      }
+    } else {
+      console.warn('[VCFitNutriPlan] onSave no provisto, plan en consola:', planParaGuardar);
+      alert('Plan listo (ver consola). No hay handler de guardado.');
+    }
+  }
+
+  // ============================================================
+  // HELPERS
+  // ============================================================
+  function esc(s) {
+    if (s == null) return '';
+    return String(s).replace(/[&<>"']/g, c =>
+      ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+
+  function getApiKey() {
+    return localStorage.getItem('anthropic_api_key') ||
+           localStorage.getItem('vcfit_api_key') || null;
+  }
+
+  // ============================================================
+  // ESTILOS (inline para single-file PWA)
+  // ============================================================
+  function renderEstilos() {
+    return `
+      <style>
+        .vcfn-wizard { font-family: 'DM Sans', sans-serif; max-width: 720px; margin: 0 auto;
+                       background: #fff; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,.12);
+                       overflow: hidden; }
+        .vcfn-header { background: #1a2332; color: #fff; padding: 20px 24px; display: flex;
+                       align-items: center; gap: 16px; position: relative; }
+        .vcfn-header h2 { margin: 0; font-family: 'Bebas Neue', sans-serif; font-size: 26px;
+                          letter-spacing: 1px; flex: 1; }
+        .vcfn-alumno { background: rgba(255,255,255,.15); padding: 4px 12px; border-radius: 16px;
+                       font-size: 13px; }
+        .vcfn-cerrar { position: absolute; top: 12px; right: 16px; background: transparent;
+                       color: #fff; border: none; font-size: 28px; cursor: pointer; line-height: 1; }
+        .vcfn-progreso { display: flex; padding: 16px 24px; gap: 12px; background: #f5f7fa;
+                         border-bottom: 1px solid #e2e8f0; }
+        .vcfn-paso { flex: 1; display: flex; align-items: center; gap: 8px; opacity: .5; }
+        .vcfn-paso.activo { opacity: 1; }
+        .vcfn-paso.completo { opacity: .9; color: #FF6B00; }
+        .vcfn-paso-num { width: 28px; height: 28px; border-radius: 50%; background: #cbd5e0;
+                         color: #fff; display: flex; align-items: center; justify-content: center;
+                         font-weight: 700; font-size: 14px; }
+        .vcfn-paso.activo .vcfn-paso-num { background: #FF6B00; }
+        .vcfn-paso.completo .vcfn-paso-num { background: #FF6B00; }
+        .vcfn-paso-nombre { font-family: 'Rajdhani', sans-serif; font-weight: 600;
+                            text-transform: uppercase; font-size: 13px; }
+        .vcfn-cuerpo { padding: 24px; }
+        .vcfn-cuerpo h3 { margin: 0 0 8px; font-family: 'Bebas Neue', sans-serif;
+                          font-size: 22px; color: #1a2332; letter-spacing: .5px; }
+        .vcfn-help { color: #64748b; font-size: 13px; margin: 4px 0 16px; }
+        .vcfn-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .vcfn-grid-2-igual { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 16px 0; }
+        .vcfn-full { grid-column: 1 / -1; }
+        .vcfn-campo { margin-bottom: 14px; }
+        .vcfn-campo label { display: block; font-size: 13px; font-weight: 600;
+                            color: #334155; margin-bottom: 4px; }
+        .vcfn-opt { color: #94a3b8; font-weight: 400; font-size: 11px; }
+        .vcfn-campo input, .vcfn-campo select { width: 100%; padding: 9px 12px;
+                                                  border: 1px solid #cbd5e0; border-radius: 6px;
+                                                  font-size: 14px; font-family: inherit; }
+        .vcfn-campo input:focus, .vcfn-campo select:focus { outline: none; border-color: #FF6B00; }
+        .vcfn-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+        .vcfn-tag { display: flex; align-items: center; gap: 6px; padding: 6px 12px;
+                    border: 1px solid #cbd5e0; border-radius: 16px; cursor: pointer;
+                    font-size: 13px; background: #fff; }
+        .vcfn-tag:has(input:checked) { background: #FFF4ED; border-color: #FF6B00; color: #FF6B00; }
+        .vcfn-tag input { margin: 0; }
+        .vcfn-error { background: #FEE2E2; border-left: 3px solid #DC2626; color: #991B1B;
+                      padding: 10px 12px; border-radius: 4px; font-size: 13px; margin: 12px 0; }
+        .vcfn-acciones { display: flex; justify-content: space-between; gap: 12px;
+                         margin-top: 24px; padding-top: 16px; border-top: 1px solid #e2e8f0; }
+        .vcfn-btn-pri, .vcfn-btn-sec { padding: 10px 20px; border-radius: 6px; font-size: 14px;
+                                        font-weight: 600; cursor: pointer; border: none;
+                                        font-family: inherit; }
+        .vcfn-btn-pri { background: #FF6B00; color: #fff; }
+        .vcfn-btn-pri:hover { background: #E55A00; }
+        .vcfn-btn-sec { background: #f1f5f9; color: #334155; }
+        .vcfn-btn-sec:hover { background: #e2e8f0; }
+        .vcfn-mini { padding: 6px 12px; font-size: 12px; margin-top: 8px; }
+        .vcfn-bloque { background: #f8fafc; padding: 16px; border-radius: 8px; margin: 14px 0; }
+        .vcfn-bloque-titulo { font-family: 'Rajdhani', sans-serif; font-weight: 700;
+                              text-transform: uppercase; font-size: 13px; letter-spacing: 1px;
+                              color: #475569; margin-bottom: 8px; }
+        .vcfn-metricas { display: flex; gap: 24px; flex-wrap: wrap; font-size: 14px; }
+        .vcfn-entreno { background: #FFF4ED; border-left: 3px solid #FF6B00; }
+        .vcfn-neat { background: #EFF6FF; border-left: 3px solid #3B82F6; }
+        .vcfn-macros-big { font-family: 'Bebas Neue', sans-serif; font-size: 20px;
+                            letter-spacing: .5px; color: #1a2332; }
+        .vcfn-observaciones { background: #fff; padding: 12px; border-radius: 6px;
+                               font-size: 14px; line-height: 1.5; white-space: pre-wrap;
+                               border: 1px solid #e2e8f0; }
+        .vcfn-loading { color: #64748b; font-style: italic; padding: 8px 0; }
+      </style>`;
+  }
+
+  // ============================================================
+  // API PUBLICA
+  // ============================================================
+  return {
+    abrir,
+    // Handlers expuestos para onclick (sintaxis VC Fit Studio)
+    _siguiente, _anterior, _cancelar, _pedirIA, _guardar
+  };
+})();
+
+// ============================================================
+// VC FIT NUTRICION - Pantalla "Mi Día" (rol alumno) v1
+// Subbloque 4.4
+// Depende de: VCFitNutri (loader 4.1) + VCFitNutriEngine (motor 4.2)
+// ============================================================
+window.VCFitMiDia = (function() {
+
+  // ============================================================
+  // STATE
+  // ============================================================
+  let state = null;
+
+  function fechaHoy() {
+    return new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  }
+
+  function lsKey(alumnoId) {
+    return 'vcfit_jornada_' + alumnoId + '_' + fechaHoy();
+  }
+
+  function initState({ container, alumnoId, alumnoNombre, planNutri }) {
+    const savedTipo = localStorage.getItem(lsKey(alumnoId));
+    state = {
+      container,
+      alumnoId,
+      alumnoNombre: alumnoNombre || 'Alumno',
+      planNutri,
+      tipoJornada: savedTipo || 'entreno'
+    };
+  }
+
+  // ============================================================
+  // ENTRYPOINT
+  // ============================================================
+  function abrir(opts) {
+    if (!window.VCFitNutri || !window.VCFitNutriEngine) {
+      console.error('[VCFitMiDia] Loader o motor no disponibles');
+      return;
+    }
+    initState(opts);
+    render();
+  }
+
+  // ============================================================
+  // RENDER PRINCIPAL
+  // ============================================================
+  function render() {
+    if (!state || !state.container) return;
+    state.container.innerHTML =
+      '<div class="vcmd-wrap">' +
+        (state.planNutri ? vistaConPlan() : vistaSinPlan()) +
+        renderEstilos() +
+      '</div>';
+  }
+
+  // ============================================================
+  // SIN PLAN
+  // ============================================================
+  function vistaSinPlan() {
+    return '<div class="vcmd-empty">' +
+      '<div class="vcmd-empty-icon">🥗</div>' +
+      '<h3>Sin plan nutricional</h3>' +
+      '<p>Tu coach todavía no te asignó un plan nutricional.<br>Consultale en tu próxima sesión.</p>' +
+    '</div>';
+  }
+
+  // ============================================================
+  // VISTA PRINCIPAL (con plan)
+  // ============================================================
+  function vistaConPlan() {
+    const tipo = state.tipoJornada;
+    const p    = state.planNutri;
+    const macros = tipo === 'entreno' ? p.dia_entreno : p.dia_NEAT;
+    const restricciones = (p.perfil && p.perfil.restricciones) ? p.perfil.restricciones : [];
+    const combos = window.VCFitNutriEngine.combosParaJornada(tipo, restricciones);
+    const porMomento = agruparPorMomento(combos);
+    const ORDEN_MOMENTOS = ['desayuno','pre_entreno','almuerzo','merienda','post_entreno','cena','snack'];
+
+    const fecha = new Date().toLocaleDateString('es-AR', {
+      weekday: 'long', day: 'numeric', month: 'long'
+    });
+
+    return renderHeader(fecha) +
+           renderToggle(tipo) +
+           renderMacros(macros, tipo) +
+           renderCombosSeccion(porMomento, ORDEN_MOMENTOS, combos.length);
+  }
+
+  function renderHeader(fecha) {
+    const nombre = state.alumnoNombre.split(' ')[0];
+    return '<div class="vcmd-header">' +
+      '<div class="vcmd-fecha">' + esc(fecha) + '</div>' +
+      '<div class="vcmd-saludo">Hola, ' + esc(nombre) + ' 👋</div>' +
+    '</div>';
+  }
+
+  function renderToggle(tipo) {
+    return '<div class="vcmd-toggle-wrap">' +
+      '<button class="vcmd-toggle' + (tipo === 'entreno' ? ' activo' : '') + '" ' +
+        'onclick="VCFitMiDia._setTipo(\'entreno\')">💪 Día Entreno</button>' +
+      '<button class="vcmd-toggle' + (tipo === 'NEAT' ? ' activo' : '') + '" ' +
+        'onclick="VCFitMiDia._setTipo(\'NEAT\')">🚶 Día Descanso</button>' +
+    '</div>';
+  }
+
+  function renderMacros(macros, tipo) {
+    const etiqueta = tipo === 'entreno'
+      ? '💪 Objetivo día entreno'
+      : '🚶 Objetivo día descanso';
+    return '<div class="vcmd-macros-bloque">' +
+      '<div class="vcmd-macros-titulo">' + etiqueta + '</div>' +
+      '<div class="vcmd-macros-grid">' +
+        macroCel(macros.kcal,  'kcal',    false) +
+        macroCel(macros.prot  + 'g', 'proteína', true) +
+        macroCel(macros.carbo + 'g', 'carbs',    false) +
+        macroCel(macros.grasa + 'g', 'grasas',   false) +
+      '</div>' +
+    '</div>';
+  }
+
+  function macroCel(val, label, destacado) {
+    return '<div class="vcmd-macro' + (destacado ? ' vcmd-prot' : '') + '">' +
+      '<span class="vcmd-macro-val">' + val + '</span>' +
+      '<span class="vcmd-macro-lab">' + label + '</span>' +
+    '</div>';
+  }
+
+  function renderCombosSeccion(porMomento, orden, totalCombos) {
+    const LABELS = {
+      desayuno:     '🌅 Desayuno',
+      pre_entreno:  '⚡ Pre-entreno',
+      almuerzo:     '☀️ Almuerzo',
+      merienda:     '🍎 Merienda',
+      post_entreno: '🔄 Post-entreno',
+      cena:         '🌙 Cena',
+      snack:        '🥜 Snack'
+    };
+
+    const momentosPresentes = orden.filter(m => porMomento[m] && porMomento[m].length);
+
+    if (!totalCombos) {
+      return '<div class="vcmd-sin-combos">No hay combos disponibles para este día con tus restricciones actuales.</div>';
+    }
+
+    return '<div class="vcmd-combos-seccion">' +
+      '<div class="vcmd-seccion-titulo">Opciones de comidas</div>' +
+      momentosPresentes.map(m =>
+        '<div class="vcmd-momento">' +
+          '<div class="vcmd-momento-titulo">' + (LABELS[m] || m) + '</div>' +
+          '<div class="vcmd-combos-lista">' +
+            porMomento[m].map(renderCombo).join('') +
+          '</div>' +
+        '</div>'
+      ).join('') +
+    '</div>';
+  }
+
+  function renderCombo(c) {
+    const m = c.macros_total;
+    return '<div class="vcmd-combo">' +
+      '<div class="vcmd-combo-nombre">' + esc(c.nombre) + '</div>' +
+      '<div class="vcmd-combo-macros">' +
+        '<span class="vcmd-kcal">' + m.kcal + ' kcal</span>' +
+        '<span>P ' + m.prot + 'g</span>' +
+        '<span>C ' + m.carbo + 'g</span>' +
+        '<span>G ' + m.grasa + 'g</span>' +
+        '<span class="vcmd-tiempo">⏱ ' + c.tiempo_min + ' min</span>' +
+      '</div>' +
+      (c.nota_vc ? '<div class="vcmd-nota">💡 ' + esc(c.nota_vc) + '</div>' : '') +
+    '</div>';
+  }
+
+  // ============================================================
+  // HELPERS
+  // ============================================================
+  function agruparPorMomento(combos) {
+    return combos.reduce(function(acc, c) {
+      if (!acc[c.momento]) acc[c.momento] = [];
+      acc[c.momento].push(c);
+      return acc;
+    }, {});
+  }
+
+  function esc(s) {
+    if (s == null) return '';
+    return String(s).replace(/[&<>"']/g, function(c) {
+      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
+    });
+  }
+
+  // ============================================================
+  // ACCION: cambiar tipo de jornada
+  // ============================================================
+  function _setTipo(tipo) {
+    if (tipo !== 'entreno' && tipo !== 'NEAT') return;
+    state.tipoJornada = tipo;
+    localStorage.setItem(lsKey(state.alumnoId), tipo);
+    render();
+  }
+
+  // ============================================================
+  // ESTILOS (inline, single-file PWA)
+  // ============================================================
+  function renderEstilos() {
+    return '<style>' +
+      '.vcmd-wrap{font-family:"DM Sans",sans-serif;max-width:600px;margin:0 auto;padding:20px 16px;}' +
+
+      /* Sin plan */
+      '.vcmd-empty{text-align:center;padding:60px 20px;color:#64748b;}' +
+      '.vcmd-empty-icon{font-size:48px;margin-bottom:16px;}' +
+      '.vcmd-empty h3{margin:0 0 8px;color:#1a2332;font-family:"Bebas Neue",sans-serif;font-size:26px;letter-spacing:.5px;}' +
+      '.vcmd-empty p{font-size:14px;line-height:1.6;}' +
+
+      /* Header */
+      '.vcmd-header{margin-bottom:20px;}' +
+      '.vcmd-fecha{font-size:13px;color:#64748b;text-transform:capitalize;margin-bottom:4px;}' +
+      '.vcmd-saludo{font-family:"Bebas Neue",sans-serif;font-size:30px;color:#1a2332;letter-spacing:.5px;}' +
+
+      /* Toggle */
+      '.vcmd-toggle-wrap{display:flex;gap:10px;margin-bottom:20px;}' +
+      '.vcmd-toggle{flex:1;padding:13px 10px;border:2px solid #e2e8f0;border-radius:10px;' +
+        'background:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;' +
+        'color:#64748b;transition:border-color .15s,background .15s,color .15s;}' +
+      '.vcmd-toggle.activo{border-color:#FF6B00;background:#FFF4ED;color:#FF6B00;}' +
+      '.vcmd-toggle:hover:not(.activo){border-color:#cbd5e0;background:#f8fafc;}' +
+
+      /* Macros bloque */
+      '.vcmd-macros-bloque{background:#1a2332;border-radius:12px;padding:18px 20px;margin-bottom:24px;}' +
+      '.vcmd-macros-titulo{font-family:"Rajdhani",sans-serif;font-size:12px;text-transform:uppercase;' +
+        'letter-spacing:1.5px;color:rgba(255,255,255,.5);margin-bottom:14px;}' +
+      '.vcmd-macros-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;}' +
+      '.vcmd-macro{text-align:center;}' +
+      '.vcmd-macro-val{display:block;font-family:"Bebas Neue",sans-serif;font-size:28px;' +
+        'color:#fff;letter-spacing:.5px;line-height:1.1;}' +
+      '.vcmd-macro.vcmd-prot .vcmd-macro-val{color:#FF6B00;}' +
+      '.vcmd-macro-lab{font-size:10px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.5px;}' +
+
+      /* Combos */
+      '.vcmd-combos-seccion{margin-top:4px;}' +
+      '.vcmd-seccion-titulo{font-family:"Bebas Neue",sans-serif;font-size:20px;' +
+        'color:#1a2332;letter-spacing:.5px;margin-bottom:14px;}' +
+      '.vcmd-momento{margin-bottom:20px;}' +
+      '.vcmd-momento-titulo{font-family:"Rajdhani",sans-serif;font-weight:700;font-size:12px;' +
+        'text-transform:uppercase;letter-spacing:1px;color:#94a3b8;' +
+        'margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f1f5f9;}' +
+      '.vcmd-combos-lista{display:flex;flex-direction:column;gap:8px;}' +
+      '.vcmd-combo{background:#f8fafc;border-radius:8px;padding:12px 14px;' +
+        'border-left:3px solid #e2e8f0;}' +
+      '.vcmd-combo-nombre{font-weight:600;font-size:14px;color:#1a2332;margin-bottom:5px;}' +
+      '.vcmd-combo-macros{display:flex;gap:10px;font-size:12px;color:#64748b;flex-wrap:wrap;align-items:center;}' +
+      '.vcmd-kcal{color:#FF6B00;font-weight:700;}' +
+      '.vcmd-tiempo{margin-left:auto;color:#94a3b8;}' +
+      '.vcmd-nota{font-size:12px;color:#94a3b8;margin-top:6px;font-style:italic;}' +
+      '.vcmd-sin-combos{color:#64748b;font-size:14px;text-align:center;padding:32px 20px;' +
+        'background:#f8fafc;border-radius:8px;}' +
+    '</style>';
+  }
+
+  // ============================================================
+  // API PUBLICA
+  // ============================================================
+  return {
+    abrir,
+    _setTipo
+  };
+
+})();
+
+// ============================================================
+// VC FIT NUTRICION - Modal "Cambiar Equivalente" (rol alumno) v1
+// Subbloque 4.5
+// Depende de: VCFitNutri (loader 4.1) + VCFitNutriEngine (motor 4.2)
+// ============================================================
+window.VCFitCambiarEquiv = (function() {
+
+  let state = null;
+
+  // ============================================================
+  // ENTRYPOINT
+  // ============================================================
+  // opts: {
+  //   comboId:     string,        <- combo a reemplazar
+  //   tagsAlumno:  string[],      <- restricciones del alumno
+  //   container:   HTMLElement,   <- donde montar el modal
+  //   onSelect:    fn(comboNuevo) <- callback al elegir
+  //   onCancel:    fn()           <- callback al cerrar sin elegir
+  // }
+  function abrir(opts) {
+    if (!window.VCFitNutri || !window.VCFitNutriEngine) {
+      console.error('[VCFitCambiarEquiv] Loader o motor no disponibles');
+      return;
+    }
+    const original = VCFitNutri.getCombo(opts.comboId);
+    if (!original) {
+      console.error('[VCFitCambiarEquiv] Combo no encontrado:', opts.comboId);
+      return;
+    }
+    const alternativas = VCFitNutriEngine.buscarEquivalentes(opts.comboId, {
+      tagsAlumno: opts.tagsAlumno || [],
+      topN: 3
+    });
+
+    state = {
+      container: opts.container,
+      original,
+      alternativas,
+      onSelect: opts.onSelect || function() {},
+      onCancel: opts.onCancel || function() {}
+    };
+
+    render();
+  }
+
+  // ============================================================
+  // RENDER
+  // ============================================================
+  function render() {
+    if (!state || !state.container) return;
+    state.container.innerHTML =
+      '<div class="vceq-overlay" onclick="VCFitCambiarEquiv._cancelar()">' +
+        '<div class="vceq-modal" onclick="event.stopPropagation()">' +
+          renderModal() +
+        '</div>' +
+      '</div>' +
+      renderEstilos();
+  }
+
+  function renderModal() {
+    return renderCabezal() +
+           renderOriginal() +
+           renderAlternativas();
+  }
+
+  function renderCabezal() {
+    return '<div class="vceq-cabezal">' +
+      '<div class="vceq-titulo">Cambiar comida</div>' +
+      '<button class="vceq-cerrar" onclick="VCFitCambiarEquiv._cancelar()">✕</button>' +
+    '</div>' +
+    '<div class="vceq-subtitulo">Opciones similares para el mismo momento</div>';
+  }
+
+  function renderOriginal() {
+    const c = state.original;
+    const m = c.macros_total;
+    return '<div class="vceq-original-bloque">' +
+      '<div class="vceq-etiqueta-chip">Opción actual</div>' +
+      '<div class="vceq-combo-nombre">' + esc(c.nombre) + '</div>' +
+      '<div class="vceq-macros-row">' +
+        '<span class="vceq-kcal">' + m.kcal + ' kcal</span>' +
+        '<span>P <b>' + m.prot + 'g</b></span>' +
+        '<span>C ' + m.carbo + 'g</span>' +
+        '<span>G ' + m.grasa + 'g</span>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderAlternativas() {
+    if (!state.alternativas || !state.alternativas.length) {
+      return '<div class="vceq-sin-alt">' +
+        '😕 No encontramos alternativas compatibles con tus restricciones para este combo.' +
+      '</div>';
+    }
+    return '<div class="vceq-alt-lista">' +
+      '<div class="vceq-etiqueta-chip vceq-alt-chip">Alternativas</div>' +
+      state.alternativas.map(function(item, i) {
+        return renderAlternativa(item.combo, item.score, i);
+      }).join('') +
+    '</div>';
+  }
+
+  function renderAlternativa(c, score, idx) {
+    const m  = c.macros_total;
+    const mo = state.original.macros_total;
+
+    const dKcal = m.kcal  - mo.kcal;
+    const dProt = m.prot  - mo.prot;
+    const dCarb = m.carbo - mo.carbo;
+    const dGras = m.grasa - mo.grasa;
+
+    const badge = idx === 0 ? '<span class="vceq-badge">Mejor match</span>' : '';
+
+    return '<div class="vceq-alt' + (idx === 0 ? ' vceq-alt-top' : '') + '">' +
+      '<div class="vceq-alt-header">' +
+        '<div class="vceq-combo-nombre">' + esc(c.nombre) + badge + '</div>' +
+        '<div class="vceq-alt-tiempo">⏱ ' + c.tiempo_min + ' min</div>' +
+      '</div>' +
+      '<div class="vceq-macros-row">' +
+        '<span class="vceq-kcal">' + m.kcal + ' kcal</span>' +
+        '<span>P <b>' + m.prot + 'g</b></span>' +
+        '<span>C ' + m.carbo + 'g</span>' +
+        '<span>G ' + m.grasa + 'g</span>' +
+      '</div>' +
+      '<div class="vceq-diff-row">' +
+        renderDiff(dKcal, 'kcal') +
+        renderDiff(dProt, 'g prot') +
+        renderDiff(dCarb, 'g carb') +
+        renderDiff(dGras, 'g gras') +
+      '</div>' +
+      (c.nota_vc ? '<div class="vceq-nota">💡 ' + esc(c.nota_vc) + '</div>' : '') +
+      '<button class="vceq-btn-elegir" onclick="VCFitCambiarEquiv._elegir(' + idx + ')">' +
+        'Usar esta opción' +
+      '</button>' +
+    '</div>';
+  }
+
+  function renderDiff(val, unit) {
+    if (val === 0) return '';
+    const signo  = val > 0 ? '+' : '';
+    const cls    = val > 0 ? 'vceq-mas' : 'vceq-menos';
+    return '<span class="vceq-diff ' + cls + '">' + signo + Math.round(val * 10) / 10 + ' ' + unit + '</span>';
+  }
+
+  // ============================================================
+  // ACCIONES
+  // ============================================================
+  function _elegir(idx) {
+    if (!state) return;
+    const item = state.alternativas[idx];
+    if (!item) return;
+    state.onSelect(item.combo);
+    _cerrar();
+  }
+
+  function _cancelar() {
+    if (!state) return;
+    state.onCancel();
+    _cerrar();
+  }
+
+  function _cerrar() {
+    if (state && state.container) {
+      state.container.innerHTML = '';
+    }
+    state = null;
+  }
+
+  // ============================================================
+  // HELPERS
+  // ============================================================
+  function esc(s) {
+    if (s == null) return '';
+    return String(s).replace(/[&<>"']/g, function(c) {
+      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
+    });
+  }
+
+  // ============================================================
+  // ESTILOS
+  // ============================================================
+  function renderEstilos() {
+    return '<style>' +
+      /* Overlay */
+      '.vceq-overlay{position:fixed;top:0;left:0;width:100%;height:100%;' +
+        'background:rgba(0,0,0,.55);z-index:10000;display:flex;' +
+        'align-items:flex-end;justify-content:center;}' +
+
+      /* Modal (bottom sheet en mobile) */
+      '.vceq-modal{background:#fff;width:100%;max-width:520px;border-radius:20px 20px 0 0;' +
+        'padding:24px 20px 32px;max-height:90vh;overflow-y:auto;' +
+        'box-shadow:0 -4px 24px rgba(0,0,0,.18);}' +
+
+      /* Cabezal */
+      '.vceq-cabezal{display:flex;align-items:center;justify-content:space-between;' +
+        'margin-bottom:4px;}' +
+      '.vceq-titulo{font-family:"Bebas Neue",sans-serif;font-size:26px;' +
+        'color:#1a2332;letter-spacing:.5px;}' +
+      '.vceq-cerrar{background:none;border:none;font-size:18px;color:#94a3b8;' +
+        'cursor:pointer;padding:4px 8px;border-radius:6px;}' +
+      '.vceq-cerrar:hover{background:#f1f5f9;color:#1a2332;}' +
+      '.vceq-subtitulo{font-size:13px;color:#64748b;margin-bottom:20px;}' +
+
+      /* Chips de etiqueta */
+      '.vceq-etiqueta-chip{display:inline-block;font-size:10px;font-weight:700;' +
+        'text-transform:uppercase;letter-spacing:1px;color:#94a3b8;' +
+        'margin-bottom:8px;}' +
+      '.vceq-alt-chip{color:#FF6B00;}' +
+
+      /* Bloque original */
+      '.vceq-original-bloque{background:#f8fafc;border-radius:10px;padding:14px;' +
+        'margin-bottom:20px;border-left:3px solid #e2e8f0;}' +
+      '.vceq-combo-nombre{font-weight:700;font-size:15px;color:#1a2332;' +
+        'margin-bottom:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}' +
+
+      /* Macros row */
+      '.vceq-macros-row{display:flex;gap:10px;font-size:13px;color:#64748b;' +
+        'flex-wrap:wrap;align-items:center;}' +
+      '.vceq-kcal{color:#FF6B00;font-weight:700;}' +
+
+      /* Lista alternativas */
+      '.vceq-alt-lista{display:flex;flex-direction:column;gap:12px;}' +
+      '.vceq-sin-alt{color:#64748b;font-size:14px;text-align:center;' +
+        'padding:32px 20px;background:#f8fafc;border-radius:10px;}' +
+
+      /* Alternativa */
+      '.vceq-alt{background:#f8fafc;border-radius:10px;padding:14px;' +
+        'border:2px solid #e2e8f0;transition:border-color .15s;}' +
+      '.vceq-alt-top{border-color:#FF6B00;background:#FFF9F5;}' +
+      '.vceq-alt-header{display:flex;align-items:flex-start;' +
+        'justify-content:space-between;gap:8px;margin-bottom:6px;}' +
+      '.vceq-alt-tiempo{font-size:12px;color:#94a3b8;white-space:nowrap;}' +
+
+      /* Badge */
+      '.vceq-badge{font-size:10px;font-weight:700;text-transform:uppercase;' +
+        'letter-spacing:.5px;background:#FF6B00;color:#fff;' +
+        'padding:2px 7px;border-radius:20px;}' +
+
+      /* Diffs */
+      '.vceq-diff-row{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 10px;}' +
+      '.vceq-diff{font-size:11px;font-weight:600;padding:2px 6px;' +
+        'border-radius:4px;}' +
+      '.vceq-mas{color:#dc2626;background:#fef2f2;}' +
+      '.vceq-menos{color:#16a34a;background:#f0fdf4;}' +
+
+      /* Nota */
+      '.vceq-nota{font-size:12px;color:#94a3b8;font-style:italic;margin-bottom:10px;}' +
+
+      /* Botón elegir */
+      '.vceq-btn-elegir{width:100%;padding:11px;border:none;border-radius:8px;' +
+        'background:#1a2332;color:#fff;font-size:14px;font-weight:600;' +
+        'cursor:pointer;font-family:inherit;transition:background .15s;}' +
+      '.vceq-btn-elegir:hover{background:#FF6B00;}' +
+    '</style>';
+  }
+
+  // ============================================================
+  // API PUBLICA
+  // ============================================================
+  return {
+    abrir,
+    _elegir,
+    _cancelar
+  };
+
+})();
+
+// ============================================================
+// VC FIT NUTRICION - Pantalla "Adherencia" (rol coach) v1
+// Subbloque 4.6
+// Depende de: VCFitNutriEngine (motor 4.2)
+// ============================================================
+window.VCFitAdherencia = (function() {
+
+  var state = null;
+
+  function abrir(opts) {
+    if (!window.VCFitNutriEngine) {
+      console.error('[VCFitAdherencia] Motor no disponible'); return;
+    }
+    state = {
+      container:    opts.container,
+      alumnoId:     opts.alumnoId,
+      alumnoNombre: opts.alumnoNombre || 'Alumno',
+      semanas:      opts.semanas || 4,
+      diasLog:      opts.diasLog || []
+    };
+    render();
+  }
+
+  function render() {
+    if (!state || !state.container) return;
+    var hoy     = new Date();
+    var semanas = construirSemanas(state.diasLog, state.semanas, hoy);
+    var todos   = semanas.reduce(function(acc,s){ return acc.concat(s.dias); }, []);
+    var res     = VCFitNutriEngine.calcAdherenceMatriz(todos);
+    state.container.innerHTML =
+      '<div class="vcad-wrap">' +
+        renderEstilos() +
+        renderHeader() +
+        renderMatriz(res) +
+        renderScore(res.score_global_pct) +
+        renderGrilla(semanas) +
+        renderLeyenda() +
+      '</div>';
+  }
+
+  // ---- Construir semanas ----
+  function construirSemanas(log, n, hoy) {
+    var idx = {};
+    log.forEach(function(d){ idx[d.fecha] = d; });
+    var semanas = [];
+    var lunes = new Date(hoy);
+    lunes.setDate(hoy.getDate() - ((hoy.getDay() + 6) % 7));
+    lunes.setHours(0,0,0,0);
+    for (var s = n-1; s >= 0; s--) {
+      var ini = new Date(lunes);
+      ini.setDate(lunes.getDate() - s*7);
+      var dias = [];
+      for (var d = 0; d < 7; d++) {
+        var dia = new Date(ini);
+        dia.setDate(ini.getDate() + d);
+        var fecha = dia.toISOString().slice(0,10);
+        var fut = dia > hoy;
+        var entry = idx[fecha] || null;
+        dias.push({
+          fecha: fecha,
+          esFuturo:  fut,
+          nutri_ok:  entry ? entry.nutri_ok  : false,
+          entreno_ok:entry ? entry.entreno_ok: false,
+          sinDato:   !entry || fut
+        });
+      }
+      semanas.push({ inicio: ini, dias: dias });
+    }
+    return semanas;
+  }
+
+  // ---- Header ----
+  function renderHeader() {
+    var nombre = state.alumnoNombre.split(' ')[0];
+    return '<div class="vcad-header">' +
+      '<div class="vcad-titulo">Adherencia</div>' +
+      '<div class="vcad-sub">' + esc(nombre) + ' — últimas ' + state.semanas + ' semanas</div>' +
+    '</div>';
+  }
+
+  // ---- Matriz 2x2 ----
+  function renderMatriz(res) {
+    var m = res.matriz;
+    var t = res.total_dias || 1;
+    var pct = function(n){ return Math.round(n/t*100); };
+    return '<div class="vcad-mwrap">' +
+      '<div class="vcad-mtit">Matriz nutri × entreno</div>' +
+      '<div class="vcad-mgrid">' +
+        '<div class="vcad-eje-y">' +
+          '<div class="vcad-elab vcad-esi">✅ Nutrición</div>' +
+          '<div class="vcad-elab vcad-eno">❌ Nutrición</div>' +
+        '</div>' +
+        cuad('vcad-q1','💪 Ambos OK',    m.ambos_ok,    pct(m.ambos_ok),    '✅ Entreno') +
+        cuad('vcad-q2','🥗 Solo nutri',  m.solo_nutri,  pct(m.solo_nutri),  '❌ Entreno') +
+        cuad('vcad-q3','🏋️ Solo entreno',m.solo_entreno,pct(m.solo_entreno),'✅ Entreno') +
+        cuad('vcad-q4','⚠️ Ninguno',     m.ambos_fail,  pct(m.ambos_fail),  '❌ Entreno') +
+      '</div>' +
+    '</div>';
+  }
+
+  function cuad(cls, lab, n, pct, eje) {
+    return '<div class="vcad-cuad ' + cls + '">' +
+      '<div class="vcad-qpct">' + pct + '%</div>' +
+      '<div class="vcad-qn">' + n + ' días</div>' +
+      '<div class="vcad-qlab">' + lab + '</div>' +
+      '<div class="vcad-qeje">' + eje + '</div>' +
+    '</div>';
+  }
+
+  // ---- Score global ----
+  function renderScore(pct) {
+    var color = pct >= 70 ? '#16a34a' : pct >= 40 ? '#FF6B00' : '#dc2626';
+    var emoji = pct >= 70 ? '🟢' : pct >= 40 ? '🟡' : '🔴';
+    var msg   = pct >= 70
+      ? 'Excelente adherencia. Mantener el estímulo.'
+      : pct >= 40
+      ? 'Adherencia media. Revisar barreras con el alumno.'
+      : 'Adherencia baja. Priorizar conversación de expectativas.';
+    return '<div class="vcad-score">' +
+      '<div class="vcad-circulo" style="border-color:' + color + ';color:' + color + '">' + pct + '%</div>' +
+      '<div>' +
+        '<div class="vcad-stit">' + emoji + ' Score global</div>' +
+        '<div class="vcad-smsg">' + msg + '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  // ---- Grilla semanal ----
+  var DLAB = ['L','M','X','J','V','S','D'];
+
+  function renderGrilla(semanas) {
+    return '<div class="vcad-gwrap">' +
+      '<div class="vcad-gtit">Detalle por semana</div>' +
+      '<div class="vcad-gheads">' +
+        DLAB.map(function(l){ return '<div class="vcad-dlab">' + l + '</div>'; }).join('') +
+      '</div>' +
+      semanas.map(function(s) {
+        var label = s.inicio.toLocaleDateString('es-AR',{day:'numeric',month:'short'});
+        return '<div class="vcad-sem">' +
+          '<div class="vcad-semlabel">' + label + '</div>' +
+          '<div class="vcad-semdias">' +
+            s.dias.map(function(d) {
+              var cls = 'vcad-dia';
+              var tip = '';
+              if (d.esFuturo)                    { cls += ' vcad-fut';     tip = 'Futuro'; }
+              else if (d.sinDato)                { cls += ' vcad-sd';      tip = 'Sin dato'; }
+              else if (d.nutri_ok && d.entreno_ok){ cls += ' vcad-ambos';  tip = 'Ambos OK'; }
+              else if (d.nutri_ok)               { cls += ' vcad-nutri';   tip = 'Solo nutri'; }
+              else if (d.entreno_ok)             { cls += ' vcad-entreno'; tip = 'Solo entreno'; }
+              else                               { cls += ' vcad-fallo';   tip = 'Ninguno'; }
+              return '<div class="' + cls + '" title="' + d.fecha + ': ' + tip + '"></div>';
+            }).join('') +
+          '</div>' +
+        '</div>';
+      }).join('') +
+    '</div>';
+  }
+
+  // ---- Leyenda ----
+  function renderLeyenda() {
+    var items = [
+      ['vcad-ambos',  '💪 Ambos OK'],
+      ['vcad-nutri',  '🥗 Solo nutri'],
+      ['vcad-entreno','🏋️ Solo entreno'],
+      ['vcad-fallo',  '❌ Ninguno'],
+      ['vcad-sd',     'Sin dato'],
+    ];
+    return '<div class="vcad-leyenda">' +
+      items.map(function(it){
+        return '<span class="vcad-li">' +
+          '<span class="vcad-dia ' + it[0] + ' vcad-ldot"></span>' +
+          '<span class="vcad-llab">' + it[1] + '</span>' +
+        '</span>';
+      }).join('') +
+    '</div>';
+  }
+
+  function esc(s) {
+    if (s==null) return '';
+    return String(s).replace(/[&<>"']/g,function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  // ---- Estilos ----
+  function renderEstilos() {
+    return '<style>' +
+      '.vcad-wrap{font-family:"DM Sans",sans-serif;max-width:640px;margin:0 auto;padding:20px 16px;}' +
+      '.vcad-header{margin-bottom:24px;}' +
+      '.vcad-titulo{font-family:"Bebas Neue",sans-serif;font-size:32px;color:#1a2332;letter-spacing:.5px;}' +
+      '.vcad-sub{font-size:13px;color:#64748b;margin-top:2px;}' +
+      /* Matriz */
+      '.vcad-mwrap{margin-bottom:24px;}' +
+      '.vcad-mtit{font-family:"Rajdhani",sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#94a3b8;margin-bottom:12px;}' +
+      '.vcad-mgrid{display:grid;grid-template-columns:auto 1fr 1fr;grid-template-rows:1fr 1fr;gap:6px;}' +
+      '.vcad-eje-y{display:flex;flex-direction:column;justify-content:space-around;gap:6px;padding-right:4px;}' +
+      '.vcad-elab{font-size:11px;font-weight:700;color:#64748b;text-align:right;padding:4px 0;}' +
+      '.vcad-esi{color:#16a34a;}' +
+      '.vcad-eno{color:#dc2626;}' +
+      '.vcad-cuad{border-radius:10px;padding:14px 12px;min-height:88px;}' +
+      '.vcad-q1{background:#dcfce7;border:2px solid #86efac;}' +
+      '.vcad-q2{background:#fef9c3;border:2px solid #fde047;}' +
+      '.vcad-q3{background:#FFF4ED;border:2px solid #fdba74;}' +
+      '.vcad-q4{background:#fee2e2;border:2px solid #fca5a5;}' +
+      '.vcad-qpct{font-family:"Bebas Neue",sans-serif;font-size:36px;line-height:1;color:#1a2332;}' +
+      '.vcad-qn{font-size:11px;color:#64748b;margin-bottom:4px;}' +
+      '.vcad-qlab{font-size:12px;font-weight:700;color:#1a2332;}' +
+      '.vcad-qeje{font-size:10px;color:#64748b;margin-top:6px;}' +
+      /* Score */
+      '.vcad-score{display:flex;align-items:center;gap:20px;background:#f8fafc;border-radius:12px;padding:20px;margin-bottom:28px;}' +
+      '.vcad-circulo{width:72px;height:72px;border-radius:50%;border:4px solid;display:flex;align-items:center;justify-content:center;font-family:"Bebas Neue",sans-serif;font-size:22px;flex-shrink:0;}' +
+      '.vcad-stit{font-weight:700;font-size:15px;color:#1a2332;margin-bottom:4px;}' +
+      '.vcad-smsg{font-size:13px;color:#64748b;line-height:1.4;}' +
+      /* Grilla */
+      '.vcad-gwrap{margin-bottom:20px;}' +
+      '.vcad-gtit{font-family:"Rajdhani",sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#94a3b8;margin-bottom:10px;}' +
+      '.vcad-gheads{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px;padding-left:52px;}' +
+      '.vcad-dlab{text-align:center;font-size:10px;font-weight:700;color:#94a3b8;}' +
+      '.vcad-sem{display:flex;align-items:center;gap:8px;margin-bottom:5px;}' +
+      '.vcad-semlabel{font-size:11px;color:#94a3b8;width:44px;flex-shrink:0;text-align:right;}' +
+      '.vcad-semdias{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;flex:1;}' +
+      '.vcad-dia{width:100%;aspect-ratio:1;border-radius:4px;}' +
+      '.vcad-ambos{background:#16a34a;}' +
+      '.vcad-nutri{background:#facc15;}' +
+      '.vcad-entreno{background:#FF6B00;}' +
+      '.vcad-fallo{background:#dc2626;}' +
+      '.vcad-sd{background:#e2e8f0;}' +
+      '.vcad-fut{background:#f1f5f9;opacity:.4;}' +
+      /* Leyenda */
+      '.vcad-leyenda{display:flex;flex-wrap:wrap;gap:10px 16px;margin-top:12px;}' +
+      '.vcad-li{display:flex;align-items:center;gap:6px;}' +
+      '.vcad-ldot{width:14px!important;height:14px;flex-shrink:0;aspect-ratio:1;}' +
+      '.vcad-llab{font-size:12px;color:#64748b;}' +
+    '</style>';
+  }
+
+  return { abrir };
+
+})();
+
+
 </script>
+<!-- Nutrición: containers -->
+<div id="vcfn-modal-container"></div>
+<div id="vcmd-container"></div>
+<div id="vceq-container"></div>
+<div id="vcad-container"></div>
 </body>
 </html>
