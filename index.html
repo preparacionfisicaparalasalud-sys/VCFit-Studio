@@ -3671,7 +3671,8 @@ function exportStatsReport() {
   <style>body{font-family:Arial,sans-serif;padding:32px;color:#111;font-size:13px}
   h1{color:#FF6B00;font-size:22px}h2{font-size:14px;color:#FF6B00;border-bottom:2px solid #FF6B00;padding-bottom:4px;margin:20px 0 10px}
   .footer{margin-top:32px;padding-top:12px;border-top:1px solid #eee;font-size:10px;color:#aaa;display:flex;justify-content:space-between}
-  /* ============================================================
+
+/* ============================================================
    VC FIT NUTRICION - Overrides de 7 temas v1
    Subbloque 4.7 — solo agrega esto a los estilos del shell
    Selectores: vcmd- (Mi Día) | vceq- (Cambiar Equiv) | vcad- (Adherencia)
@@ -5882,7 +5883,7 @@ function applyThemeForRole(role) {
 // ═══════════════════════════════════════════
 const firebaseConfig = {
   apiKey: "AIzaSyDbyCfESCLU1ut5t6AExXRedalFAuf83JI",
-
+  authDomain: "vcfit-studio.firebaseapp.com",
   projectId: "vcfit-studio",
   storageBucket: "vcfit-studio.firebasestorage.app",
   messagingSenderId: "738858575495",
@@ -6317,7 +6318,7 @@ applyLogo();
 // Pantallas exclusivas del entrenador
 const TRAINER_SCREENS = [
   'screen-trainer','screen-trainer-profile','screen-students','screen-student-detail',
-  'screen-workouts','screen-stats','screen-ai-chat','screen-finance','screen-anamnesis-inbox'
+  'screen-workouts','screen-stats','screen-ai-chat','screen-finance',  'screen-anamnesis-inbox'
 ];
 
 function showScreen(id) {
@@ -7220,31 +7221,13 @@ function saveEditWorkout() {
   if (!w) return;
   const name = document.getElementById('ew-name').value.trim();
   if (!name) { alert('El nombre es obligatorio.'); return; }
-
-  const contentChanged = w.content !== document.getElementById('ew-content').value.trim();
-
   w.name = name;
   w.desc = document.getElementById('ew-desc').value.trim();
   w.content = document.getElementById('ew-content').value.trim();
-
-  // Si cambió el contenido, actualizar todos los alumnos que tienen esta rutina
-  if (contentChanged) {
-    state.students.forEach(s => {
-      if (s.assignedWorkoutId === id) {
-        // Limpiar personalización del alumno — el entrenador actualizó la rutina
-        s.customWorkoutContent = null;
-        s.routineUpdated = true;
-      }
-    });
-  }
-
   saveState();
   closeModal('modal-edit-workout');
   renderWorkoutsList();
-  const afectados = contentChanged
-    ? state.students.filter(s => s.assignedWorkoutId === id).length
-    : 0;
-  alert(`Rutina actualizada ✅${afectados > 0 ? `\n${afectados} alumno${afectados!==1?'s':''} notificado${afectados!==1?'s':''}.` : ''}`);
+  alert('Rutina actualizada ✅');
 }
 
 function saveNewWorkout() {
@@ -7415,9 +7398,7 @@ function saveWorkoutFromStudentTab() {
     s.exclusiveWorkout = { name, desc, content };
     const anterior = s.assignedWorkoutId;
     s.assignedWorkoutId = '__exclusive__';
-    s.customWorkoutContent = null; // limpiar personalización anterior
     if (anterior !== '__exclusive__') s.routineUpdated = true;
-    else s.routineUpdated = true; // aunque ya era exclusiva, el contenido cambió
     saveState();
     renderAssignTab(s);
     renderTodayWorkout(s);
@@ -7492,10 +7473,7 @@ function assignWorkout() {
   if (!s) return;
   const anterior = s.assignedWorkoutId;
   s.assignedWorkoutId = id || null;
-  if (id && id !== anterior) {
-    s.routineUpdated = true;
-    s.customWorkoutContent = null; // limpiar personalización al cambiar rutina
-  }
+  if (id && id !== anterior) s.routineUpdated = true; // flag para banner alumno
   saveState();
   renderAssignTab(s);
   renderTodayWorkout(s);
@@ -10987,11 +10965,101 @@ async function checkInitialAnamnesisCount() {
   }
 }
 
+(async function init() {
+  // Safety net: si algo falla, la pantalla nunca queda colgada
+  const safetyTimer = setTimeout(() => {
+    console.warn('Init safety net activado — forzando pantalla de login');
+    hideLoadingOverlay();
+    showScreen('screen-login');
+  }, 10000);
+
+  try {
+    // ── Nutricion: cargar BD ──
+    try {
+      await VCFitNutri.load();
+      console.log('[VC Fit] BD nutricional lista');
+    } catch (errNutri) {
+      console.warn('[VC Fit] BD nutricional no disponible:', errNutri);
+    }
+    initTheme();
+    initApiKeyUI();
+    await loadState();
+    if (!state.expenses) state.expenses = [];
+    propagateRecurringExpenses();
+    const now = new Date();
+    _financePeriod = { year: now.getFullYear(), month: now.getMonth() + 1 };
+    loadDemoData();
+    refreshTrainerDashboard();
+    renderStudentsList();
+    renderWorkoutsList();
+    // Si hay token Calendar guardado, cargar APIs en background automáticamente
+    if (localStorage.getItem('vcfit_gcal_token')) {
+    }
+  } catch(e) {
+    console.warn('Error en init:', e);
+  } finally {
+    clearTimeout(safetyTimer);
+    if (window._safetyUnlock) window._safetyUnlock();
+    hideLoadingOverlay();
+    showScreen('screen-login');
+  }
+})();
+</script>
+
+<!-- PWA MANIFEST INLINE -->
+<script>
+// PWA: register service worker si está disponible
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    const CACHE = 'vcfit-v4';
+    const ASSETS = ['/', './nutricion_db.json'];
+    self.addEventListener('install', e => {
+      e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
+      self.skipWaiting();
+    });
+    self.addEventListener('activate', e => {
+      e.waitUntil(
+        caches.keys().then(keys =>
+          Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+        )
+      );
+      self.clients.claim();
+    });
+    self.addEventListener('fetch', e => {
+      e.respondWith(
+        caches.match(e.request).then(r => r || fetch(e.request))
+      );
+    });
+  `;
+  const blob = new Blob([swCode], { type: 'application/javascript' });
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).catch(() => {});
+}
+
+// PWA Manifest
+const manifest = {
+  name: "VC Fit Studio",
+  short_name: "VC Fit",
+  start_url: "./",
+  display: "standalone",
+  background_color: "#141414",
+  theme_color: "#141414",
+  icons: [{ src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%230a0a0a'/><text y='.9em' font-size='70' x='50%' text-anchor='middle' fill='%23E8650A' font-weight='bold'>VC</text></svg>", sizes: "192x192", type: "image/svg+xml" }]
+};
+const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+const manifestUrl = URL.createObjectURL(manifestBlob);
+const link = document.createElement('link');
+link.rel = 'manifest';
+link.href = manifestUrl;
 document.head.appendChild(link);
+</script>
+
+<script>
 // ============================================================
 // VC FIT NUTRICION - Bloque 4 (v1)
-// Módulos: loader, engine, wizard, mi_dia, cambiar_equiv, adherencia
-// ============================================================// ============================================================
+// Modulos: loader, engine, wizard, mi_dia, cambiar_equiv, adherencia
+// ============================================================
+// ============================================================
 // VC FIT NUTRICION - Loader v1.1
 // Carga nutricion_db.json con cache offline y fallback localStorage.
 // v1.1: agrega tagsCatalogo(), categoriasCatalogo() y momentosCatalogo()
@@ -11075,6 +11143,8 @@ window.VCFitNutri = (function() {
     get meta() { return DB?._meta; }
   };
 })();
+
+
 // ============================================================
 // VC FIT NUTRICION - Motor de calculo v1
 // Funciones puras, sin DOM, testeables en consola.
@@ -11377,6 +11447,7 @@ window.VCFitNutriEngine = (function() {
     FACTORES_ACTIVIDAD, AJUSTE_FASE
   };
 })();
+
 
 // ============================================================
 // VC FIT NUTRICION - Wizard "Asignar Plan" (rol coach) v1
@@ -11942,6 +12013,7 @@ Devolveme observaciones prácticas para el coach: timing de comidas, ajustes seg
   };
 })();
 
+
 // ============================================================
 // VC FIT NUTRICION - Pantalla "Mi Día" (rol alumno) v1
 // Subbloque 4.4
@@ -12210,6 +12282,7 @@ window.VCFitMiDia = (function() {
 
 })();
 
+
 // ============================================================
 // VC FIT NUTRICION - Modal "Cambiar Equivalente" (rol alumno) v1
 // Subbloque 4.5
@@ -12477,6 +12550,7 @@ window.VCFitCambiarEquiv = (function() {
 
 })();
 
+
 // ============================================================
 // VC FIT NUTRICION - Pantalla "Adherencia" (rol coach) v1
 // Subbloque 4.6
@@ -12716,95 +12790,10 @@ window.VCFitAdherencia = (function() {
   return { abrir };
 
 })();
-(async function init() {
-  // ── Nutrición: cargar BD ──────────────────────────────
-  try {
-    await VCFitNutri.load();
-    console.log('[VC Fit] BD nutricional lista');
-  } catch (err) {
-    console.warn('[VC Fit] BD nutricional no disponible:', err);
-  }
-  // ─────────────────────────────────────────────────────
-  // Safety net: si algo falla, la pantalla nunca queda colgada
-  const safetyTimer = setTimeout(() => {
-    console.warn('Init safety net activado — forzando pantalla de login');
-    hideLoadingOverlay();
-    showScreen('screen-login');
-  }, 10000);
-
-  try {
-    initTheme();
-    initApiKeyUI();
-    await loadState();
-    if (!state.expenses) state.expenses = [];
-    propagateRecurringExpenses();
-    const now = new Date();
-    _financePeriod = { year: now.getFullYear(), month: now.getMonth() + 1 };
-    loadDemoData();
-    refreshTrainerDashboard();
-    renderStudentsList();
-    renderWorkoutsList();
-  } catch(e) {
-    console.warn('Error en init:', e);
-  } finally {
-    clearTimeout(safetyTimer);
-    if (window._safetyUnlock) window._safetyUnlock();
-    hideLoadingOverlay();
-    showScreen('screen-login');
-  }
-})();
-</script>
-
-<!-- PWA MANIFEST INLINE -->
-<script>
-// PWA: register service worker si está disponible
-if ('serviceWorker' in navigator) {
-  const swCode = `
-    const CACHE = 'vcfit-v4';
-    const ASSETS = ['/'];
-    self.addEventListener('install', e => {
-      e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
-      self.skipWaiting();
-    });
-    self.addEventListener('activate', e => {
-      e.waitUntil(
-        caches.keys().then(keys =>
-          Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-        )
-      );
-      self.clients.claim();
-    });
-    self.addEventListener('fetch', e => {
-      e.respondWith(
-        caches.match(e.request).then(r => r || fetch(e.request))
-      );
-    });
-  `;
-  const blob = new Blob([swCode], { type: 'application/javascript' });
-  const swUrl = URL.createObjectURL(blob);
-  navigator.serviceWorker.register(swUrl).catch(() => {});
-}
-
-// PWA Manifest
-const manifest = {
-  name: "VC Fit Studio",
-  short_name: "VC Fit",
-  start_url: "./",
-  display: "standalone",
-  background_color: "#141414",
-  theme_color: "#141414",
-  icons: [{ src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%230a0a0a'/><text y='.9em' font-size='70' x='50%' text-anchor='middle' fill='%23E8650A' font-weight='bold'>VC</text></svg>", sizes: "192x192", type: "image/svg+xml" }]
-};
-const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
-const manifestUrl = URL.createObjectURL(manifestBlob);
-const link = document.createElement('link');
-link.rel = 'manifest';
-link.href = manifestUrl;
-
-
 
 </script>
-<!-- Nutrición: containers -->
+
+<!-- Nutricion: containers (Bloque 4) -->
 <div id="vcfn-modal-container"></div>
 <div id="vcmd-container"></div>
 <div id="vceq-container"></div>
