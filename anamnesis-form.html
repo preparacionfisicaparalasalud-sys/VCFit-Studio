@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <style>
   :root {
     --orange: #FF6B00;
@@ -718,9 +719,16 @@ const firebaseConfig = {
 };
 
 let db = null;
+let _authReady = false;
 try {
   firebase.initializeApp(firebaseConfig);
   db = firebase.firestore();
+  // Login anónimo automático para cumplir con las nuevas reglas de seguridad
+  firebase.auth().signInAnonymously().then(() => {
+    _authReady = true;
+  }).catch(err => {
+    console.warn('Auth error:', err.message);
+  });
 } catch(e) { console.warn('Firebase init error:', e); }
 
 // ── Leer params del URL ──
@@ -845,6 +853,12 @@ async function submitForm() {
 
   try {
     if (db) {
+      // Esperar hasta 5 segundos a que la autenticación termine
+      let waited = 0;
+      while (!_authReady && waited < 5000) {
+        await new Promise(r => setTimeout(r, 200));
+        waited += 200;
+      }
       await db.collection('vcfit_anamnesis_pending').add(payload);
     } else {
       throw new Error('Sin conexión a Firebase');
