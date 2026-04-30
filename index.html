@@ -11,6 +11,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -5817,6 +5818,7 @@ let STATE_DOC = null;
 let syncEnabled = false;
 let syncUnsubscribe = null;
 let _firebaseAvailable = false;
+let _firebaseAuthReady = false; // true cuando el login anónimo terminó
 
 try {
   if (typeof firebase !== 'undefined') {
@@ -5824,6 +5826,17 @@ try {
     db = firebase.firestore();
     STATE_DOC = db.collection('vcfit').doc('state');
     _firebaseAvailable = true;
+
+    // Login anónimo automático — necesario para que las nuevas reglas de Firestore funcionen
+    // El usuario no ve nada, sucede en background
+    firebase.auth().signInAnonymously().then(() => {
+      _firebaseAuthReady = true;
+      console.log('[VC Fit] 🔒 Autenticación anónima OK');
+    }).catch(err => {
+      console.warn('[VC Fit] ⚠️ Auth anónima falló:', err.message);
+      // Si falla, igual seguimos — la app funcionará en modo localStorage
+      _firebaseAuthReady = false;
+    });
   }
 } catch(e) {
   console.warn('Firebase no disponible:', e.message);
@@ -5896,6 +5909,21 @@ async function loadState() {
   if (!_firebaseAvailable || !STATE_DOC) {
     setSyncStatus('offline');
     return;
+  }
+
+  // 2b. Esperar hasta 5 seg a que la autenticación termine
+  if (!_firebaseAuthReady) {
+    setLoadingMsg('Autenticando...');
+    let waited = 0;
+    while (!_firebaseAuthReady && waited < 5000) {
+      await new Promise(r => setTimeout(r, 200));
+      waited += 200;
+    }
+    if (!_firebaseAuthReady) {
+      console.warn('[VC Fit] Timeout en auth — usando localStorage');
+      setSyncStatus('offline');
+      return;
+    }
   }
 
   try {
@@ -11053,7 +11081,7 @@ async function checkInitialAnamnesisCount() {
 // PWA: register service worker si está disponible
 if ('serviceWorker' in navigator) {
   const swCode = `
-    const CACHE = 'vcfit-v5';
+    const CACHE = 'vcfit-v6';
     const ASSETS = ['/'];
     self.addEventListener('install', e => {
       e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
