@@ -14107,13 +14107,62 @@ function okFatiga(sel,c){
   return true;
 }
 
-function estimarDur(ejs,rondas,nivel){
-  let s=0;
-  for(const e of ejs){
-    if(e.es_combo){for(const p of e.pasos){const r=p.reps[nivel]||p.reps.intermedio;s+=r*(e.tipo==='bodyweight'?2:3);}s+=10;}
-    else{const r=e.reps[nivel]||e.reps.intermedio;s+=r*(e.tipo==='bodyweight'?2:3);}
+// Segundos por rep según tipo de ejercicio
+function segsPerRep(tipo) {
+  if(tipo==='barra')     return 3.5;
+  if(tipo==='mancuerna') return 3.0;
+  if(tipo==='maquina')   return 0;   // maquinas siempre son es_tiempo — no se multiplican
+  return 2.0; // bodyweight
+}
+
+// Tiempo de un ejercicio en segundos (una ronda)
+function tiempoEjercicio(e, nivel) {
+  const reps = e.reps_sesion !== undefined
+    ? e.reps_sesion
+    : (e.reps && (e.reps[nivel] || e.reps.intermedio)) || 10;
+
+  // Si es tiempo (segundos directos) — no multiplicar
+  if(e.es_tiempo || e.tipo==='maquina') return reps;
+
+  // Reps normales → multiplicar por segundos/rep
+  return reps * segsPerRep(e.tipo || 'bodyweight');
+}
+
+function tiempoCombo(combo, nivel) {
+  const pasos = combo.pasos_sesion || combo.pasos || [];
+  let total = 0;
+  for(const p of pasos) {
+    const reps = p.reps_sesion !== undefined ? p.reps_sesion : ((p.reps && (p.reps[nivel]||p.reps.intermedio)) || 10);
+    const esTiempo = combo.es_tiempo || p.es_tiempo || combo.tipo==='maquina';
+    total += esTiempo ? reps : reps * segsPerRep(combo.tipo || 'bodyweight');
   }
-  return Math.round((s*rondas+rondas*60)/60);
+  return total + 15; // 15s de transición entre pasos
+}
+
+function estimarDur(ejs, rondas, nivel, descansoSeg) {
+  descansoSeg = descansoSeg || 60;
+  let tiempoPorRonda = 0;
+  for(const e of ejs) {
+    if(e.es_combo) tiempoPorRonda += tiempoCombo(e, nivel);
+    else           tiempoPorRonda += tiempoEjercicio(e, nivel);
+    tiempoPorRonda += 12; // transición entre ejercicios
+  }
+  const totalSeg = (tiempoPorRonda + descansoSeg) * rondas;
+  return Math.round(totalSeg / 60);
+}
+
+// Calibrar rondas para que el workout dure lo solicitado
+function calibrarRondas(ejs, duracionMin, descansoSeg, nivel) {
+  let tiempoPorRonda = 0;
+  for(const e of ejs) {
+    if(e.es_combo) tiempoPorRonda += tiempoCombo(e, nivel);
+    else           tiempoPorRonda += tiempoEjercicio(e, nivel);
+    tiempoPorRonda += 12;
+  }
+  if(tiempoPorRonda <= 0) return 3;
+  const durSeg = duracionMin * 60;
+  const rondas = Math.round(durSeg / (tiempoPorRonda + descansoSeg));
+  return Math.max(1, Math.min(rondas, 15)); // entre 1 y 15 rondas
 }
 
 function elegirDios(intensidad,objetivo){
@@ -14329,12 +14378,17 @@ function generarWorkout(params){
   });
 
   const dios=elegirDios(intensidad,objetivo);
+
+  // Calibrar rondas para que el workout dure lo solicitado
+  const rondasCalibradas = calibrarRondas(seqR, parseInt(duracion), descansoSeg, nivel);
+  const durEstimada = estimarDur(seqR, rondasCalibradas, nivel, descansoSeg);
+
   return{
     id:'w_'+Date.now(),nombre:dios.nombre,subtitulo:dios.subtitulo,mitologia:dios.mitologia,
-    params,rondas:cfg.r,
+    params,rondas:rondasCalibradas,
     descanso:descansoSeg,
     rpe:RPE_POR_OBJETIVO[objetivo]||'RPE 7',
-    duracion_est:estimarDur(seqR,cfg.r,nivel),
+    duracion_est:durEstimada,
     secuencia:seqR,fecha:new Date().toISOString()
   };
 }
