@@ -3375,6 +3375,7 @@ ALMUERZO
             <option value="solo_cuerpo" selected>Solo cuerpo</option>
             <option value="con_barras">+ Barras</option>
             <option value="con_mancuernas">+ Mancuernas</option>
+            <option value="con_maquinas">🚴 Máquinas</option>
             <option value="completo">Completo</option>
           </select>
         </div>
@@ -12560,7 +12561,173 @@ const EJERCICIOS_DB = [
   { id:"patada_gluteo_banda", nombre:"Patada de Glúteo con Banda", tipo:"bodyweight", patron:"piernas", grupo_primario:"glúteos", grupo_secundario:["isquiotibiales","core"], nivel_minimo:1, demanda_neural:1, demanda_metabolica:1, fatiga_local:["glúteos"], fase:"activacion", objetivos:["hipertrofia","wellness"], reps:{principiante:15,intermedio:20,avanzado:30}, descripcion:"En cuatro patas con banda en el tobillo. Extender la pierna hacia atrás y arriba contra la resistencia. Mantener la espalda neutra. Aislamiento de glúteo con resistencia progresiva.", peso_sugerido:{} },
   { id:"elevacion_lateral_pierna", nombre:"Elevación Lateral de Pierna", tipo:"bodyweight", patron:"piernas", grupo_primario:"glúteos", grupo_secundario:["glúteo medio","TFL"], nivel_minimo:1, demanda_neural:1, demanda_metabolica:1, fatiga_local:["glúteos"], fase:"activacion", objetivos:["hipertrofia","movilidad"], reps:{principiante:15,intermedio:20,avanzado:30}, descripcion:"De lado apoyado en el suelo. Elevar la pierna superior manteniendo la punta del pie hacia adelante. El glúteo medio trabaja en su función de abducción pura. Alternando lados.", peso_sugerido:{} },
   { id:"curl_munieca", nombre:"Curl de Muñeca", tipo:"mancuerna", patron:"tiron", grupo_primario:"antebrazo", grupo_secundario:["muñeca"], nivel_minimo:1, demanda_neural:1, demanda_metabolica:1, fatiga_local:["antebrazo"], fase:"principal", objetivos:["fuerza","hipertrofia"], reps:{principiante:15,intermedio:20,avanzado:25}, descripcion:"Antebrazo apoyado en el muslo, muñeca fuera del borde. Flexionar y extender la muñeca con mancuerna liviana. Trabaja los flexores del antebrazo y mejora el agarre.", peso_sugerido:{hombre:{principiante:"5kg",intermedio:"8kg",avanzado:"12kg"},mujer:{principiante:"2kg",intermedio:"4kg",avanzado:"6kg"}} },
-  { id:"curl_inverso", nombre:"Curl Inverso", tipo:"mancuerna", patron:"tiron", grupo_primario:"antebrazo", grupo_secundario:["bíceps","braquial"], nivel_minimo:1, demanda_neural:1, demanda_metabolica:1, fatiga_local:["antebrazo"], fase:"principal", objetivos:["fuerza","hipertrofia"], reps:{principiante:10,intermedio:12,avanzado:15}, descripcion:"Curl de bíceps con agarre prono (palmas hacia abajo). Trabaja el braquiorradial y los extensores del antebrazo. El grip inverso es el punto de fallo — usar menos peso que el curl normal.", peso_sugerido:{hombre:{principiante:"5kg",intermedio:"8kg",avanzado:"12kg"},mujer:{principiante:"2kg",intermedio:"4kg",avanzado:"6kg"}} }
+  { id:"curl_inverso", nombre:"Curl Inverso", tipo:"mancuerna", patron:"tiron", grupo_primario:"antebrazo", grupo_secundario:["bíceps","braquial"], nivel_minimo:1, demanda_neural:1, demanda_metabolica:1, fatiga_local:["antebrazo"], fase:"principal", objetivos:["fuerza","hipertrofia"], reps:{principiante:10,intermedio:12,avanzado:15}, descripcion:"Curl de bíceps con agarre prono (palmas hacia abajo). Trabaja el braquiorradial y los extensores del antebrazo. El grip inverso es el punto de fallo — usar menos peso que el curl normal.", peso_sugerido:{hombre:{principiante:"5kg",intermedio:"8kg",avanzado:"12kg"},mujer:{principiante:"2kg",intermedio:"4kg",avanzado:"6kg"}} },
+  // ══════════════════════════════════════════════════════════
+  // CINTA DE CORRER / CAMINAR
+  // ══════════════════════════════════════════════════════════
+  { id:"caminata_activa", nombre:"Caminata Activa en Cinta", tipo:"maquina", patron:"cardio",
+    grupo_primario:"gemelos", grupo_secundario:["glúteos","cuádriceps","cardiovascular"],
+    nivel_minimo:1, demanda_neural:1, demanda_metabolica:1, fatiga_local:["gemelos"],
+    fase:"activacion", objetivos:["grasa","resistencia","wellness","movilidad","atletismo"],
+    reps:{principiante:180,intermedio:300,avanzado:300}, es_tiempo:true,
+    descripcion:"Caminata continua a 5-6 km/h. Postura erguida, brazos en movimiento natural. Ideal como calentamiento progresivo antes de cualquier sesión. Reps = segundos.",
+    peso_sugerido:{} },
+
+  { id:"caminata_pendiente", nombre:"Caminata en Pendiente", tipo:"maquina", patron:"cardio",
+    grupo_primario:"glúteos", grupo_secundario:["isquiotibiales","gemelos","cardiovascular"],
+    nivel_minimo:1, demanda_neural:1, demanda_metabolica:2, fatiga_local:["glúteos","gemelos"],
+    fase:"principal", objetivos:["grasa","resistencia","wellness","funcional"],
+    reps:{principiante:180,intermedio:300,avanzado:600}, es_tiempo:true,
+    descripcion:"Caminata a 5-6 km/h con inclinación 8-12%. Sin apoyar manos en las barandas. Activa glúteos e isquiotibiales intensamente. Alta quema calórica a baja intensidad cardíaca. Reps = segundos.",
+    peso_sugerido:{} },
+
+  { id:"trote_moderado", nombre:"Trote Moderado en Cinta", tipo:"maquina", patron:"cardio",
+    grupo_primario:"cardiovascular", grupo_secundario:["cuádriceps","gemelos","core"],
+    nivel_minimo:1, demanda_neural:1, demanda_metabolica:2, fatiga_local:["gemelos","cuádriceps"],
+    fase:"principal", objetivos:["grasa","resistencia","atletismo"],
+    reps:{principiante:180,intermedio:300,avanzado:600}, es_tiempo:true,
+    descripcion:"Trote a ritmo conversacional (7-9 km/h). Se puede hablar con esfuerzo. Zona aeróbica 2-3. Base de cualquier programa de resistencia. Reps = segundos.",
+    peso_sugerido:{} },
+
+  { id:"sprint_cinta", nombre:"Sprint en Cinta", tipo:"maquina", patron:"cardio",
+    grupo_primario:"cardiovascular", grupo_secundario:["cuádriceps","glúteos","gemelos"],
+    nivel_minimo:2, demanda_neural:2, demanda_metabolica:3, fatiga_local:["cuádriceps","gemelos"],
+    fase:"finisher", objetivos:["grasa","atletismo","potencia"],
+    reps:{principiante:20,intermedio:30,avanzado:45}, es_tiempo:true,
+    descripcion:"Sprint a máxima velocidad (14-18+ km/h). Inclinación 0-1%. Explosividad máxima. Para HIIT: 20-45 seg de trabajo / 40-90 seg de recuperación. Reps = segundos.",
+    peso_sugerido:{} },
+
+  { id:"cinta_hiit_intervalo", nombre:"Intervalo HIIT en Cinta", tipo:"maquina", patron:"cardio",
+    grupo_primario:"cardiovascular", grupo_secundario:["cuádriceps","gemelos","glúteos"],
+    nivel_minimo:2, demanda_neural:2, demanda_metabolica:3, fatiga_local:["cuádriceps","gemelos"],
+    fase:"principal", objetivos:["grasa","atletismo","resistencia"],
+    reps:{principiante:20,intermedio:30,avanzado:40}, es_tiempo:true,
+    descripcion:"Alternancia sprint (30s a 16 km/h) / trote recuperación (60s a 8 km/h). 8-10 ciclos. El método HIIT más efectivo en cinta. Reps = segundos de cada sprint.",
+    peso_sugerido:{} },
+
+  // ══════════════════════════════════════════════════════════
+  // ELÍPTICA
+  // ══════════════════════════════════════════════════════════
+  { id:"eliptica_suave", nombre:"Elíptica Suave", tipo:"maquina", patron:"cardio",
+    grupo_primario:"cardiovascular", grupo_secundario:["cuádriceps","glúteos","dorsales"],
+    nivel_minimo:1, demanda_neural:1, demanda_metabolica:1, fatiga_local:["cuádriceps"],
+    fase:"activacion", objetivos:["grasa","resistencia","wellness","movilidad"],
+    reps:{principiante:180,intermedio:300,avanzado:300}, es_tiempo:true,
+    descripcion:"Elíptica a resistencia baja (nivel 3-5), ritmo cómodo. Cero impacto articular. Ideal como calentamiento o para personas con lesiones de rodilla o cadera. Reps = segundos.",
+    peso_sugerido:{} },
+
+  { id:"eliptica_moderada", nombre:"Elíptica Moderada", tipo:"maquina", patron:"cardio",
+    grupo_primario:"cardiovascular", grupo_secundario:["glúteos","cuádriceps","dorsales","hombros"],
+    nivel_minimo:1, demanda_neural:1, demanda_metabolica:2, fatiga_local:["cuádriceps","glúteos"],
+    fase:"principal", objetivos:["grasa","resistencia","recomposicion","funcional"],
+    reps:{principiante:300,intermedio:600,avanzado:900}, es_tiempo:true,
+    descripcion:"Elíptica a resistencia media (nivel 6-8), ritmo sostenido. Empujar activamente con brazos y piernas. Full body de bajo impacto. Zonas aeróbicas 2-3. Reps = segundos.",
+    peso_sugerido:{} },
+
+  { id:"eliptica_sprint", nombre:"Sprint en Elíptica", tipo:"maquina", patron:"cardio",
+    grupo_primario:"cardiovascular", grupo_secundario:["glúteos","cuádriceps","hombros"],
+    nivel_minimo:1, demanda_neural:2, demanda_metabolica:3, fatiga_local:["cuádriceps","glúteos"],
+    fase:"finisher", objetivos:["grasa","atletismo","resistencia"],
+    reps:{principiante:20,intermedio:30,avanzado:40}, es_tiempo:true,
+    descripcion:"Máxima cadencia en elíptica por 20-40 seg, sin aumentar resistencia. Velocidad sobre carga. Para HIIT: 30s máximo / 30s suave. Sin impacto = mayor volumen posible. Reps = segundos.",
+    peso_sugerido:{} },
+
+  // ══════════════════════════════════════════════════════════
+  // REMO CONCEPT 2 (ergómetro)
+  // ══════════════════════════════════════════════════════════
+  { id:"remo_tecnico", nombre:"Remo Técnico (Concept 2)", tipo:"maquina", patron:"tiron",
+    grupo_primario:"dorsales", grupo_secundario:["isquiotibiales","glúteos","bíceps","core"],
+    nivel_minimo:1, demanda_neural:2, demanda_metabolica:1, fatiga_local:["dorsales","lumbar"],
+    fase:"activacion", objetivos:["fuerza","hipertrofia","resistencia","atletismo","funcional"],
+    reps:{principiante:60,intermedio:120,avanzado:180}, es_tiempo:true,
+    descripcion:"Remo a ratio lento (24-26 str/min), damper 3-4. Foco en técnica: piernas empujan, luego tronco, luego brazos. Recuperación activa de dorsales y cadena posterior. Reps = segundos.",
+    peso_sugerido:{} },
+
+  { id:"remo_500m", nombre:"500m en Concept 2", tipo:"maquina", patron:"full",
+    grupo_primario:"full body", grupo_secundario:["dorsales","isquiotibiales","glúteos","bíceps","core"],
+    nivel_minimo:1, demanda_neural:2, demanda_metabolica:3, fatiga_local:["dorsales","lumbar","cuádriceps"],
+    fase:"principal", objetivos:["grasa","resistencia","atletismo","potencia","fuerza"],
+    reps:{principiante:120,intermedio:105,avanzado:90}, es_tiempo:true,
+    descripcion:"500 metros a ritmo fuerte (damper 5-7). Marca objetivo: principiante 2:00-2:20/500m, intermedio 1:50-2:00/500m, avanzado sub 1:45/500m. El ejercicio de remo más completo. Reps = segundos estimados.",
+    peso_sugerido:{} },
+
+  { id:"remo_1000m", nombre:"1000m en Concept 2", tipo:"maquina", patron:"full",
+    grupo_primario:"full body", grupo_secundario:["dorsales","isquiotibiales","cardiovascular"],
+    nivel_minimo:1, demanda_neural:2, demanda_metabolica:3, fatiga_local:["dorsales","lumbar"],
+    fase:"principal", objetivos:["resistencia","grasa","atletismo"],
+    reps:{principiante:270,intermedio:240,avanzado:210}, es_tiempo:true,
+    descripcion:"1000 metros a ritmo sostenido (damper 5). Control de split: mantener el mismo ritmo por 500m en toda la distancia. Prueba de resistencia aeróbica-anaeróbica. Reps = segundos estimados.",
+    peso_sugerido:{} },
+
+  { id:"remo_sprint_250m", nombre:"Sprint 250m Concept 2", tipo:"maquina", patron:"full",
+    grupo_primario:"full body", grupo_secundario:["glúteos","dorsales","isquiotibiales"],
+    nivel_minimo:2, demanda_neural:3, demanda_metabolica:3, fatiga_local:["dorsales","lumbar","cuádriceps"],
+    fase:"finisher", objetivos:["potencia","grasa","atletismo","fuerza_absoluta"],
+    reps:{principiante:60,intermedio:50,avanzado:40}, es_tiempo:true,
+    descripcion:"250 metros a máxima potencia (damper 7-10). Todo o nada desde la largada. Potencia de piernas → transferencia → tirada de brazos explosiva. El sprint de remo más utilizado en CrossFit. Reps = segundos.",
+    peso_sugerido:{} },
+
+  // ══════════════════════════════════════════════════════════
+  // BICICLETA INDOOR / SPIN
+  // ══════════════════════════════════════════════════════════
+  { id:"bici_suave", nombre:"Bicicleta Indoor Suave", tipo:"maquina", patron:"cardio",
+    grupo_primario:"cuádriceps", grupo_secundario:["glúteos","gemelos","cardiovascular"],
+    nivel_minimo:1, demanda_neural:1, demanda_metabolica:1, fatiga_local:["cuádriceps"],
+    fase:"activacion", objetivos:["grasa","resistencia","wellness","movilidad","recomposicion"],
+    reps:{principiante:180,intermedio:300,avanzado:300}, es_tiempo:true,
+    descripcion:"Pedaleo a 70-80 RPM, resistencia baja. Calentamiento articular de rodilla y cadera. Cero impacto. Ideal para entradas en calor o para recuperación activa entre series pesadas. Reps = segundos.",
+    peso_sugerido:{} },
+
+  { id:"bici_moderada", nombre:"Bicicleta Indoor Moderada", tipo:"maquina", patron:"cardio",
+    grupo_primario:"cuádriceps", grupo_secundario:["glúteos","isquiotibiales","cardiovascular"],
+    nivel_minimo:1, demanda_neural:1, demanda_metabolica:2, fatiga_local:["cuádriceps","glúteos"],
+    fase:"principal", objetivos:["grasa","resistencia","recomposicion","funcional"],
+    reps:{principiante:300,intermedio:600,avanzado:900}, es_tiempo:true,
+    descripcion:"Pedaleo sostenido a 85-95 RPM, resistencia media. Zona aeróbica 2-3. La base del entrenamiento en bici indoor. Mantener cadencia constante sin rebotar en el asiento. Reps = segundos.",
+    peso_sugerido:{} },
+
+  { id:"bici_sprint", nombre:"Sprint en Bicicleta Indoor", tipo:"maquina", patron:"cardio",
+    grupo_primario:"cuádriceps", grupo_secundario:["glúteos","cardiovascular"],
+    nivel_minimo:1, demanda_neural:2, demanda_metabolica:3, fatiga_local:["cuádriceps","glúteos"],
+    fase:"finisher", objetivos:["grasa","atletismo","potencia","resistencia"],
+    reps:{principiante:20,intermedio:30,avanzado:40}, es_tiempo:true,
+    descripcion:"Sprint a máxima cadencia (110-130+ RPM), resistencia alta. Para HIIT: 30s al tope / 30s suave x 8-10 rondas. Sin impacto — permite máximo volumen de trabajo explosivo. Reps = segundos.",
+    peso_sugerido:{} },
+
+  { id:"bici_tabata", nombre:"Tabata en Bicicleta", tipo:"maquina", patron:"cardio",
+    grupo_primario:"cardiovascular", grupo_secundario:["cuádriceps","glúteos"],
+    nivel_minimo:1, demanda_neural:2, demanda_metabolica:3, fatiga_local:["cuádriceps"],
+    fase:"finisher", objetivos:["grasa","atletismo","resistencia"],
+    reps:{principiante:20,intermedio:20,avanzado:20}, es_tiempo:true,
+    descripcion:"Protocolo Tabata clásico (Izumi Tabata, 1996): 20 seg sprint máximo / 10 seg suave, 8 rondas = 4 minutos. La bici es el vehículo ideal para Tabata por el cero impacto y control de resistencia. Reps = segundos de trabajo.",
+    peso_sugerido:{} },
+
+  // ══════════════════════════════════════════════════════════
+  // ESCALADOR (StairMaster / StepMill)
+  // ══════════════════════════════════════════════════════════
+  { id:"escalador_suave", nombre:"Escalador Suave", tipo:"maquina", patron:"cardio",
+    grupo_primario:"glúteos", grupo_secundario:["cuádriceps","gemelos","cardiovascular"],
+    nivel_minimo:1, demanda_neural:1, demanda_metabolica:2, fatiga_local:["glúteos","gemelos"],
+    fase:"activacion", objetivos:["grasa","resistencia","wellness","funcional"],
+    reps:{principiante:120,intermedio:180,avanzado:300}, es_tiempo:true,
+    descripcion:"Escalador a velocidad baja (nivel 4-6). Pasos completos, sin apoyar todo el peso en las barandas. Mayor activación de glúteo que cualquier otra máquina. Excelente calentamiento de tren inferior. Reps = segundos.",
+    peso_sugerido:{} },
+
+  { id:"escalador_moderado", nombre:"Escalador Moderado", tipo:"maquina", patron:"cardio",
+    grupo_primario:"glúteos", grupo_secundario:["cuádriceps","isquiotibiales","cardiovascular"],
+    nivel_minimo:1, demanda_neural:1, demanda_metabolica:2, fatiga_local:["glúteos","cuádriceps"],
+    fase:"principal", objetivos:["grasa","resistencia","recomposicion","atletismo"],
+    reps:{principiante:300,intermedio:600,avanzado:900}, es_tiempo:true,
+    descripcion:"Escalador a nivel 7-10, ritmo sostenido. La demanda metabólica es equivalente a correr al 70% a igual percepción de esfuerzo. Ideal para definición y resistencia de tren inferior. Reps = segundos.",
+    peso_sugerido:{} },
+
+  { id:"escalador_sprint", nombre:"Sprint en Escalador", tipo:"maquina", patron:"cardio",
+    grupo_primario:"glúteos", grupo_secundario:["cuádriceps","cardiovascular"],
+    nivel_minimo:2, demanda_neural:2, demanda_metabolica:3, fatiga_local:["glúteos","cuádriceps"],
+    fase:"finisher", objetivos:["grasa","atletismo","potencia"],
+    reps:{principiante:20,intermedio:30,avanzado:45}, es_tiempo:true,
+    descripcion:"Escalador a máxima velocidad (nivel 12-20) por 20-45 seg. Recuperación caminando 60-90 seg. Activa glúteos e isquiotibiales con altísima demanda cardíaca. El finisher de tren inferior más brutal en máquina. Reps = segundos.",
+    peso_sugerido:{} }
 
 ];
 
@@ -13595,12 +13762,300 @@ const COMBOS_DB = [
       {nombre:"Puente de Glúteos", reps:{principiante:20,intermedio:30,avanzado:40}, descripcion:"Con banda sobre las rodillas: elevar caderas."}
     ],
     descripcion_combo:"Activación de glúteo medio + glúteo mayor en secuencia. La banda permanece durante los dos ejercicios. El glúteo llega al puente ya activado. El combo de activación más efectivo para glúteos."
+  },
+  // ══════════════════════════════════════════════════════════
+  // COMBOS CONCEPT 2 — REMO
+  // ══════════════════════════════════════════════════════════
+  { id:"combo_remo_thruster", nombre:"Remo 500m + Thruster",
+    tipo:"maquina", patron:"full", grupo_primario:"full body", nivel_minimo:2,
+    demanda_neural:3, demanda_metabolica:3, fatiga_local:["dorsales","hombros","cuádriceps"],
+    fase:"principal", objetivos:["grasa","fuerza","potencia","atletismo"], es_combo:true,
+    pasos:[
+      {nombre:"500m en Concept 2", reps:{principiante:120,intermedio:105,avanzado:90}, descripcion:"500m a ritmo fuerte. Damper 5-7. Máxima potencia por stroke."},
+      {nombre:"Empujador con Mancuernas", reps:{principiante:10,intermedio:12,avanzado:15}, descripcion:"Inmediatamente: squat + press encadenado sin parar."}
+    ],
+    descripcion_combo:"El combo más icónico del CrossFit. Del remo al thruster sin transición. El remo pre-fatiga la cadena posterior, el thruster la termina de explotar de abajo hacia arriba."
+  },
+  { id:"combo_remo_dominada", nombre:"Remo 500m + Dominadas",
+    tipo:"maquina", patron:"tiron", grupo_primario:"dorsales", nivel_minimo:2,
+    demanda_neural:3, demanda_metabolica:3, fatiga_local:["dorsales","bíceps","lumbar"],
+    fase:"principal", objetivos:["fuerza","atletismo","grasa"], es_combo:true,
+    pasos:[
+      {nombre:"500m en Concept 2", reps:{principiante:120,intermedio:105,avanzado:90}, descripcion:"500m a ritmo fuerte. Foco en el tirón."},
+      {nombre:"Dominada", reps:{principiante:5,intermedio:8,avanzado:12}, descripcion:"Inmediatamente: dominadas estrictas."}
+    ],
+    descripcion_combo:"Doble tirón: horizontal (remo) + vertical (dominadas). La cadena de tirón completa en dos planos. Las dominadas llegan con dorsales ya activados al máximo."
+  },
+  { id:"combo_remo_press_militar", nombre:"Remo 250m + Press Militar",
+    tipo:"maquina", patron:"full", grupo_primario:"full body", nivel_minimo:1,
+    demanda_neural:3, demanda_metabolica:3, fatiga_local:["dorsales","hombros","lumbar"],
+    fase:"principal", objetivos:["grasa","fuerza","atletismo"], es_combo:true,
+    pasos:[
+      {nombre:"Sprint 250m Concept 2", reps:{principiante:60,intermedio:50,avanzado:40}, descripcion:"250m sprint máxima potencia."},
+      {nombre:"Press Militar con Barra", reps:{principiante:8,intermedio:10,avanzado:12}, descripcion:"Inmediatamente: press estricto overhead."}
+    ],
+    descripcion_combo:"Potencia de tirón + fuerza de empuje. El sprint de remo explota la cadena posterior, el press la complementa con la anterior. Push/pull en un solo bloque."
+  },
+  { id:"combo_remo_peso_muerto", nombre:"Remo 1000m + Peso Muerto",
+    tipo:"maquina", patron:"piernas", grupo_primario:"isquiotibiales", nivel_minimo:2,
+    demanda_neural:3, demanda_metabolica:3, fatiga_local:["dorsales","lumbar","isquiotibiales"],
+    fase:"finisher", objetivos:["fuerza","atletismo","resistencia"], es_combo:true,
+    pasos:[
+      {nombre:"1000m en Concept 2", reps:{principiante:270,intermedio:240,avanzado:210}, descripcion:"1000m a ritmo fuerte sostenido."},
+      {nombre:"Peso Muerto Convencional", reps:{principiante:5,intermedio:6,avanzado:8}, descripcion:"Inmediatamente: peso muerto pesado."}
+    ],
+    descripcion_combo:"La cadena posterior al límite. Remo pre-fatiga dorsales, glúteos e isquiotibiales. El peso muerto los lleva a fallo bajo fatiga acumulada. Solo para avanzados con buena base técnica."
+  },
+  { id:"combo_remo_box_jump", nombre:"Remo Sprint + Salto al Cajón",
+    tipo:"maquina", patron:"full", grupo_primario:"full body", nivel_minimo:2,
+    demanda_neural:3, demanda_metabolica:3, fatiga_local:["cuádriceps","glúteos","dorsales"],
+    fase:"finisher", objetivos:["potencia","atletismo","grasa"], es_combo:true,
+    pasos:[
+      {nombre:"Sprint 250m Concept 2", reps:{principiante:60,intermedio:50,avanzado:40}, descripcion:"250m sprint máxima potencia."},
+      {nombre:"Salto al Cajón y Cruce", reps:{principiante:6,intermedio:10,avanzado:14}, descripcion:"Sprint de remo → saltos al cajón explosivos."}
+    ],
+    descripcion_combo:"Potencia de tirón + potencia de salto. Del remo (horizontal) al cajón (vertical). El sistema neuromuscular lleva la potencia generada en el remo a un vector diferente."
+  },
+  { id:"combo_remo_burpee", nombre:"Remo 500m + Burpees",
+    tipo:"maquina", patron:"full", grupo_primario:"full body", nivel_minimo:1,
+    demanda_neural:3, demanda_metabolica:3, fatiga_local:["dorsales","hombros","cuádriceps"],
+    fase:"finisher", objetivos:["grasa","atletismo","resistencia"], es_combo:true,
+    pasos:[
+      {nombre:"500m en Concept 2", reps:{principiante:120,intermedio:105,avanzado:90}, descripcion:"500m a ritmo fuerte."},
+      {nombre:"Burpee", reps:{principiante:10,intermedio:15,avanzado:20}, descripcion:"Inmediatamente: burpees sin pausa."}
+    ],
+    descripcion_combo:"Cardio horizontal + cardio total. Del ergómetro directamente al suelo. El corazón ya está al límite cuando empiezan los burpees. El finisher clásico de preparación física militar."
+  },
+  { id:"combo_remo_swing", nombre:"Remo Técnico + Balanceo KB",
+    tipo:"maquina", patron:"full", grupo_primario:"glúteos", nivel_minimo:1,
+    demanda_neural:2, demanda_metabolica:3, fatiga_local:["glúteos","dorsales","lumbar"],
+    fase:"principal", objetivos:["grasa","atletismo","funcional","fuerza"], es_combo:true,
+    pasos:[
+      {nombre:"Remo Técnico (Concept 2)", reps:{principiante:60,intermedio:120,avanzado:180}, descripcion:"Remo suave enfocado en cadena posterior."},
+      {nombre:"Balanceo con Mancuerna", reps:{principiante:15,intermedio:20,avanzado:25}, descripcion:"Bisagra explosiva bilateral inmediata."}
+    ],
+    descripcion_combo:"La bisagra de cadera en dos máquinas distintas. El remo activa y el swing explota. Ambos movimientos comparten el mismo patrón motor — la transferencia entre los dos es perfecta."
+  },
+
+  // ══════════════════════════════════════════════════════════
+  // COMBOS BICICLETA INDOOR
+  // ══════════════════════════════════════════════════════════
+  { id:"combo_bici_flexion", nombre:"Sprint Bici + Flexiones",
+    tipo:"maquina", patron:"full", grupo_primario:"pectoral", nivel_minimo:1,
+    demanda_neural:2, demanda_metabolica:3, fatiga_local:["cuádriceps","pectoral","hombros"],
+    fase:"finisher", objetivos:["grasa","resistencia","atletismo"], es_combo:true,
+    pasos:[
+      {nombre:"Sprint en Bicicleta Indoor", reps:{principiante:20,intermedio:30,avanzado:40}, descripcion:"Sprint a máxima cadencia."},
+      {nombre:"Flexión de Brazos", reps:{principiante:10,intermedio:15,avanzado:20}, descripcion:"Bajar de la bici: flexiones completas."}
+    ],
+    descripcion_combo:"Piernas al límite + tren superior. El sprint de bici lleva el pulso al tope, las flexiones sostienen la intensidad cardíaca trabajando un grupo completamente distinto."
+  },
+  { id:"combo_bici_escalador", nombre:"Bici Sprint + Escalador",
+    tipo:"maquina", patron:"cardio", grupo_primario:"cardiovascular", nivel_minimo:1,
+    demanda_neural:2, demanda_metabolica:3, fatiga_local:["cuádriceps","glúteos"],
+    fase:"finisher", objetivos:["grasa","atletismo","resistencia"], es_combo:true,
+    pasos:[
+      {nombre:"Sprint en Bicicleta Indoor", reps:{principiante:30,intermedio:40,avanzado:45}, descripcion:"Sprint máxima intensidad en bici."},
+      {nombre:"Escalador", reps:{principiante:20,intermedio:30,avanzado:40}, descripcion:"Inmediatamente en plancha: rodillas al pecho alternando rápido."}
+    ],
+    descripcion_combo:"Cardio de máquina + cardio de suelo sin pausa. El escalador mantiene el ritmo cardíaco alcanzado en la bici usando el tren superior como continuidad."
+  },
+  { id:"combo_bici_remo_barra", nombre:"Bici 2 min + Remo con Barra",
+    tipo:"maquina", patron:"tiron", grupo_primario:"dorsales", nivel_minimo:1,
+    demanda_neural:2, demanda_metabolica:3, fatiga_local:["cuádriceps","dorsales"],
+    fase:"principal", objetivos:["grasa","fuerza","resistencia","recomposicion"], es_combo:true,
+    pasos:[
+      {nombre:"Bicicleta Indoor Moderada", reps:{principiante:120,intermedio:120,avanzado:120}, descripcion:"2 minutos a ritmo moderado-alto."},
+      {nombre:"Remo con Barra", reps:{principiante:8,intermedio:10,avanzado:12}, descripcion:"Inmediatamente: remo inclinado con barra."}
+    ],
+    descripcion_combo:"Cardio + fuerza de tirón. La bici pre-activa el metabolismo, el remo aprovecha el estado cardiovascular elevado para máxima quema calórica durante el trabajo de fuerza."
+  },
+  { id:"combo_bici_press_hombro", nombre:"Sprint Bici + Press Hombro",
+    tipo:"maquina", patron:"empuje", grupo_primario:"hombros", nivel_minimo:1,
+    demanda_neural:2, demanda_metabolica:3, fatiga_local:["cuádriceps","hombros"],
+    fase:"principal", objetivos:["grasa","hipertrofia","atletismo"], es_combo:true,
+    pasos:[
+      {nombre:"Sprint en Bicicleta Indoor", reps:{principiante:30,intermedio:40,avanzado:45}, descripcion:"Sprint a cadencia máxima."},
+      {nombre:"Press de Hombro", reps:{principiante:10,intermedio:12,avanzado:15}, descripcion:"Inmediatamente: press bilateral overhead."}
+    ],
+    descripcion_combo:"Tren inferior explosivo + tren superior de fuerza. El sprint de bici no involucra los hombros — llegan frescos al press con el pulso ya alto para máxima respuesta hormonal."
+  },
+  { id:"combo_bici_sentadilla", nombre:"Bici Sprint + Sentadilla con Salto",
+    tipo:"maquina", patron:"piernas", grupo_primario:"cuádriceps", nivel_minimo:2,
+    demanda_neural:3, demanda_metabolica:3, fatiga_local:["cuádriceps","glúteos"],
+    fase:"finisher", objetivos:["potencia","grasa","atletismo"], es_combo:true,
+    pasos:[
+      {nombre:"Sprint en Bicicleta Indoor", reps:{principiante:20,intermedio:30,avanzado:40}, descripcion:"Sprint a máxima cadencia."},
+      {nombre:"Sentadilla con Salto", reps:{principiante:8,intermedio:12,avanzado:15}, descripcion:"Bajar: sentadillas con salto explosivo."}
+    ],
+    descripcion_combo:"La pierna en modo explosivo total. La bici pre-fatiga cuádriceps y glúteos, los jump squats los terminan con pliometría. La transición sin descanso es lo que lo hace brutal."
+  },
+  { id:"combo_tabata_bici_remo", nombre:"Tabata Bici + Remo KB",
+    tipo:"maquina", patron:"full", grupo_primario:"full body", nivel_minimo:1,
+    demanda_neural:2, demanda_metabolica:3, fatiga_local:["cuádriceps","glúteos","dorsales"],
+    fase:"finisher", objetivos:["grasa","atletismo","resistencia"], es_combo:true,
+    pasos:[
+      {nombre:"Tabata en Bicicleta", reps:{principiante:20,intermedio:20,avanzado:20}, descripcion:"8 rondas de 20s sprint / 10s suave = 4 minutos."},
+      {nombre:"Balanceo con Mancuerna", reps:{principiante:15,intermedio:20,avanzado:25}, descripcion:"Inmediatamente al bajar: swings explosivos."}
+    ],
+    descripcion_combo:"Tabata en bici (4 min) + swing KB. Uno de los finishers más efectivos para grasa: el Tabata agota el glucógeno, el swing termina con la cadena posterior."
+  },
+
+  // ══════════════════════════════════════════════════════════
+  // COMBOS ESCALADOR
+  // ══════════════════════════════════════════════════════════
+  { id:"combo_escalador_swing", nombre:"Escalador + Balanceo KB",
+    tipo:"maquina", patron:"full", grupo_primario:"glúteos", nivel_minimo:1,
+    demanda_neural:2, demanda_metabolica:3, fatiga_local:["glúteos","cuádriceps","dorsales"],
+    fase:"principal", objetivos:["grasa","atletismo","funcional","resistencia"], es_combo:true,
+    pasos:[
+      {nombre:"Escalador Moderado", reps:{principiante:180,intermedio:300,avanzado:300}, descripcion:"3-5 min a ritmo sostenido."},
+      {nombre:"Balanceo con Mancuerna", reps:{principiante:15,intermedio:20,avanzado:25}, descripcion:"Inmediatamente: swings bilaterales."}
+    ],
+    descripcion_combo:"Glúteos pre-fatigados en máquina + potencia de cadera con KB. El escalador trabaja glúteos en modo resistencia, el swing los activa en modo explosivo. La combinación más efectiva para el tren posterior."
+  },
+  { id:"combo_escalador_push_press", nombre:"Escalador Sprint + Push Press",
+    tipo:"maquina", patron:"full", grupo_primario:"full body", nivel_minimo:2,
+    demanda_neural:3, demanda_metabolica:3, fatiga_local:["glúteos","hombros","cuádriceps"],
+    fase:"finisher", objetivos:["potencia","grasa","atletismo"], es_combo:true,
+    pasos:[
+      {nombre:"Sprint en Escalador", reps:{principiante:20,intermedio:30,avanzado:45}, descripcion:"Sprint máximo en escalador."},
+      {nombre:"Press Impulsado con Barra", reps:{principiante:6,intermedio:8,avanzado:10}, descripcion:"Inmediatamente: push press explosivo."}
+    ],
+    descripcion_combo:"Explosividad de tren inferior + potencia overhead. El sprint en escalador eleva el sistema nervioso central, el push press capitaliza esa activación para producir más potencia."
+  },
+  { id:"combo_escalador_remo", nombre:"Escalador + Remo con Barra",
+    tipo:"maquina", patron:"tiron", grupo_primario:"full body", nivel_minimo:1,
+    demanda_neural:2, demanda_metabolica:3, fatiga_local:["glúteos","dorsales","lumbar"],
+    fase:"principal", objetivos:["grasa","resistencia","atletismo","funcional"], es_combo:true,
+    pasos:[
+      {nombre:"Escalador Moderado", reps:{principiante:180,intermedio:240,avanzado:300}, descripcion:"3-4 min sostenido."},
+      {nombre:"Remo con Barra", reps:{principiante:8,intermedio:10,avanzado:12}, descripcion:"Inmediatamente: remo inclinado con barra."}
+    ],
+    descripcion_combo:"Tren inferior aeróbico + tirón de espalda. El escalador no cansa los dorsales — llegan frescos al remo con el metabolismo ya elevado."
+  },
+  { id:"combo_escalador_lunges", nombre:"Escalador + Zancadas Cargadas",
+    tipo:"maquina", patron:"piernas", grupo_primario:"cuádriceps", nivel_minimo:1,
+    demanda_neural:2, demanda_metabolica:3, fatiga_local:["glúteos","cuádriceps"],
+    fase:"principal", objetivos:["grasa","hipertrofia","resistencia","recomposicion"], es_combo:true,
+    pasos:[
+      {nombre:"Escalador Suave", reps:{principiante:120,intermedio:180,avanzado:300}, descripcion:"2-3 min ritmo constante."},
+      {nombre:"Zancada con Carga", reps:{principiante:16,intermedio:20,avanzado:24}, descripcion:"Inmediatamente: lunges con mancuernas o sandbag."}
+    ],
+    descripcion_combo:"Pre-fatiga de tren inferior en máquina + volumen de zancadas. El escalador calienta y agota la capacidad aeróbica de las piernas, las zancadas terminan con volumen muscular."
+  },
+
+  // ══════════════════════════════════════════════════════════
+  // COMBOS CINTA
+  // ══════════════════════════════════════════════════════════
+  { id:"combo_cinta_pendiente_deadlift", nombre:"Cinta Pendiente + Peso Muerto",
+    tipo:"maquina", patron:"piernas", grupo_primario:"glúteos", nivel_minimo:1,
+    demanda_neural:2, demanda_metabolica:3, fatiga_local:["glúteos","isquiotibiales","lumbar"],
+    fase:"principal", objetivos:["grasa","hipertrofia","resistencia","recomposicion"], es_combo:true,
+    pasos:[
+      {nombre:"Caminata en Pendiente", reps:{principiante:180,intermedio:300,avanzado:300}, descripcion:"3-5 min a 8-12% pendiente, 5-6 km/h."},
+      {nombre:"Peso Muerto Convencional", reps:{principiante:6,intermedio:8,avanzado:10}, descripcion:"Inmediatamente: peso muerto pesado."}
+    ],
+    descripcion_combo:"La cadena posterior al límite. La caminata en pendiente pre-activa glúteos e isquiotibiales, el peso muerto los lleva a máxima contracción con carga. Ideal para recomposición corporal."
+  },
+  { id:"combo_sprint_cinta_burpee", nombre:"Sprint Cinta + Burpees",
+    tipo:"maquina", patron:"full", grupo_primario:"full body", nivel_minimo:2,
+    demanda_neural:3, demanda_metabolica:3, fatiga_local:["cuádriceps","hombros"],
+    fase:"finisher", objetivos:["grasa","atletismo","potencia"], es_combo:true,
+    pasos:[
+      {nombre:"Sprint en Cinta", reps:{principiante:20,intermedio:30,avanzado:40}, descripcion:"Sprint máximo en cinta."},
+      {nombre:"Burpee", reps:{principiante:8,intermedio:12,avanzado:15}, descripcion:"Bajar: burpees sin pausa."}
+    ],
+    descripcion_combo:"El finisher más brutal. Sprint en cinta → burpees. Dos movimientos de máxima demanda cardíaca y total body. El corazón no tiene tiempo de recuperar entre los dos."
+  },
+  { id:"combo_trote_flexion_abs", nombre:"Trote + Flexiones + Abdominales",
+    tipo:"maquina", patron:"full", grupo_primario:"full body", nivel_minimo:1,
+    demanda_neural:2, demanda_metabolica:3, fatiga_local:["cuádriceps","pectoral","abdomen"],
+    fase:"principal", objetivos:["grasa","resistencia","atletismo","funcional"], es_combo:true,
+    pasos:[
+      {nombre:"Trote Moderado en Cinta", reps:{principiante:120,intermedio:180,avanzado:300}, descripcion:"Trote a ritmo conversacional."},
+      {nombre:"Flexión de Brazos", reps:{principiante:10,intermedio:15,avanzado:20}, descripcion:"Bajar: flexiones al suelo."},
+      {nombre:"Abdominal Completo", reps:{principiante:20,intermedio:30,avanzado:40}, descripcion:"Al suelo: abdominales completos."}
+    ],
+    descripcion_combo:"El circuito clásico del entrenamiento funcional militar. Trote + empuje de suelo + core. Tres movimientos, tres sistemas, sin equipamiento adicional. El cuerpo entero en 5 minutos."
+  },
+  { id:"combo_cinta_sprint_squat", nombre:"Sprint Cinta + Sentadilla + Plancha",
+    tipo:"maquina", patron:"full", grupo_primario:"full body", nivel_minimo:1,
+    demanda_neural:2, demanda_metabolica:3, fatiga_local:["cuádriceps","core","hombros"],
+    fase:"finisher", objetivos:["grasa","atletismo","funcional"], es_combo:true,
+    pasos:[
+      {nombre:"Sprint en Cinta", reps:{principiante:20,intermedio:30,avanzado:45}, descripcion:"Sprint explosivo en cinta."},
+      {nombre:"Sentadilla", reps:{principiante:15,intermedio:20,avanzado:25}, descripcion:"Bajar: sentadillas con peso corporal."},
+      {nombre:"Plancha Isométrica", reps:{principiante:20,intermedio:30,avanzado:45}, descripcion:"Al suelo: plancha sostenida."}
+    ],
+    descripcion_combo:"Tres sistemas en cascada. El sprint agota el cardio, la sentadilla termina el tren inferior, la plancha estabiliza el core bajo fatiga total."
+  },
+
+  // ══════════════════════════════════════════════════════════
+  // COMBOS ELÍPTICA
+  // ══════════════════════════════════════════════════════════
+  { id:"combo_eliptica_press_remo", nombre:"Elíptica + Press + Remo",
+    tipo:"maquina", patron:"full", grupo_primario:"full body", nivel_minimo:1,
+    demanda_neural:2, demanda_metabolica:3, fatiga_local:["cuádriceps","hombros","dorsales"],
+    fase:"principal", objetivos:["grasa","resistencia","recomposicion","funcional"], es_combo:true,
+    pasos:[
+      {nombre:"Elíptica Moderada", reps:{principiante:180,intermedio:300,avanzado:300}, descripcion:"3-5 min a intensidad media."},
+      {nombre:"Press de Pecho", reps:{principiante:10,intermedio:12,avanzado:15}, descripcion:"Press bilateral con mancuernas."},
+      {nombre:"Remo con Mancuerna", reps:{principiante:10,intermedio:12,avanzado:15}, descripcion:"Remo bilateral inclinado."}
+    ],
+    descripcion_combo:"Cardio full body + push/pull. La elíptica ya trabaja brazos y piernas, el press y el remo terminan el trabajo de tren superior con carga. El circuito más eficiente para recomposición."
+  },
+  { id:"combo_eliptica_sprint_swing", nombre:"Sprint Elíptica + Balanceo KB",
+    tipo:"maquina", patron:"full", grupo_primario:"full body", nivel_minimo:1,
+    demanda_neural:2, demanda_metabolica:3, fatiga_local:["cuádriceps","glúteos","dorsales"],
+    fase:"finisher", objetivos:["grasa","atletismo","resistencia"], es_combo:true,
+    pasos:[
+      {nombre:"Sprint en Elíptica", reps:{principiante:20,intermedio:30,avanzado:40}, descripcion:"Sprint a máxima cadencia."},
+      {nombre:"Balanceo con Mancuerna", reps:{principiante:15,intermedio:20,avanzado:25}, descripcion:"Inmediatamente: swings bilaterales."}
+    ],
+    descripcion_combo:"La elíptica trabaja en el plano sagital frontal, el swing en el posterior explosivo. Dos vectores de movimiento completamente distintos en secuencia para máxima quema calórica."
+  },
+
+  // ══════════════════════════════════════════════════════════
+  // COMBOS MIXTOS DE MÁQUINAS
+  // ══════════════════════════════════════════════════════════
+  { id:"combo_remo_bici_biathlon", nombre:"Remo + Bici (Biatlón Indoor)",
+    tipo:"maquina", patron:"cardio", grupo_primario:"cardiovascular", nivel_minimo:1,
+    demanda_neural:2, demanda_metabolica:3, fatiga_local:["dorsales","cuádriceps"],
+    fase:"finisher", objetivos:["grasa","atletismo","resistencia"], es_combo:true,
+    pasos:[
+      {nombre:"500m en Concept 2", reps:{principiante:120,intermedio:105,avanzado:90}, descripcion:"500m a ritmo fuerte en remo."},
+      {nombre:"Sprint en Bicicleta Indoor", reps:{principiante:30,intermedio:40,avanzado:45}, descripcion:"Inmediatamente: sprint en bici."}
+    ],
+    descripcion_combo:"El biatlón indoor. Remo (pull) → Bici (push de piernas). Dos máquinas, dos demandas distintas, sin descanso. Músculo diferente en cada estación — el cuerpo no puede recuperar entre los dos."
+  },
+  { id:"combo_escalador_remo_c2", nombre:"Escalador + Remo C2 + Burpee",
+    tipo:"maquina", patron:"full", grupo_primario:"full body", nivel_minimo:2,
+    demanda_neural:3, demanda_metabolica:3, fatiga_local:["glúteos","dorsales","hombros"],
+    fase:"finisher", objetivos:["grasa","atletismo","potencia"], es_combo:true,
+    pasos:[
+      {nombre:"Escalador Sprint", reps:{principiante:20,intermedio:30,avanzado:45}, descripcion:"Sprint máximo en escalador."},
+      {nombre:"Sprint 250m Concept 2", reps:{principiante:60,intermedio:50,avanzado:40}, descripcion:"Inmediatamente: 250m remo sprint."},
+      {nombre:"Burpee", reps:{principiante:6,intermedio:10,avanzado:12}, descripcion:"Inmediatamente: burpees al suelo."}
+    ],
+    descripcion_combo:"El triatlón del pain cave. Escalador (piernas) → Remo C2 (full body tirón) → Burpee (full body total). Tres movimientos sin pausa. El finisher más exigente de la colección."
+  },
+  { id:"combo_hyrox_simulado", nombre:"Hyrox Simulado",
+    tipo:"maquina", patron:"full", grupo_primario:"full body", nivel_minimo:2,
+    demanda_neural:3, demanda_metabolica:3, fatiga_local:["cuádriceps","dorsales","glúteos"],
+    fase:"finisher", objetivos:["atletismo","grasa","resistencia"], es_combo:true,
+    pasos:[
+      {nombre:"Trote Moderado en Cinta", reps:{principiante:120,intermedio:120,avanzado:120}, descripcion:"1 km a ritmo de carrera (2 min aprox)."},
+      {nombre:"Lanzamiento a la Pared", reps:{principiante:15,intermedio:20,avanzado:25}, descripcion:"Wall ball: squat + lanzamiento al blanco."},
+      {nombre:"Zancada con Carga", reps:{principiante:16,intermedio:20,avanzado:24}, descripcion:"Lunge con sandbag o mancuernas."}
+    ],
+    descripcion_combo:"Simulación del formato Hyrox. Correr + estación de trabajo + correr. La carrera fatiga el sistema aeróbico, los ejercicios lo mantienen elevado. El formato de competencia más popular de 2024-2025."
   }
 ];
 
 const INCOMPATIBLES_CONSECUTIVOS = [["empuje","empuje"],["tiron","tiron"],["piernas","piernas"],["core","core"]];
 const FATIGA_MAXIMA = {"hombros":2,"lumbar":1,"rodillas":2,"tríceps":2};
-const TIPOS_POR_EQUIPAMIENTO = {"solo_cuerpo":["bodyweight"],"con_barras":["bodyweight","barra"],"con_mancuernas":["bodyweight","mancuerna"],"completo":["bodyweight","barra","mancuerna"]};
+const TIPOS_POR_EQUIPAMIENTO = {"solo_cuerpo":["bodyweight"],"con_barras":["bodyweight","barra"],"con_mancuernas":["bodyweight","mancuerna"],"con_maquinas":["bodyweight","maquina"],"completo":["bodyweight","barra","mancuerna","maquina"]};
 
 const DIOSES = [
   {nombre:"Zeus",subtitulo:"Rey del Olimpo",mitologia:"El padre de todos los dioses. Este workout no perdona rangos.",intensidad:"alta",objetivos:["fuerza","grasa"]},
@@ -13673,32 +14128,144 @@ function generarWorkout(params){
   const cfg={'20':{ep:3,r:3},'30':{ep:4,r:4},'45':{ep:5,r:5},'60':{ep:6,r:6}}[duracion]||{ep:4,r:4};
   if(intensidad==='alta')cfg.r++;if(intensidad==='baja')cfg.r--;cfg.r=Math.max(2,cfg.r);
 
+  // ── MEJORA 1: Reps calibradas por objetivo ──────────────────
+  const REPS_POR_OBJETIVO = {
+    fuerza_absoluta: {principiante:{min:2,max:3}, intermedio:{min:2,max:4}, avanzado:{min:1,max:3}},
+    potencia:        {principiante:{min:3,max:5}, intermedio:{min:3,max:5}, avanzado:{min:2,max:4}},
+    fuerza:          {principiante:{min:5,max:6}, intermedio:{min:4,max:6}, avanzado:{min:3,max:5}},
+    hipertrofia:     {principiante:{min:10,max:12},intermedio:{min:8,max:12},avanzado:{min:8,max:15}},
+    recomposicion:   {principiante:{min:10,max:15},intermedio:{min:8,max:12},avanzado:{min:8,max:12}},
+    grasa:           {principiante:{min:15,max:20},intermedio:{min:12,max:20},avanzado:{min:15,max:25}},
+    resistencia:     {principiante:{min:20,max:25},intermedio:{min:15,max:25},avanzado:{min:20,max:30}},
+    atletismo:       {principiante:{min:8,max:12}, intermedio:{min:8,max:15}, avanzado:{min:10,max:20}},
+    funcional:       {principiante:{min:10,max:15},intermedio:{min:10,max:15},avanzado:{min:12,max:20}},
+    movilidad:       {principiante:{min:20,max:30},intermedio:{min:30,max:45},avanzado:{min:30,max:60}},
+    wellness:        {principiante:{min:20,max:30},intermedio:{min:25,max:40},avanzado:{min:30,max:45}},
+  };
+  const calcReps = (e, niv, obj) => {
+    if(e.es_tiempo || e.fase==='activacion') return e.reps[niv]||e.reps.intermedio;
+    if(obj==='movilidad'||obj==='wellness') return e.reps[niv]||e.reps.intermedio;
+    const range = (REPS_POR_OBJETIVO[obj]||{})[niv];
+    if(!range) return e.reps[niv]||e.reps.intermedio;
+    const base = e.reps[niv]||e.reps.intermedio;
+    const clamped = Math.min(Math.max(base, range.min), range.max);
+    return clamped;
+  };
+
+  // ── MEJORA 2: Descanso calibrado por objetivo (en seg) ─────
+  const DESCANSO_POR_OBJETIVO = {
+    fuerza_absoluta: 240,  // 4:00
+    potencia:        180,  // 3:00
+    fuerza:          120,  // 2:00
+    hipertrofia:      75,  // 1:15
+    recomposicion:    60,  // 1:00
+    grasa:            45,  // 0:45
+    resistencia:      30,  // 0:30
+    atletismo:        60,  // 1:00
+    funcional:        60,  // 1:00
+    movilidad:        15,  // 0:15 (flujo)
+    wellness:         15,  // 0:15 (flujo)
+  };
+  // Con máquinas: el descanso entre máquina y ejercicio es la transición (15-30 seg)
+  const tieneMaquinas = tipos.includes('maquina');
+  const descansoBase = DESCANSO_POR_OBJETIVO[objetivo] || ({baja:90,media:75,alta:45})[intensidad] || 60;
+  const descansoAjustado = tieneMaquinas && ['grasa','atletismo','resistencia'].includes(objetivo)
+    ? Math.max(descansoBase - 15, 15)
+    : descansoBase;
+  const descansoSeg = descansoAjustado;
+
+  // ── MEJORA 3: Score de prioridad por objetivo ───────────────
+  const scorePorObjetivo = (e, obj) => {
+    let score = Math.random() * 0.4; // base aleatoria reducida
+    // Fuerza absoluta → compuestos multiarticulares pesados
+    if(obj==='fuerza_absoluta'||obj==='fuerza'||obj==='potencia'){
+      if(e.patron==='full'||e.patron==='piernas') score += 0.5;
+      if(e.demanda_neural===3) score += 0.4;
+      if(e.tipo==='barra') score += 0.3;
+      if(e.demanda_neural===1) score -= 0.4; // penalizar aislados
+    }
+    // Hipertrofia → demanda metabólica media, variedad de grupos
+    if(obj==='hipertrofia'){
+      if(e.demanda_metabolica===2) score += 0.3;
+      if(e.patron==='empuje'||e.patron==='tiron') score += 0.2;
+    }
+    // Grasa / Resistencia → máxima demanda metabólica
+    if(obj==='grasa'||obj==='resistencia'||obj==='recomposicion'){
+      score += e.demanda_metabolica * 0.25;
+      if(e.patron==='full') score += 0.3;
+    }
+    // Movilidad / Wellness → yoga, calistenia suave
+    if(obj==='movilidad'||obj==='wellness'){
+      if(e.tipo==='bodyweight') score += 0.3;
+      if(e.demanda_neural<=2) score += 0.3;
+      if(e.demanda_metabolica===1) score += 0.2;
+      if(e.objetivos.includes('movilidad')||e.objetivos.includes('wellness')) score += 0.5;
+      if(e.tipo==='maquina'&&e.demanda_metabolica===1) score += 0.2; // caminata suave en maquina ok
+    }
+    // Atletismo → explosividad, cardio, máquinas de potencia
+    if(obj==='atletismo'){
+      if(e.demanda_metabolica===3) score += 0.3;
+      if(e.patron==='cardio'||e.patron==='full') score += 0.2;
+      if(e.objetivos.includes('atletismo')) score += 0.4;
+      if(e.tipo==='maquina') score += 0.3; // máquinas son ideales para atletismo
+    }
+    // Grasa / Resistencia → máquinas de alta demanda metabólica
+    if(obj==='grasa'||obj==='resistencia'){
+      if(e.tipo==='maquina'&&e.demanda_metabolica>=2) score += 0.35;
+    }
+    // Potencia → remo sprint, bici sprint
+    if(obj==='potencia'){
+      if(e.tipo==='maquina'&&e.demanda_metabolica===3) score += 0.4;
+      if(['remo_sprint_250m','bici_sprint','sprint_cinta'].includes(e.id)) score += 0.3;
+    }
+    // Fuerza / Hipertrofia → máquinas solo en activación, no en principal
+    if(obj==='fuerza_absoluta'||obj==='fuerza'||obj==='hipertrofia'){
+      if(e.tipo==='maquina'&&e.fase==='activacion') score += 0.1;
+      if(e.tipo==='maquina'&&e.fase==='principal') score -= 0.5; // penalizar máquinas en bloques de fuerza
+    }
+    return score;
+  };
+  const sh = (arr, obj) => [...arr].sort((a,b) => scorePorObjetivo(b,obj||objetivo) - scorePorObjetivo(a,obj||objetivo));
+
   let disp=filtrarEjercicios({nivel,equipamiento,objetivo,musculo_foco});
   if(disp.length<5)disp=filtrarEjercicios({nivel,equipamiento,objetivo,musculo_foco:'general'});
   if(disp.length<4)disp=filtrarEjercicios({nivel,equipamiento,objetivo:null,musculo_foco:'general'});
   if(disp.length<3)return{error:'Pool insuficiente',params};
-  const sh=a=>[...a].sort(()=>Math.random()-.5);
 
-  // Activación
-  const act_pool=sh(disp.filter(e=>e.fase==='activacion'));
+  // Activación (sin score — siempre es aleatoria)
+  const shRnd = a => [...a].sort(()=>Math.random()-.5);
+  const act_pool=shRnd(disp.filter(e=>e.fase==='activacion'));
   const act=[];
   for(const e of act_pool){
     if(act.length>=2)break;
     if(act.length===0||compatibles(act[act.length-1],e))if(okFatiga(act,e))act.push(e);
   }
 
-  // Combos disponibles para este workout
-  const combosDisp=usar_combos?sh(COMBOS_DB.filter(c=>{
+  // Combos disponibles
+  const combosDisp=usar_combos?shRnd(COMBOS_DB.filter(c=>{
     const nNum={principiante:1,intermedio:2,avanzado:3}[nivel]||2;
     return c.nivel_minimo<=nNum&&tipos.includes(c.tipo)&&(!objetivo||c.objetivos.includes(objetivo));
   })):[];
   const combosFin=combosDisp.filter(c=>c.fase==='finisher');
   const combosPri=combosDisp.filter(c=>c.fase==='principal');
 
-  // Principal con 1 combo embebido en posición intermedia
+  // ── MEJORA 4: Balanceo push/pull ───────────────────────────
+  const patronCuota = {empuje:0, tiron:0, piernas:0, full:0, core:0, cardio:0};
+  const CUOTAS = {
+    fuerza_absoluta: {empuje:1, tiron:1, piernas:1},
+    fuerza:          {empuje:1, tiron:1, piernas:1},
+    hipertrofia:     {empuje:1, tiron:1, piernas:0},
+    grasa:           {empuje:0, tiron:0, piernas:0},
+    resistencia:     {empuje:0, tiron:0, piernas:0},
+    default:         {empuje:1, tiron:1, piernas:0},
+  };
+  const cuota = CUOTAS[objetivo]||CUOTAS.default;
+  const cuotaCubierta = () => Object.keys(cuota).every(p => cuota[p]===0 || patronCuota[p]>=cuota[p]);
+
   const pp=sh(disp.filter(e=>e.fase==='principal'&&e.demanda_neural<=(intensidad==='alta'?3:2)));
   const pri=[];const all=[...act];let comboUsado=false;
   const slotCombo=Math.floor(cfg.ep/2);
+
   for(const e of pp){
     if(pri.length>=cfg.ep)break;
     if(!comboUsado&&combosPri.length&&pri.length===slotCombo){
@@ -13709,35 +14276,66 @@ function generarWorkout(params){
     if(ul&&!ul.es_combo&&!compatibles(ul,e))continue;
     if(!okFatiga(all,e))continue;
     pri.push(e);all.push(e);
+    if(e.patron) patronCuota[e.patron]=(patronCuota[e.patron]||0)+1;
   }
+
+  // Si no se cubrieron las cuotas, rellenar con ejercicios que las cubran
+  if(!cuotaCubierta()&&pri.length<cfg.ep){
+    const patronesFaltantes=Object.keys(cuota).filter(p=>cuota[p]>0&&(patronCuota[p]||0)<cuota[p]);
+    const used=new Set(pri.map(e=>e.id));
+    for(const patron of patronesFaltantes){
+      const candidatos=sh(disp.filter(e=>e.fase==='principal'&&e.patron===patron&&!used.has(e.id)));
+      for(const e of candidatos){
+        if(pri.length>=cfg.ep)break;
+        pri.push(e);used.add(e.id);
+        patronCuota[patron]=(patronCuota[patron]||0)+1;
+        break;
+      }
+    }
+  }
+
+  // Fallback si aún faltan ejercicios
   if(pri.length<cfg.ep){
     const used=new Set(pri.map(e=>e.id));
-    const fb=sh(disp.filter(e=>e.fase==='principal'&&!used.has(e.id)));
+    const fb=shRnd(disp.filter(e=>e.fase==='principal'&&!used.has(e.id)));
     for(const e of fb){if(pri.length>=cfg.ep)break;const ul=pri[pri.length-1];if(ul&&!ul.es_combo&&!compatibles(ul,e))continue;pri.push(e);}
   }
 
   // Core
   let core=null;
-  if(['general','core','full_body'].includes(musculo_foco)){const cp=sh(disp.filter(e=>e.fase==='core'));if(cp.length)core=cp[0];}
+  if(['general','core','full_body'].includes(musculo_foco)){const cp=shRnd(disp.filter(e=>e.fase==='core'));if(cp.length)core=cp[0];}
 
-  // Finisher: combo primero si disponible
+  // Finisher
   let fin=null;
   if(intensidad!=='baja'){
     if(combosFin.length)fin={...combosFin[0],es_combo:true};
     if(!fin){const fp=sh(disp.filter(e=>e.fase==='finisher'&&e.demanda_metabolica>=(intensidad==='alta'?3:2)&&tipos.includes(e.tipo)));if(fp.length){const ul=pri[pri.length-1];for(const e of fp){if(!ul||compatibles(ul,e)){fin=e;break;}}}}
-    if(!fin){const fb=sh(disp.filter(e=>e.fase==='finisher'&&tipos.includes(e.tipo)));if(fb.length)fin=fb[0];}
+    if(!fin){const fb=shRnd(disp.filter(e=>e.fase==='finisher'&&tipos.includes(e.tipo)));if(fb.length)fin=fb[0];}
   }
 
   const seq=[...act,...pri,...(core?[core]:[]),...(fin?[fin]:[])];
+
+  // ── MEJORA 5: RPE target por objetivo ──────────────────────
+  const RPE_POR_OBJETIVO = {
+    fuerza_absoluta:'RPE 9–10', potencia:'RPE 8–9', fuerza:'RPE 8–9',
+    hipertrofia:'RPE 7–8', recomposicion:'RPE 7–8', grasa:'RPE 7–8',
+    resistencia:'RPE 6–7', atletismo:'RPE 7–8', funcional:'RPE 6–7',
+    movilidad:'RPE 4–5', wellness:'RPE 4–5',
+  };
+
   const seqR=seq.map(e=>{
-    if(e.es_combo)return{...e,pasos_sesion:e.pasos.map(p=>({...p,reps_sesion:p.reps[nivel]||p.reps.intermedio}))};
-    return{...e,reps_sesion:e.reps[nivel]||e.reps.intermedio,es_tiempo:['plancha','dead_hang','l_sit','cat_cow','hip_circle'].includes(e.id)};
+    if(e.es_combo)return{...e,pasos_sesion:e.pasos.map(p=>({...p,reps_sesion:calcReps(p,nivel,objetivo)}))};
+    return{...e,reps_sesion:calcReps(e,nivel,objetivo),es_tiempo:e.es_tiempo||['plancha','dead_hang','l_sit','cat_cow','hip_circle'].includes(e.id)};
   });
+
   const dios=elegirDios(intensidad,objetivo);
   return{
     id:'w_'+Date.now(),nombre:dios.nombre,subtitulo:dios.subtitulo,mitologia:dios.mitologia,
-    params,rondas:cfg.r,descanso:({baja:90,media:75,alta:60})[intensidad]||75,
-    duracion_est:estimarDur(seqR,cfg.r,nivel),secuencia:seqR,fecha:new Date().toISOString()
+    params,rondas:cfg.r,
+    descanso:descansoSeg,
+    rpe:RPE_POR_OBJETIVO[objetivo]||'RPE 7',
+    duracion_est:estimarDur(seqR,cfg.r,nivel),
+    secuencia:seqR,fecha:new Date().toISOString()
   };
 }
 
@@ -13903,14 +14501,16 @@ function mostrarWorkout(w) {
   document.getElementById('wd-mito').textContent = '"'+w.mitologia+'"';
 
   const labels = {grasa:'Pérdida de grasa',fuerza:'Fuerza',fuerza_absoluta:'Fuerza absoluta',potencia:'Potencia',hipertrofia:'Hipertrofia',resistencia:'Resistencia',recomposicion:'Recomposición corporal',funcional:'Funcional',movilidad:'Movilidad y Yoga',atletismo:'Atletismo',wellness:'Wellness'};
-  const labelsEq = {solo_cuerpo:'Cuerpo libre',con_barras:'+ Barras',con_mancuernas:'+ Mancuernas',completo:'Completo'};
+  const labelsEq = {solo_cuerpo:'Cuerpo libre',con_barras:'+ Barras',con_mancuernas:'+ Mancuernas',con_maquinas:'+ Máquinas',completo:'Completo'};
   const proto = w.protocolo||'rondas';
   document.getElementById('wd-meta').innerHTML = [
     `⏱ ~${w.duracion_est} min`,
     PROTO_LABELS[proto]||proto,
     labels[w.params.objetivo]||w.params.objetivo,
-    labelsEq[w.params.equipamiento]||w.params.equipamiento
-  ].map(t=>`<span class="gw-meta-pill">${t}</span>`).join('');
+    labelsEq[w.params.equipamiento]||w.params.equipamiento,
+    w.rpe ? `🎯 ${w.rpe}` : null,
+    w.descanso ? `⏸ ${Math.floor(w.descanso/60)>0?Math.floor(w.descanso/60)+"':":''} ${(w.descanso%60).toString().padStart(2,'0')}" desc` : null
+  ].filter(Boolean).map(t=>`<span class="gw-meta-pill">${t}</span>`).join('');
 
   // Ejercicios
   const faseBadge = f => {
@@ -13921,13 +14521,13 @@ function mostrarWorkout(w) {
   // Descripción del protocolo seleccionado
   const protoDescs = {
     rondas: {title:'FORMATO: RONDAS', body:'Completá todos los ejercicios en secuencia. Eso es una ronda. Descansá y repetí.'},
-    hiit: {title:'FORMATO: HIIT', body:'Trabajás a máxima intensidad durante el tiempo de trabajo, luego descansás. Repetís el ciclo por cada ejercicio.'},
-    tabata: {title:'FORMATO: TABATA', body:'Protocolo original de Izumi Tabata: 20 seg de trabajo máximo, 10 seg de descanso, 8 rondas por ejercicio (= 4 min por bloque).'},
+    hiit: {title:'FORMATO: HIIT', body:'Trabajás a máxima intensidad durante el tiempo de trabajo, luego descansás. En máquinas: sprint máximo durante el trabajo, velocidad mínima en el descanso. Sin bajar de la máquina entre intervalos.'},
+    tabata: {title:'FORMATO: TABATA', body:'Protocolo original de Izumi Tabata (1996): 20 seg de trabajo máximo, 10 seg de descanso, 8 rondas = 4 min por bloque. En bicicleta o elíptica: máxima cadencia en trabajo, pedaleo suave en descanso. Sin bajar de la máquina.'},
     emom: {title:'FORMATO: EMOM', body:'Every Minute On the Minute. Al inicio de cada minuto completás las reps indicadas. El tiempo que sobra es tu descanso.'},
     amrap: {title:'FORMATO: AMRAP', body:'As Many Rounds As Possible. Completás tantas rondas del circuito como puedas dentro del tiempo establecido. Sin parar.'},
     fortime: {title:'FORMATO: FOR TIME', body:'Completás la cantidad de rondas establecida lo más rápido posible. Tu tiempo es tu marca. Intentás mejorarla en cada sesión.'},
     piramidal: {title:'FORMATO: PIRAMIDAL', body:'Las reps suben por escalones hasta el pico y luego bajan. El cuerpo trabaja en fatiga acumulada y luego va cediendo volumen.'},
-    intervalado: {title:'FORMATO: INTERVALADO', body:'Bloques de trabajo de alta densidad separados por descanso estructurado. Cada bloque es independiente.'}
+    intervalado: {title:'FORMATO: INTERVALADO', body:'Bloques de trabajo de alta densidad separados por descanso estructurado. En máquinas: cada bloque puede ser una distancia o tiempo fijo (ej: 500m remo / 2 min bici) seguido de descanso activo. Ideal para circuito entre múltiples máquinas.'}
   };
   const pd = protoDescs[w.protocolo||'rondas'];
   const pdEl = document.getElementById('wd-proto-desc');
@@ -14163,7 +14763,7 @@ function exportarTexto() {
   const proto = w.protocolo || 'rondas';
   const protoLabel = {rondas:'Rondas',hiit:'HIIT',tabata:'Tabata',emom:'EMOM',amrap:'AMRAP',fortime:'For Time',piramidal:'Piramidal',intervalado:'Intervalado'}[proto] || proto;
   const objLabel = {grasa:'Pérdida de grasa',fuerza:'Fuerza',fuerza_absoluta:'Fuerza absoluta',potencia:'Potencia',hipertrofia:'Hipertrofia',resistencia:'Resistencia',recomposicion:'Recomposición corporal',funcional:'Funcional',movilidad:'Movilidad y Yoga',atletismo:'Atletismo',wellness:'Wellness'}[w.params?.objetivo] || w.params?.objetivo || '';
-  const eqLabel = {solo_cuerpo:'Cuerpo libre',con_barras:'Con barras',con_mancuernas:'Con mancuernas',completo:'Completo'}[w.params?.equipamiento] || '';
+  const eqLabel = {solo_cuerpo:'Cuerpo libre',con_barras:'Con barras',con_mancuernas:'Con mancuernas',con_maquinas:'Con máquinas',completo:'Completo'}[w.params?.equipamiento] || '';
   const genero = w.params?.genero || 'masculino';
   const nivel = w.params?.nivel || 'intermedio';
 
@@ -14176,7 +14776,11 @@ function exportarTexto() {
   txt += `⚡ Protocolo: ${protoLabel}\n`;
   txt += `🔄 Rondas: ${w.rondas}\n`;
   txt += `⏱ Duración estimada: ~${w.duracion_est} min\n`;
-  txt += `⏸ Descanso entre rondas: ${w.descanso}s\n`;
+  const descMin = Math.floor((w.descanso||60)/60);
+  const descSeg = ((w.descanso||60)%60).toString().padStart(2,'0');
+  const descFmt = descMin>0 ? `${descMin}' ${descSeg}"` : `${w.descanso||60}"`;
+  txt += `⏸ Descanso entre rondas: ${descFmt}\n`;
+  if(w.rpe) txt += `🎯 Intensidad objetivo: ${w.rpe}\n`;
   txt += `🏋️ Equipamiento: ${eqLabel}\n`;
   txt += `📊 Nivel: ${nivel}\n\n`;
   txt += '────────────────────────────────\n';
