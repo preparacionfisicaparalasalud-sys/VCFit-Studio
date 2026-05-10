@@ -1261,7 +1261,7 @@
 
   /* ── PANELS ── */
   .gw-panel { display: none; }
-  .gw-panel.active { display: block; }
+  .gw-panel.gw-active { display: block; }
 
   /* ── GENERADOR ── */
   .gw-gen-grid {
@@ -1712,7 +1712,7 @@
   }
 
   /* ── TOAST ── */
-  #toast {
+  #gw-toast {
     position: fixed;
     bottom: 24px; left: 50%;
     transform: translateX(-50%) translateY(80px);
@@ -1728,7 +1728,7 @@
     transition: transform .3s ease;
     white-space: nowrap;
   }
-  #toast.show { transform: translateX(-50%) translateY(0); }
+  #gw-toast.show { transform: translateX(-50%) translateY(0); }
 
 
   /* ── PROTOCOLO SELECTOR ── */
@@ -3790,7 +3790,7 @@ ALMUERZO
   </div>
 </div>
 
-<!-- TOAST -->
+<!-- TOAST (GW) -->
 <div id="gw-toast"></div>
 <!-- FIN GOD WORKOUTS SCREEN -->
 
@@ -13784,19 +13784,8 @@ function seleccionarProto(proto, el) {
   if(pp) pp.classList.add('gw-visible');
 }
 
-function getProtoEfectivo(params) {
-  if(modoProto==='manual') return protoSeleccionado;
-  // Selección automática basada en objetivo + intensidad + duración
-  const {objetivo,intensidad,duracion} = params;
-  const dur = parseInt(duracion);
-  if(objetivo==='grasa'&&intensidad==='alta') return dur<=20?'tabata':'hiit';
-  if(objetivo==='grasa'&&intensidad==='media') return dur<=30?'hiit':'piramidal';
-  if(objetivo==='resistencia'&&dur>=30) return 'emom';
-  if(objetivo==='resistencia'&&dur<30) return 'amrap';
-  if(objetivo==='fuerza'&&intensidad==='alta') return 'fortime';
-  if(objetivo==='hipertrofia') return 'rondas';
-  return 'rondas';
-}
+
+// getProtoEfectivo — ver versión completa más abajo
 
 function getProtoConfig() {
   const p = protoSeleccionado;
@@ -13913,7 +13902,7 @@ function mostrarWorkout(w) {
   document.getElementById('wd-subtitulo').textContent = w.subtitulo;
   document.getElementById('wd-mito').textContent = '"'+w.mitologia+'"';
 
-  const labels = {grasa:'Pérdida de grasa',fuerza:'Fuerza',hipertrofia:'Hipertrofia',resistencia:'Resistencia'};
+  const labels = {grasa:'Pérdida de grasa',fuerza:'Fuerza',fuerza_absoluta:'Fuerza absoluta',potencia:'Potencia',hipertrofia:'Hipertrofia',resistencia:'Resistencia',recomposicion:'Recomposición corporal',funcional:'Funcional',movilidad:'Movilidad y Yoga',atletismo:'Atletismo',wellness:'Wellness'};
   const labelsEq = {solo_cuerpo:'Cuerpo libre',con_barras:'+ Barras',con_mancuernas:'+ Mancuernas',completo:'Completo'};
   const proto = w.protocolo||'rondas';
   document.getElementById('wd-meta').innerHTML = [
