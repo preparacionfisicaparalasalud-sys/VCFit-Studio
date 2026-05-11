@@ -13,6 +13,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=JetBrains+Mono:wght@400;600&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   :root {
     --orange: #FF6B00;
@@ -1822,6 +1823,267 @@
 /* ═══════════════════════════════════════════════════════
    FIN GOD WORKOUTS MODULE — Estilos
    ═══════════════════════════════════════════════════════ */
+</style>
+
+<!-- REMO TRAINER v3 — Estilos -->
+<style>
+/* Variables del módulo remo */
+#screen-remo {
+  --bg:#0a0c0f;--bg2:#0f1217;--bg3:#151a21;--bg4:#1c232d;
+  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.14);
+  --text:#e8eaed;--muted:#6b7280;--muted2:#9ca3af;
+  --green:#22c55e;--green-bg:rgba(34,197,94,.1);
+  --yellow:#eab308;--yellow-bg:rgba(234,179,8,.1);
+  --red:#ef4444;--red-bg:rgba(239,68,68,.1);
+  --blue:#38bdf8;--blue-bg:rgba(56,189,248,.1);
+  --orange:#f97316;--orange-bg:rgba(249,115,22,.1);
+  --purple:#a855f7;--purple-bg:rgba(168,85,247,.1);
+  --teal:#14b8a6;--teal-bg:rgba(20,184,166,.1);
+  --z1:#38bdf8;--z1b:rgba(56,189,248,.1);
+  --z2:#22c55e;--z2b:rgba(34,197,94,.1);
+  --z3:#eab308;--z3b:rgba(234,179,8,.1);
+  --z4:#f97316;--z4b:rgba(249,115,22,.1);
+  --z5:#ef4444;--z5b:rgba(239,68,68,.1);
+  --fd:'Barlow Condensed',sans-serif;
+  --fm:'JetBrains Mono',monospace;
+  --fb:'Barlow',sans-serif;
+  --r:8px;--rl:14px;
+}
+#screen-remo * { box-sizing:border-box; }
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+/* TOPBAR */
+#topbar{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:100;gap:8px}
+.brand{font-family:var(--fd);font-size:18px;font-weight:700;letter-spacing:.04em;flex-shrink:0}
+.brand em{color:var(--green);font-style:normal}
+.brand small{color:var(--muted);font-size:12px;font-weight:400;margin-left:3px}
+.topbar-r{display:flex;align-items:center;gap:6px;flex-wrap:nowrap}
+.pm5-tag{font-family:var(--fm);font-size:9px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:3px 6px;border-radius:var(--r);letter-spacing:.06em;flex-shrink:0}
+.tb-btn{border:1px solid var(--border2);border-radius:var(--r);padding:6px 10px;font-family:var(--fd);font-size:12px;font-weight:600;letter-spacing:.04em;cursor:pointer;transition:all .15s;background:var(--bg2);white-space:nowrap}
+.tb-btn:hover{background:var(--bg3)}
+.tb-btn.teal{color:var(--teal);border-color:rgba(20,184,166,.3);background:var(--teal-bg)}
+.tb-btn.teal:hover{background:rgba(20,184,166,.18)}
+.tb-btn.ghost{color:var(--muted2)}
+.tb-btn.ghost:hover{background:var(--bg4);color:var(--text)}
+
+/* MAIN */
+#main{flex:1;overflow-y:auto;padding:18px 16px 48px;max-width:520px;margin:0 auto;width:100%}
+.scr{display:none}.scr.on{display:block}
+.lbl{font-family:var(--fd);font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+
+/* LEVEL CARDS */
+.lvl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
+.lvl-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:14px 8px;cursor:pointer;text-align:center;transition:all .15s;position:relative;overflow:hidden}
+.lvl-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;opacity:0;transition:opacity .2s;background:var(--lc,var(--green))}
+.lvl-card:hover{background:var(--bg3);border-color:var(--border2)}
+.lvl-card.sel{border-color:var(--lc,var(--green))}.lvl-card.sel::after{opacity:1}
+.lvl-dot{width:28px;height:28px;border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:13px;font-weight:700}
+.lvl-name{font-family:var(--fd);font-size:13px;font-weight:600;margin-bottom:3px}
+.lvl-sub{font-size:9px;color:var(--muted);line-height:1.4}
+
+/* HOME TOOLS ROW */
+.home-tools{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:22px}
+.tool-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px 10px;cursor:pointer;text-align:center;transition:all .15s}
+.tool-card:hover{background:var(--bg3);border-color:var(--border2)}
+.tool-icon{font-size:18px;margin-bottom:5px}
+.tool-name{font-family:var(--fd);font-size:11px;font-weight:600;letter-spacing:.04em;color:var(--muted2)}
+
+/* BANNER / BREADCRUMB */
+.sel-banner{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:9px 12px;margin-bottom:14px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted2)}
+.sel-banner strong{color:var(--text);font-weight:500}
+.sel-banner .dot{width:7px;height:7px;border-radius:50%;background:var(--lc,var(--green));flex-shrink:0}
+.breadcrumb{font-size:11px;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.breadcrumb span{color:var(--muted2)}.breadcrumb .sep{color:var(--border2)}
+
+/* OBJ GRID */
+.obj-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:8px}
+.obj-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:12px 10px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden}
+.obj-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--oc,var(--green));opacity:0;transition:opacity .2s;border-radius:3px 0 0 3px}
+.obj-card:hover{background:var(--bg3);border-color:var(--border2)}
+.obj-card.sel{border-color:var(--oc,var(--green))}.obj-card.sel::before{opacity:1}
+.obj-icon{font-size:18px;margin-bottom:6px;display:block}
+.obj-name{font-family:var(--fd);font-size:13px;font-weight:700;letter-spacing:.02em;margin-bottom:3px}
+.obj-desc{font-size:10px;color:var(--muted);line-height:1.45}
+.obj-count{font-family:var(--fm);font-size:9px;margin-top:6px;color:var(--muted2)}
+
+/* SESSION LIST */
+.sess-list{display:flex;flex-direction:column;gap:7px;margin-bottom:14px}
+.sess-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:11px 12px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all .15s}
+.sess-card:hover{background:var(--bg3);border-color:var(--border2)}
+.sess-card.sel{border-width:1.5px;border-color:var(--oc,var(--green))}
+.sess-badge{min-width:36px;height:36px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:11px;font-weight:700;letter-spacing:.04em;flex-shrink:0;color:var(--bg)}
+.sess-info{flex:1;min-width:0}
+.sess-name{font-family:var(--fd);font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
+.sess-sub{font-size:10px;color:var(--muted);line-height:1.4}
+.sess-dur{font-family:var(--fm);font-size:10px;color:var(--muted2);flex-shrink:0}
+
+/* CONFIG + CALORIE ESTIMATE */
+.cfg-row{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;display:flex;gap:14px;margin-bottom:14px;display:none;flex-wrap:wrap}
+.cfg-item{flex:1;min-width:60px}
+.cfg-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px}
+.cfg-val{font-family:var(--fm);font-size:13px;font-weight:600}
+.cal-est-row{background:var(--orange-bg);border:1px solid rgba(249,115,22,.25);border-radius:var(--r);padding:8px 12px;margin-bottom:12px;display:none;align-items:center;gap:8px;font-size:12px}
+.cal-est-icon{font-size:14px}
+.cal-est-txt{color:var(--muted2);flex:1}
+.cal-est-val{font-family:var(--fm);font-size:13px;font-weight:600;color:var(--orange)}
+
+/* BTN START */
+.btn-start{width:100%;padding:14px;border:none;border-radius:var(--rl);font-family:var(--fd);font-size:16px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--bg);cursor:pointer;transition:all .15s;background:var(--green)}
+.btn-start:disabled{opacity:.3;cursor:not-allowed}
+.btn-start:not(:disabled):hover{filter:brightness(1.1);transform:translateY(-1px)}
+
+/* SESSION ACTIVE */
+.sess-hdr{margin-bottom:12px}
+.sess-title{font-family:var(--fd);font-size:20px;font-weight:700;letter-spacing:.02em;line-height:1.1;margin-bottom:4px}
+.sess-meta{font-size:11px;color:var(--muted);display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.meta-sep{color:var(--border2)}
+.prog-wrap{height:3px;background:var(--bg3);border-radius:2px;margin-bottom:16px;overflow:hidden}
+.prog-fill{height:100%;border-radius:2px;background:var(--green);transition:width .6s cubic-bezier(.4,0,.2,1)}
+
+/* TIMER */
+.timer-panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:20px 16px 16px;margin-bottom:10px;text-align:center;position:relative;overflow:hidden}
+.timer-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--zc,var(--green));transition:background .3s}
+.phase-nm{font-family:var(--fd);font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--zc,var(--green));margin-bottom:8px;transition:color .3s}
+.timer-dig{font-family:var(--fm);font-size:64px;font-weight:600;line-height:1;color:var(--text);margin-bottom:10px;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.timer-dig.warn{animation:blink .5s ease-in-out infinite alternate}
+@keyframes blink{from{opacity:1}to{opacity:.45}}
+.phase-ins{font-size:12px;color:var(--muted2);line-height:1.5;max-width:340px;margin:0 auto}
+
+/* LIVE STATS ROW */
+.live-stats{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:10px}
+.met-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:9px 6px;text-align:center}
+.met-lbl{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px}
+.met-val{font-family:var(--fm);font-size:16px;font-weight:600;line-height:1}
+.met-val.cal{color:var(--orange)}
+
+/* ZONE PILL */
+.zp{display:inline-block;padding:3px 7px;border-radius:20px;font-family:var(--fm);font-size:10px;font-weight:600}
+.zZ1,.zREST{background:var(--z1b);color:var(--z1)}.zZ2{background:var(--z2b);color:var(--z2)}
+.zZ3{background:var(--z3b);color:var(--z3)}.zZ4{background:var(--z4b);color:var(--z4)}
+.zZ5,.zALL{background:var(--z5b);color:var(--z5)}
+
+/* NEXT */
+.next-row{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:8px 12px;margin-bottom:12px;display:flex;align-items:center;gap:8px;font-size:11px}
+.next-lbl{color:var(--muted);flex-shrink:0}.next-val{color:var(--muted2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.next-dur{font-family:var(--fm);font-size:10px;color:var(--muted);flex-shrink:0}
+
+/* CONTROLS */
+.ctrls{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px}
+.ctrl{background:var(--bg3);border:1px solid var(--border2);border-radius:50%;width:44px;height:44px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;color:var(--muted2);flex-shrink:0}
+.ctrl:hover{background:var(--bg4);color:var(--text)}
+.ctrl:active{transform:scale(.94)}
+.ctrl-play{width:60px;height:60px;background:var(--green);border-color:transparent;color:var(--bg)}
+.ctrl-play:hover{filter:brightness(1.1);background:var(--green);color:var(--bg)}
+.ctrl-play.off{background:var(--bg3);border-color:var(--border2);color:var(--text)}
+.ctrl-play.off:hover{background:var(--bg4)}
+.ctrl-stop{color:var(--red)}.ctrl-stop:hover{background:var(--red-bg);color:var(--red);border-color:rgba(239,68,68,.3)}
+
+/* PHASE LIST */
+.phase-list{display:flex;flex-direction:column;gap:2px;max-height:220px;overflow-y:auto;padding-right:2px}
+.ph-row{display:flex;align-items:center;gap:7px;padding:6px 7px;border-radius:var(--r);font-size:11px;color:var(--muted);transition:background .1s}
+.ph-row.cur{background:var(--bg3);color:var(--text);font-weight:500}.ph-row.done{opacity:.32}
+.ph-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.ph-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ph-dur{font-family:var(--fm);font-size:9px;color:var(--muted);flex-shrink:0}
+
+/* DONE */
+.done-wrap{text-align:center;padding:24px 0}
+.done-ico{width:58px;height:58px;background:var(--green-bg);border:1px solid rgba(34,197,94,.2);border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center}
+.done-title{font-family:var(--fd);font-size:26px;font-weight:700;letter-spacing:.02em;margin-bottom:5px}
+.done-sub{font-size:12px;color:var(--muted2);margin-bottom:20px;line-height:1.6;max-width:300px;margin-left:auto;margin-right:auto}
+.done-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;text-align:left}
+.done-stat{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:11px}
+.done-stat-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.done-stat-val{font-family:var(--fd);font-size:18px;font-weight:700;line-height:1.1}
+.done-btns{display:flex;gap:8px;margin-bottom:16px}
+.btn-sec{flex:1;padding:12px;border:1px solid var(--border2);border-radius:var(--r);font-family:var(--fd);font-size:14px;font-weight:600;letter-spacing:.05em;color:var(--muted2);background:var(--bg2);cursor:pointer;transition:all .15s}
+.btn-sec:hover{background:var(--bg3);color:var(--text)}
+
+/* GLOSSARY */
+.glos-hdr{margin-bottom:14px}
+.glos-title{font-family:var(--fd);font-size:19px;font-weight:700;letter-spacing:.03em;margin-bottom:3px}
+.glos-sub{font-size:11px;color:var(--muted)}
+.glos-tabs{display:flex;gap:7px;margin-bottom:16px}
+.glos-tab{flex:1;padding:8px 10px;border-radius:var(--r);font-family:var(--fd);font-size:12px;font-weight:600;letter-spacing:.04em;cursor:pointer;border:1px solid var(--border);background:var(--bg2);color:var(--muted);transition:all .15s;text-align:center}
+.glos-tab.on{background:var(--teal-bg);border-color:rgba(20,184,166,.4);color:var(--teal)}
+.glos-panel{display:none}.glos-panel.on{display:block}
+.gterm{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:7px}
+.gterm-name{font-family:var(--fd);font-size:13px;font-weight:700;letter-spacing:.02em;margin-bottom:5px;color:var(--teal)}
+.gterm-def{font-size:11px;color:var(--muted2);line-height:1.6}
+.gterm-tip{font-size:10px;color:var(--muted);margin-top:5px;padding-top:5px;border-top:1px solid var(--border);font-style:italic}
+
+/* HISTORIAL */
+.hist-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.hist-title{font-family:var(--fd);font-size:19px;font-weight:700;letter-spacing:.03em}
+.hist-clear{font-size:11px;color:var(--muted);cursor:pointer;padding:4px 8px;border:1px solid var(--border);border-radius:var(--r);background:none;transition:all .15s}
+.hist-clear:hover{color:var(--red);border-color:rgba(239,68,68,.4)}
+.hist-empty{text-align:center;padding:40px 20px;color:var(--muted)}
+.hist-empty .hist-ico{font-size:32px;margin-bottom:10px}
+.hist-item{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:7px;display:flex;gap:12px;align-items:center}
+.hist-color{width:4px;border-radius:2px;align-self:stretch;flex-shrink:0}
+.hist-info{flex:1;min-width:0}
+.hist-sess{font-family:var(--fd);font-size:13px;font-weight:600;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hist-meta{font-size:10px;color:var(--muted);line-height:1.5}
+.hist-right{text-align:right;flex-shrink:0}
+.hist-time{font-family:var(--fm);font-size:14px;font-weight:600;margin-bottom:2px}
+.hist-cal{font-size:10px;color:var(--orange)}
+.hist-date{font-size:9px;color:var(--muted)}
+
+/* PROGRESION */
+.prog-hdr{margin-bottom:14px}
+.prog-title{font-family:var(--fd);font-size:19px;font-weight:700;letter-spacing:.03em;margin-bottom:3px}
+.prog-sub{font-size:11px;color:var(--muted)}
+
+/* Setup progresión */
+.prog-setup{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:16px;margin-bottom:14px}
+.prog-setup-title{font-family:var(--fd);font-size:13px;font-weight:600;margin-bottom:12px;color:var(--muted2)}
+.setup-row{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.setup-lbl{font-size:11px;color:var(--muted);font-weight:500}
+.setup-btns{display:flex;gap:6px;flex-wrap:wrap}
+.setup-btn{padding:7px 14px;border:1px solid var(--border2);border-radius:var(--r);font-family:var(--fd);font-size:12px;font-weight:600;cursor:pointer;background:var(--bg3);color:var(--muted2);transition:all .15s}
+.setup-btn:hover{background:var(--bg4)}.setup-btn.sel{border-color:var(--green);color:var(--green);background:var(--green-bg)}
+.setup-input{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:8px 10px;font-family:var(--fm);font-size:14px;color:var(--text);width:100%;outline:none}
+.setup-input:focus{border-color:var(--green)}
+
+/* Hoy */
+.prog-today{background:var(--bg2);border:1px solid var(--green);border-radius:var(--rl);padding:14px;margin-bottom:14px;position:relative;overflow:hidden}
+.prog-today::before{content:'HOY';position:absolute;top:8px;right:10px;font-family:var(--fd);font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--green);opacity:.6}
+.prog-today-week{font-family:var(--fd);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.prog-today-sess{font-family:var(--fd);font-size:18px;font-weight:700;margin-bottom:4px}
+.prog-today-meta{font-size:11px;color:var(--muted2);margin-bottom:12px}
+.prog-rest{font-family:var(--fd);font-size:15px;font-weight:600;color:var(--muted);margin-bottom:4px}
+
+/* Semanas */
+.week-block{margin-bottom:10px}
+.week-hdr{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg3);border-radius:var(--r);margin-bottom:5px;cursor:pointer}
+.week-num{font-family:var(--fd);font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--muted2);min-width:70px}
+.week-bar-wrap{flex:1;height:4px;background:var(--bg4);border-radius:2px;overflow:hidden}
+.week-bar-fill{height:100%;background:var(--green);border-radius:2px;transition:width .4s}
+.week-pct{font-family:var(--fm);font-size:10px;color:var(--muted);min-width:28px;text-align:right}
+.week-days{display:flex;flex-direction:column;gap:4px;padding:0 4px}
+.week-day-item{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:var(--r);font-size:11px;border:1px solid var(--border);background:var(--bg2)}
+.week-day-item.today-item{border-color:var(--green);background:var(--green-bg)}
+.week-day-item.rest-item{opacity:.5}
+.wdi-day{font-family:var(--fd);font-size:11px;font-weight:600;letter-spacing:.04em;color:var(--muted);min-width:28px}
+.wdi-sess{font-family:var(--fd);font-size:12px;font-weight:600;flex:1}
+.wdi-type{font-size:10px;color:var(--muted);flex-shrink:0}
+.wdi-go{font-size:11px;color:var(--green);cursor:pointer;padding:3px 8px;border:1px solid rgba(34,197,94,.3);border-radius:var(--r);background:var(--green-bg);flex-shrink:0}
+.wdi-go:hover{background:rgba(34,197,94,.2)}
+
+/* CONFIG */
+.cfg-section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:14px;margin-bottom:10px}
+.cfg-section-title{font-family:var(--fd);font-size:13px;font-weight:600;margin-bottom:10px;color:var(--muted2)}
+.wk-lock-status{display:flex;align-items:center;gap:6px;font-size:11px;margin-top:8px}
+.wl-dot{width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.wl-dot.on{background:var(--green)}
+
+@media(max-width:400px){
+  .timer-dig{font-size:52px}
+  .live-stats{grid-template-columns:1fr 1fr}
+  .home-tools{grid-template-columns:1fr 1fr 1fr}
+}
+
 </style>
 </head>
 <body>
@@ -7524,7 +7786,8 @@ applyLogo();
 const TRAINER_SCREENS = [
   'screen-trainer','screen-trainer-profile','screen-students','screen-student-detail',
   'screen-workouts','screen-stats','screen-ai-chat','screen-finance','screen-anamnesis-inbox',
-  'screen-god-workouts'
+  'screen-god-workouts',
+  'screen-remo'
 ];
 
 function showScreen(id) {
@@ -8809,6 +9072,16 @@ function refreshTrainerDashboard() {
             <div class="text-small text-gray">Motor de entrenamiento olímpico</div>
           </div>
           <div style="color:var(--orange);font-size:1.2rem">→</div>
+        </div>
+      </div>
+      <div class="nav-card" onclick="showScreen('screen-remo');remoInit()" style="grid-column:1/-1;border-color:rgba(20,184,166,0.3);background:linear-gradient(135deg,var(--dark2),rgba(20,184,166,0.06))">
+        <div style="display:flex;align-items:center;gap:1rem;width:100%">
+          <div class="nav-card-icon" style="background:rgba(20,184,166,0.15);font-size:20px">🚣</div>
+          <div style="flex:1">
+            <div class="nav-card-label" style="color:#14b8a6">Remo Trainer</div>
+            <div class="text-small text-gray">Concept 2 · PM5 · 6 objetivos · 26 sesiones</div>
+          </div>
+          <div style="color:#14b8a6;font-size:1.2rem">→</div>
         </div>
       </div>`;
   }
@@ -15101,6 +15374,974 @@ function gwInit() { renderBiblioteca(); }
 // ═══════════════════════════════════════════════════════════════
 // FIN GOD WORKOUTS MODULE
 // ═══════════════════════════════════════════════════════════════
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCREEN: REMO TRAINER v3
+═══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-remo">
+<div style="min-height:100vh;background:#0a0c0f;color:#e8eaed;display:flex;flex-direction:column">
+
+  <!-- Topbar propio del módulo remo -->
+  <div id="remo-topbar" style="display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:1px solid rgba(255,255,255,.07);background:#0a0c0f;position:sticky;top:0;z-index:100;gap:8px">
+    <div class="brand" style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;letter-spacing:.04em;flex-shrink:0">
+      VC <em style="color:#22c55e;font-style:normal">Fit</em>
+      <small style="color:#6b7280;font-size:12px;font-weight:400;margin-left:3px">REMO</small>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <div class="pm5-tag" id="wl-tag" style="font-family:'JetBrains Mono',monospace;font-size:9px;background:#151a21;border:1px solid rgba(255,255,255,.07);color:#6b7280;padding:3px 6px;border-radius:8px;letter-spacing:.06em">PM5</div>
+      <button class="tb-btn teal" id="btn-glos" onclick="openGlos()" style="border:1px solid rgba(20,184,166,.3);border-radius:8px;padding:6px 10px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:.04em;cursor:pointer;transition:all .15s;background:rgba(20,184,166,.1);color:#14b8a6">Glosario</button>
+      <button class="tb-btn ghost" id="btn-back" onclick="goBack()" style="display:none;border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:6px 10px;font-family:'Barlow',sans-serif;font-size:13px;cursor:pointer;background:#0f1217;color:#9ca3af">← Volver</button>
+      <button onclick="showScreen('screen-trainer')" style="border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:6px 11px;font-family:'Barlow',sans-serif;font-size:12px;cursor:pointer;background:#151a21;color:#6b7280">✕ Salir</button>
+    </div>
+  </div>
+
+  <div id="remo-main">
+
+<!-- ═══ NIVEL ═══ -->
+<div class="scr on" id="s-level">
+  <div class="lbl">Tu nivel</div>
+  <div class="lvl-grid">
+    <div class="lvl-card" id="lc0" onclick="selectLevel(0)" style="--lc:var(--green)">
+      <div class="lvl-dot" style="background:var(--green-bg);color:var(--green)">P</div>
+      <div class="lvl-name">Principiante</div>
+      <div class="lvl-sub">6 objetivos<br>8 sesiones</div>
+    </div>
+    <div class="lvl-card" id="lc1" onclick="selectLevel(1)" style="--lc:var(--yellow)">
+      <div class="lvl-dot" style="background:var(--yellow-bg);color:var(--yellow)">M</div>
+      <div class="lvl-name">Medio</div>
+      <div class="lvl-sub">6 objetivos<br>9 sesiones</div>
+    </div>
+    <div class="lvl-card" id="lc2" onclick="selectLevel(2)" style="--lc:var(--red)">
+      <div class="lvl-dot" style="background:var(--red-bg);color:var(--red)">A</div>
+      <div class="lvl-name">Avanzado</div>
+      <div class="lvl-sub">6 objetivos<br>10 sesiones</div>
+    </div>
+  </div>
+  <div class="lbl">Herramientas</div>
+  <div class="home-tools">
+    <div class="tool-card" onclick="openProg()">
+      <div class="tool-icon">📅</div>
+      <div class="tool-name">Progresión</div>
+    </div>
+    <div class="tool-card" onclick="openHist()">
+      <div class="tool-icon">📊</div>
+      <div class="tool-name">Historial</div>
+    </div>
+    <div class="tool-card" onclick="openConfig()">
+      <div class="tool-icon">⚙️</div>
+      <div class="tool-name">Ajustes</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ OBJETIVO ═══ -->
+<div class="scr" id="s-obj">
+  <div class="sel-banner" id="obj-banner"><div class="dot"></div><div>Nivel: <strong id="obj-lv-name">–</strong></div></div>
+  <div class="lbl">¿Objetivo de hoy?</div>
+  <div class="obj-grid" id="obj-grid"></div>
+</div>
+
+<!-- ═══ SESIÓN ═══ -->
+<div class="scr" id="s-sess">
+  <div class="breadcrumb" id="breadcrumb"></div>
+  <div class="lbl">Sesión</div>
+  <div class="sess-list" id="sess-list"></div>
+  <div class="cfg-row" id="cfg-row">
+    <div class="cfg-item"><div class="cfg-lbl">Damper</div><div class="cfg-val" id="cfg-d">–</div></div>
+    <div class="cfg-item"><div class="cfg-lbl">Tipo</div><div class="cfg-val" id="cfg-t">–</div></div>
+    <div class="cfg-item"><div class="cfg-lbl">Duración</div><div class="cfg-val" id="cfg-dur">–</div></div>
+    <div class="cfg-item"><div class="cfg-lbl">Fases</div><div class="cfg-val" id="cfg-ph">–</div></div>
+  </div>
+  <div class="cal-est-row" id="cal-est-row">
+    <span class="cal-est-icon">🔥</span>
+    <span class="cal-est-txt">Calorías estimadas:</span>
+    <span class="cal-est-val" id="cal-est-val">–</span>
+  </div>
+  <button class="btn-start" id="btn-start" disabled onclick="startSession()">Iniciar sesión →</button>
+</div>
+
+<!-- ═══ ACTIVA ═══ -->
+<div class="scr" id="s-active">
+  <div class="sess-hdr">
+    <div class="sess-title" id="act-title">–</div>
+    <div class="sess-meta" id="act-meta">–</div>
+  </div>
+  <div class="prog-wrap"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  <div class="timer-panel" id="timer-panel">
+    <div class="phase-nm" id="phase-nm">–</div>
+    <div class="timer-dig" id="timer-dig">00:00</div>
+    <div class="phase-ins" id="phase-ins">–</div>
+  </div>
+  <div class="live-stats">
+    <div class="met-box"><div class="met-lbl">SPM obj.</div><div class="met-val" id="m-spm" style="font-size:13px">–</div></div>
+    <div class="met-box"><div class="met-lbl">Zona</div><div class="met-val" id="m-zona">–</div></div>
+    <div class="met-box"><div class="met-lbl">Fase</div><div class="met-val" id="m-fase">–</div></div>
+    <div class="met-box"><div class="met-lbl">Kcal</div><div class="met-val cal" id="m-cal">0</div></div>
+  </div>
+  <div class="next-row" id="next-row">
+    <span class="next-lbl">A continuación</span>
+    <span class="next-val" id="next-val">–</span>
+    <span class="next-dur" id="next-dur">–</span>
+  </div>
+  <div class="ctrls">
+    <button class="ctrl" onclick="prevPh()" title="Fase anterior">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2.5" width="2.8" height="11" rx="1.2" fill="currentColor"/><path d="M14 3L6 8l8 5z" fill="currentColor"/></svg>
+    </button>
+    <button class="ctrl ctrl-play off" id="btn-play" onclick="togglePlay()">
+      <svg id="ic-play" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 3L17 10 5 17z" fill="currentColor"/></svg>
+      <svg id="ic-pause" width="20" height="20" viewBox="0 0 20 20" fill="none" style="display:none"><rect x="3.5" y="3" width="4.5" height="14" rx="1.5" fill="currentColor"/><rect x="12" y="3" width="4.5" height="14" rx="1.5" fill="currentColor"/></svg>
+    </button>
+    <button class="ctrl" onclick="nextPh()" title="Siguiente fase">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="11.2" y="2.5" width="2.8" height="11" rx="1.2" fill="currentColor"/><path d="M2 3l8 5-8 5z" fill="currentColor"/></svg>
+    </button>
+    <button class="ctrl ctrl-stop" onclick="stopSess()" title="Terminar">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="2" width="10" height="10" rx="2" fill="currentColor"/></svg>
+    </button>
+  </div>
+  <div class="lbl">Fases</div>
+  <div class="phase-list" id="phase-list"></div>
+</div>
+
+<!-- ═══ DONE ═══ -->
+<div class="scr" id="s-done">
+  <div class="done-wrap">
+    <div class="done-ico">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><polyline points="4,13 9.5,19.5 22,7" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="done-title">Sesión completada</div>
+    <div class="done-sub" id="done-sub">Registrá la sesión en ErgData.</div>
+    <div class="done-stats">
+      <div class="done-stat"><div class="done-stat-lbl">Sesión</div><div class="done-stat-val" id="d-sess" style="font-size:12px;line-height:1.3">–</div></div>
+      <div class="done-stat"><div class="done-stat-lbl">Tiempo</div><div class="done-stat-val" id="d-time" style="color:var(--green)">–</div></div>
+      <div class="done-stat"><div class="done-stat-lbl">Calorías est.</div><div class="done-stat-val" id="d-cal" style="color:var(--orange)">–</div></div>
+      <div class="done-stat"><div class="done-stat-lbl">Fases</div><div class="done-stat-val" id="d-phs">–</div></div>
+    </div>
+    <div class="done-btns">
+      <button class="btn-sec" onclick="openHist()">📊 Historial</button>
+      <button class="btn-sec" onclick="openProg()">📅 Plan</button>
+    </div>
+    <button class="btn-start" onclick="resetApp()" style="max-width:260px;margin:0 auto;display:block">Nueva sesión →</button>
+  </div>
+</div>
+
+<!-- ═══ GLOSARIO ═══ -->
+<div class="scr" id="s-glos">
+  <div class="glos-hdr">
+    <div class="glos-title">Glosario</div>
+    <div class="glos-sub">Display PM5 y técnica de remo</div>
+  </div>
+  <div class="glos-tabs">
+    <div class="glos-tab on" id="gt0" onclick="switchGlosTab(0)">Display PM5</div>
+    <div class="glos-tab" id="gt1" onclick="switchGlosTab(1)">Técnica de remo</div>
+  </div>
+  <div class="glos-panel on" id="gp0"></div>
+  <div class="glos-panel" id="gp1"></div>
+</div>
+
+<!-- ═══ HISTORIAL ═══ -->
+<div class="scr" id="s-hist">
+  <div class="hist-hdr">
+    <div class="hist-title">Historial</div>
+    <button class="hist-clear" onclick="clearHist()">Borrar todo</button>
+  </div>
+  <div id="hist-list"></div>
+</div>
+
+<!-- ═══ PROGRESIÓN ═══ -->
+<div class="scr" id="s-prog">
+  <div class="prog-hdr">
+    <div class="prog-title">Plan 8 Semanas</div>
+    <div class="prog-sub" id="prog-sub">Configurá tu plan para ver el calendario</div>
+  </div>
+  <div id="prog-setup-block">
+    <div class="prog-setup">
+      <div class="prog-setup-title">Configurar plan</div>
+      <div class="setup-row">
+        <div class="setup-lbl">Nivel</div>
+        <div class="setup-btns" id="prog-lvl-btns">
+          <button class="setup-btn" onclick="setPL(0)">Principiante</button>
+          <button class="setup-btn" onclick="setPL(1)">Medio</button>
+          <button class="setup-btn" onclick="setPL(2)">Avanzado</button>
+        </div>
+      </div>
+      <div class="setup-row">
+        <div class="setup-lbl">Fecha de inicio</div>
+        <input type="date" class="setup-input" id="prog-date" />
+      </div>
+      <button class="btn-start" onclick="saveProg()" style="margin-top:4px">Guardar plan →</button>
+    </div>
+  </div>
+  <div id="prog-today-block" style="display:none"></div>
+  <div id="prog-weeks-block" style="display:none"></div>
+  <button class="btn-sec" id="prog-reset-btn" style="display:none;width:100%;margin-top:12px" onclick="resetProg()">Reiniciar plan</button>
+</div>
+
+<!-- ═══ CONFIG ═══ -->
+<div class="scr" id="s-config">
+  <div class="prog-hdr">
+    <div class="prog-title">Ajustes</div>
+    <div class="prog-sub">Peso corporal y preferencias</div>
+  </div>
+  <div class="cfg-section">
+    <div class="cfg-section-title">Peso corporal (para calorías)</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input type="number" class="setup-input" id="weight-input" placeholder="75" min="40" max="200" style="max-width:100px">
+      <span style="font-size:12px;color:var(--muted)">kg</span>
+      <button class="btn-start" onclick="saveWeight()" style="flex:1;padding:10px;font-size:13px">Guardar</button>
+    </div>
+    <div style="font-size:10px;color:var(--muted);margin-top:8px">Fórmula: MET × peso × tiempo. Estimación aproximada.</div>
+  </div>
+  <div class="cfg-section">
+    <div class="cfg-section-title">Pantalla encendida (WakeLock)</div>
+    <div style="font-size:11px;color:var(--muted2)">Se activa automáticamente cuando iniciás una sesión y se libera al terminar.</div>
+    <div class="wk-lock-status">
+      <div class="wl-dot" id="wl-dot"></div>
+      <span id="wl-status" style="font-size:11px;color:var(--muted)">Inactivo</span>
+    </div>
+  </div>
+  <div class="cfg-section">
+    <div class="cfg-section-title">Versión</div>
+    <div style="font-size:11px;color:var(--muted)">VC Fit Remo Trainer v3.0<br>Concept 2 PM5 · 26 sesiones · 6 objetivos</div>
+  </div>
+</div>
+
+</div><!-- /remo-main -->
+
+  </div>
+
+</div>
+</div>
+
+
+<!-- REMO TRAINER v3 — Script -->
+<script>
+
+// ═══════════════════════════════════════════════════
+// DATA HELPERS
+// ═══════════════════════════════════════════════════
+function ph(n,d,z,s,i){return{name:n,dur:d,zona:z,spm:s,instr:i}}
+function fmt(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+function tabB(r){
+  const o=[];
+  for(let i=1;i<=8;i++){
+    o.push(ph('R'+r+' — Int '+i+'/8',20,'ALL','26–30+','Máxima potencia. Piernas. Explosivo.'));
+    o.push(ph('R'+r+' — Pausa '+i+'/8',10,'REST','—','Pausa total. Recuperate.'));
+  }
+  return o;
+}
+const ZC={Z1:'var(--z1)',Z2:'var(--z2)',Z3:'var(--z3)',Z4:'var(--z4)',Z5:'var(--z5)',ALL:'var(--z5)',REST:'var(--z1)'};
+const MET_Z={Z1:3.5,Z2:6,Z3:8,Z4:11,Z5:14,ALL:14,REST:2.5};
+const LVLNAMES=['Principiante','Medio','Avanzado'];
+const LVLC=['var(--green)','var(--yellow)','var(--red)'];
+const DAY_NAMES=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+
+// ═══════════════════════════════════════════════════
+// SESSION DB (completa v2)
+// ═══════════════════════════════════════════════════
+const DB={
+'P-T1':{name:'Técnica base',sub:'Segmentación · Sin carga',type:'TÉCNICA',dur:'~20 min',damper:'3',
+phases:[ph('Calentamiento',3*60,'Z1','14–16','Remo muy lento. Sentí cómo se mueve el carro.'),ph('Solo piernas',4*60,'Z1','14–16','Solo empujás con las piernas. Brazos bloqueados, extendidos.'),ph('Piernas + cuerpo',4*60,'Z1','16','Sumás la inclinación de cadera. Brazos siguen extendidos.'),ph('Secuencia completa',5*60,'Z1','16–18','ORDEN: piernas → cadera → brazos. Lento y consciente.'),ph('Integración',3*60,'Z2','18','Juntás todo a ritmo fluido. Recovery lento, drive explosivo.'),ph('Vuelta a la calma',2*60,'Z1','14','Muy suave. Terminás pensando en cada movimiento.')]},
+'P-R1':{name:'Recuperación activa',sub:'Z1 constante · 15 min',type:'RECOVERY',dur:'15 min',damper:'3',
+phases:[ph('Recuperación activa',13*60,'Z1','14–16','Z1 suave y constante. Mover el cuerpo sin desgastarlo. RPE 2–3.'),ph('Vuelta a la calma',2*60,'Z1','14','Más suave todavía.')]},
+'P-1':{name:'Continua 15 min',sub:'La primera remada · Z2',type:'CONTINUA',dur:'~15 min',damper:'3–4',
+phases:[ph('Calentamiento',3*60,'Z1','16–18','Coordinar piernas → cadera → brazos. Sin apuro.'),ph('Trabajo aeróbico',10*60,'Z2','18–20','Split constante. Podés hablar durante toda la sesión. RPE 4–5.'),ph('Vuelta a la calma',2*60,'Z1','16','Aflojá el ritmo. FC bajando.')]},
+'P-3':{name:'Continua 30 min',sub:'Primera sesión larga · Z2',type:'CONTINUA',dur:'~30 min',damper:'3–4',
+phases:[ph('Calentamiento',5*60,'Z1','16–18','Entrada en calor progresiva.'),ph('Trabajo Z2',20*60,'Z2','18–20','Z2 constante. Cada 5 min verificá que podés hablar. Si no → bajás el split.'),ph('Vuelta a la calma',5*60,'Z1','16','Remo suave. Bajá todo.')]},
+'P-2':{name:'Intervalada 20 min',sub:'4 × 3 min + 2 min pausa',type:'INTERVALADA',dur:'~24 min',damper:'3–4',
+phases:[ph('Calentamiento',4*60,'Z1','16–18','Entrada en calor suave.'),ph('Int 1 — Trabajo',3*60,'Z2','20–22','Z2–Z3. Ritmo sostenible.'),ph('Int 1 — Descanso',2*60,'Z1','16','Remo suave o pausa.'),ph('Int 2 — Trabajo',3*60,'Z2','20–22','Mismo split.'),ph('Int 2 — Descanso',2*60,'Z1','16','El 3° y 4° entrenan.'),ph('Int 3 — Trabajo',3*60,'Z3','20–22','Acá empieza el trabajo real.'),ph('Int 3 — Descanso',2*60,'Z1','16','Último descanso.'),ph('Int 4 — Trabajo',3*60,'Z3','20–22','Último. Todo lo que tenés.'),ph('Vuelta a la calma',4*60,'Z1','16','Bien hecho.')]},
+'P-A2':{name:'Progresiva 25 min',sub:'Z1 → Z3 → Z2 · Construcción gradual',type:'PROGRESIVA',dur:'~25 min',damper:'3–4',
+phases:[ph('Calentamiento Z1',5*60,'Z1','16','Muy suave.'),ph('Progresión Z2',5*60,'Z2','18–20','Subís a Z2.'),ph('Progresión Z3',5*60,'Z3','20–22','Subís a Z3. Frases cortas.'),ph('Bajada Z2',5*60,'Z2','18–20','Bajás a Z2. Se siente más fácil.'),ph('Vuelta a la calma',5*60,'Z1','16','Suave.')]},
+'P-P1':{name:'HIIT Iniciación',sub:'4 × 1 min + 3 min recuperación',type:'HIIT',dur:'~20 min',damper:'4',
+phases:[ph('Calentamiento',5*60,'Z2','18–20','Bien calentado. No saltees esto.'),ph('Int 1 — Intenso',60,'Z3','22–24','Z3 sólida. Esfuerzo sostenido.'),ph('Int 1 — Recuperación',3*60,'Z1','16','3 min. Recuperate bien.'),ph('Int 2 — Intenso',60,'Z3','22–24','Mismo split.'),ph('Int 2 — Recuperación',3*60,'Z1','16','Recuperate.'),ph('Int 3 — Intenso',60,'Z4','22–24','Subís a Z4.'),ph('Int 3 — Recuperación',3*60,'Z1','16','Casi terminaste.'),ph('Int 4 — Intenso',60,'Z4','22–24','Último. Todo.'),ph('Vuelta a la calma',3*60,'Z1','16','Primera sesión HIIT completada.')]},
+'P-F1':{name:'Fuerza base',sub:'3 × 3 min · Damper 5–6 · Cadencia baja',type:'FUERZA',dur:'~20 min',damper:'5–6',
+phases:[ph('Calentamiento',5*60,'Z1','16–18','En damper 4. Subís solo para el trabajo.'),ph('Serie 1',3*60,'Z2','14–16','Damper 5–6. Cada palada potente y deliberada.'),ph('Descanso 1',2*60,'Z1','16','Recuperate.'),ph('Serie 2',3*60,'Z2','14–16','Misma potencia. No aceleres.'),ph('Descanso 2',2*60,'Z1','16','Recuperate.'),ph('Serie 3',3*60,'Z3','14–16','Última. Podés subir la intensidad.'),ph('Vuelta a la calma',3*60,'Z1','16–18','Bajá el damper. Remo suave.')]},
+'M-T1':{name:'Técnica con carga',sub:'Alternancia 18/24 SPM · 3 bloques',type:'TÉCNICA',dur:'~25 min',damper:'4',
+phases:[ph('Calentamiento',5*60,'Z2','18–20','Entrada en calor con foco técnico.'),ph('B1 — Cadencia baja',3*60,'Z2','18','SPM 18. Lento y potente.'),ph('B1 — Cadencia alta',60,'Z3','24','24 SPM. Técnica limpia a mayor velocidad.'),ph('Descanso 1',2*60,'Z1','16','¿Cambió algo al acelerar?'),ph('B2 — Cadencia baja',3*60,'Z2','18','Ratio: recovery lento, drive explosivo.'),ph('B2 — Cadencia alta',60,'Z3','24','Técnica a alta cadencia.'),ph('Descanso 2',2*60,'Z1','16','Recuperate.'),ph('B3 — Cadencia baja',3*60,'Z2','18','Más fluido.'),ph('B3 — Cadencia alta',60,'Z3','24','Último sprint técnico.'),ph('Integración',3*60,'Z2','20–22','Tu ritmo natural. ¿Sentís la diferencia?')]},
+'M-R1':{name:'Recuperación activa',sub:'Z1 suave · 20 min',type:'RECOVERY',dur:'20 min',damper:'3',
+phases:[ph('Recuperación activa',18*60,'Z1','14–18','Z1 constante. FC por debajo del 60% FCmáx. Movimiento activo, sin carga.'),ph('Vuelta a la calma',2*60,'Z1','14','Terminás.')]},
+'M-1':{name:'Fartlek 20 min',sub:'El split que sube y baja · Z2/Z3',type:'FARTLEK',dur:'~20 min',damper:'4–5',
+phases:[ph('Calentamiento',4*60,'Z1','18–20','Entrada en calor suave.'),ph('Base 1',2*60,'Z2','20','Ritmo de base.'),ph('Pico 1',60,'Z3','22–24','Subís. RPE 6–7.'),ph('Base 2',2*60,'Z2','20','Bajás.'),ph('Pico 2',60,'Z3','22–24','Segundo pico.'),ph('Base 3',2*60,'Z2','20','Base.'),ph('Pico 3',60,'Z3','22–24','Tercer pico.'),ph('Base 4',2*60,'Z2','20','Base.'),ph('Pico 4',60,'Z3','22–24','Último pico.'),ph('Libre',60,'Z2','20','A tu ritmo.'),ph('Vuelta a la calma',3*60,'Z1','18','Bajá todo.')]},
+'M-4':{name:'Intervalada 45 min',sub:'Bloque A × 3 + Bloque B × 4',type:'INTERVALADA',dur:'~48 min',damper:'4–5',
+phases:[ph('Calentamiento',8*60,'Z2','20','Progresiva.'),ph('A-1 Trabajo',5*60,'Z2','20–22','Motor aeróbico.'),ph('A-1 Descanso',2*60,'Z1','18','Recuperate.'),ph('A-2 Trabajo',5*60,'Z2','20–22','Mantenés.'),ph('A-2 Descanso',2*60,'Z1','18','Recuperate.'),ph('A-3 Trabajo',5*60,'Z2','20–22','Última del A.'),ph('A-3 Descanso',2*60,'Z1','18','Motor a prueba.'),ph('B-1 Trabajo',2*60,'Z3','22–24','Z3–Z4.'),ph('B-1 Descanso',90,'Z1','18','1:30 descanso.'),ph('B-2 Trabajo',2*60,'Z3','22–24','Mismo ritmo.'),ph('B-2 Descanso',90,'Z1','18','Respirá.'),ph('B-3 Trabajo',2*60,'Z4','22–24','Z4.'),ph('B-3 Descanso',90,'Z1','18','Casi.'),ph('B-4 Trabajo',2*60,'Z4','22–24','Última serie.'),ph('Vuelta a la calma',5*60,'Z1','16–18','Bien hecho.')]},
+'M-A2':{name:'Tempo 30 min',sub:'20 min Z3 sostenida · Umbral aeróbico',type:'TEMPO',dur:'~32 min',damper:'4–5',
+phases:[ph('Calentamiento',7*60,'Z2','20','Progresivo Z1→Z2.'),ph('Tempo Z3',20*60,'Z3','22–24','Z3 sostenida. FC 70–80% FCmáx. Incómodo pero sostenible.'),ph('Vuelta a la calma',5*60,'Z1','18','Bajá gradualmente.')]},
+'M-2':{name:'HIIT 8 × 1 min',sub:'8 × 1 min intenso + 2 min recuperación',type:'HIIT',dur:'~36 min',damper:'4–5',
+phases:[ph('Calentamiento',7*60,'Z2','18–20','Progresivo Z1→Z2.'),...Array.from({length:8},(_,i)=>[ph(`Int ${i+1}/8 — Intenso`,60,'Z4','24–26',i<2?'Z4. RPE 8.':i<5?'Trabajo real. Sostenés.':'Últimos. Sin aflojar.'),ph(`Int ${i+1}/8 — Rec`,2*60,'Z1','18','Recuperate.')]).flat(),ph('Vuelta a la calma',5*60,'Z1','18','Remo muy suave.')]},
+'M-3':{name:'Tabata 2 rondas',sub:'2 × 8 × (20/10 seg)',type:'TABATA',dur:'~22 min',damper:'4–5',
+phases:[ph('Calentamiento',8*60,'Z2','20–22','Progresivo.'),...tabB(1),ph('Descanso entre rondas',4*60,'Z1','16','Recuperación completa.'),...tabB(2),ph('Vuelta a la calma',8*60,'Z1','16–18','Remo muy suave.')]},
+'M-F1':{name:'6 × 250m Fuerza',sub:'Series cortas de alta potencia',type:'FUERZA',dur:'~25 min',damper:'5–6',
+phases:[ph('Calentamiento',7*60,'Z2','20','Bien calentado.'),...Array.from({length:6},(_,i)=>[ph(`250m — S${i+1}`,2*60,i>=4?'Z5':'Z4','22–28',`Serie ${i+1}. Potencia de piernas.`),i<5?ph(`Rec ${i+1}`,90,'Z1','16','Anotá el split.'):null]).flat().filter(Boolean),ph('Vuelta a la calma',5*60,'Z1','18','Remo suave.')]},
+'A-T1':{name:'Técnica avanzada',sub:'Alternancia 16–18 / 28–30 SPM',type:'TÉCNICA',dur:'~30 min',damper:'4',
+phases:[ph('Calentamiento',10*60,'Z2','20–22','10 min. Pensá en cada movimiento.'),ph('S1 — Baja',2*60,'Z2','16–18','SPM 16–18. Ratio 1:3.'),ph('S1 — Alta',2*60,'Z3','28–30','28–30 SPM. Técnica limpia.'),ph('Descanso',60,'Z1','16','Recuperate.'),ph('S2 — Baja',2*60,'Z2','16–18','Más fluido.'),ph('S2 — Alta',2*60,'Z3','28–30','Técnica a alta cadencia.'),ph('Descanso',60,'Z1','16','Recuperate.'),ph('S3 — Baja',2*60,'Z2','16–18','Tercera.'),ph('S3 — Alta',2*60,'Z4','28–30','Z4 con técnica.'),ph('Integración',4*60,'Z2','22','Tu ritmo natural óptimo.')]},
+'A-R1':{name:'Recuperación activa',sub:'Z1 constante · 30 min',type:'RECOVERY',dur:'30 min',damper:'3–4',
+phases:[ph('Recuperación activa',28*60,'Z1','16–18','Z1 constante. FC < 60% FCmáx. Después de semana de alta carga, esta sesión vale lo mismo que un HIIT.'),ph('Vuelta a la calma',2*60,'Z1','14','Terminás.')]},
+'A-1':{name:'Steady State 60 min',sub:'Z2 estricta · La madre de la base',type:'CONTINUA',dur:'60 min',damper:'4–5',
+phases:[ph('Calentamiento',10*60,'Z2','18–20','Progresivo Z1→Z2.'),ph('Trabajo Z2',45*60,'Z2','18–22','Z2 ESTRICTA. Split constante ±5 seg. Usá Pace Boat del PM5. Si querés ir más rápido → estás yendo demasiado rápido.'),ph('Vuelta a la calma',5*60,'Z1','16–18','Remo muy suave.')]},
+'A-G2':{name:'Steady State 45 min',sub:'Z2 estricta · Versión media',type:'CONTINUA',dur:'~45 min',damper:'4–5',
+phases:[ph('Calentamiento',5*60,'Z2','18–20','Entrada progresiva.'),ph('Trabajo Z2',35*60,'Z2','18–22','Z2 constante. Si la FC sube → bajás el split.'),ph('Vuelta a la calma',5*60,'Z1','16–18','Suave.')]},
+'A-2':{name:'Norwegian Method',sub:'4 × 8 min umbral · Z3',type:'INTERVALADA',dur:'~57 min',damper:'4–5',
+phases:[ph('Calentamiento',10*60,'Z2','20–22','Prepará bien el sistema aeróbico.'),ph('S1 — Umbral',8*60,'Z3','22–24','Z3. FC 75–80% FCmáx. Sostenido.'),ph('Descanso 1',2*60,'Z1','18','Recuperate.'),ph('S2 — Umbral',8*60,'Z3','22–24','Mismo split. Concentración.'),ph('Descanso 2',2*60,'Z1','18','Recuperate.'),ph('S3 — Umbral',8*60,'Z3','22–24','Mitad. Mentalidad noruega.'),ph('Descanso 3',2*60,'Z1','18','Un intervalo más.'),ph('S4 — Umbral',8*60,'Z3','22–24','Última.'),ph('Descanso 4',2*60,'Z1','18','Terminaste.'),ph('Vuelta a la calma',7*60,'Z1','16–18','Remo muy suave.')]},
+'A-A2':{name:'Tempo largo 45 min',sub:'2 × 15 min Z3 · Resistencia umbral',type:'TEMPO',dur:'~45 min',damper:'4–5',
+phases:[ph('Calentamiento',8*60,'Z2','20–22','Entrada progresiva.'),ph('Tempo 1 — 15 min',15*60,'Z3','22–24','Z3 sostenida. 15 min de umbral continuo.'),ph('Descanso',3*60,'Z1','18','Tomá agua.'),ph('Tempo 2 — 15 min',15*60,'Z3','22–24','Segunda parte. Más duro. Mentalidad.'),ph('Vuelta a la calma',5*60,'Z1','18','Bajá todo.')]},
+'A-3':{name:'HIIT Piramidal',sub:'1–2–3–2–1 min · Gestión de fatiga',type:'PIRAMIDAL',dur:'~30 min',damper:'4–6',
+phases:[ph('Calentamiento',7*60,'Z2','20–22','Progresiva.'),ph('Pir 1 min',60,'Z4','24–28','Z4. Primer escalón.'),ph('Desc 1',60,'Z1','18','Recuperate.'),ph('Pir 2 min',2*60,'Z4','24–28','Más largo.'),ph('Desc 2',2*60,'Z1','18','Recuperate.'),ph('Pir 3 min',3*60,'Z4','24–28','La cúspide. No te rompas.'),ph('Desc 3',3*60,'Z1','18','Merecido.'),ph('Pir 2 min',2*60,'Z4','24–28','Bajando.'),ph('Desc 4',2*60,'Z1','18','Casi.'),ph('Pir 1 min',60,'Z4','24–28','Último.'),ph('Desc 5',60,'Z1','18','Perfecto.'),ph('Vuelta a la calma',5*60,'Z1','18','Suave.')]},
+'A-4':{name:'Protocolo 500m',sub:'6 × 500m · Fuerza aeróbica',type:'FUERZA',dur:'~37 min',damper:'5–6',
+phases:[ph('Calentamiento',8*60,'Z2','20–22','Prepará las piernas.'),...Array.from({length:6},(_,i)=>[ph(`500m — S${i+1}`,4*60,i===5?'Z5':'Z4','24–28',i===5?'Última. Z5 en los últimos 100m.':`S${i+1}. Consistencia ±3 seg.`),i<5?ph(`Rec ${i+1}`,30,'Z1','18','30 seg.'):null]).flat().filter(Boolean),ph('Vuelta a la calma',5*60,'Z1','16–18','Bien hecho.')]},
+'A-5':{name:'Tabata Triple',sub:'3 × 8 × (20/10 seg) · Para veteranos',type:'TABATA',dur:'~41 min',damper:'4–5',
+phases:[ph('Calentamiento',10*60,'Z2','20–22','10 min + 3 acelerones de 10 seg.'),...tabB(1),ph('Desc R1',5*60,'Z1','16','Recuperación completa.'),...tabB(2),ph('Desc R2',5*60,'Z1','16','La 3ra es la más dura.'),...tabB(3),ph('Vuelta a la calma',8*60,'Z1','16','Bienvenido al dolor organizado.')]},
+'A-F2':{name:'8 × 250m Potencia',sub:'Series cortas explosivas · Z5',type:'FUERZA',dur:'~30 min',damper:'5–6',
+phases:[ph('Calentamiento',8*60,'Z2','20–22','Bien calentado antes de Z5.'),...Array.from({length:8},(_,i)=>[ph(`250m — S${i+1}`,90,'Z5','26–30+',`S${i+1}. Split objetivo consistente.`),ph(`Rec ${i+1}`,60,'Z1','16','60 seg.')]).flat(),ph('Vuelta a la calma',5*60,'Z1','16–18','Recuperación completa.')]},
+};
+
+// ═══════════════════════════════════════════════════
+// OBJECTIVES + MAP
+// ═══════════════════════════════════════════════════
+const OBJS=[
+  {key:'tecnica',name:'Técnica',icon:'🎯',color:'var(--teal)',cb:'var(--teal-bg)',bc:'rgba(20,184,166,.35)',desc:'Movimientos correctos antes de sumar intensidad.'},
+  {key:'recuperacion',name:'Recuperación activa',icon:'🔄',color:'var(--green)',cb:'var(--green-bg)',bc:'rgba(34,197,94,.35)',desc:'Sesión suave para días de cansancio o entre cargas altas.'},
+  {key:'grasa',name:'Quema de grasa',icon:'🔥',color:'var(--orange)',cb:'var(--orange-bg)',bc:'rgba(249,115,22,.35)',desc:'Steady state Z2. Sustrato energético: grasa. Lento y largo.'},
+  {key:'resistencia',name:'Resistencia aeróbica',icon:'🫁',color:'var(--blue)',cb:'var(--blue-bg)',bc:'rgba(56,189,248,.35)',desc:'Fartlek, tempo e intervalos. Motor aeróbico de largo plazo.'},
+  {key:'potencia',name:'Potencia',icon:'⚡',color:'var(--red)',cb:'var(--red-bg)',bc:'rgba(239,68,68,.35)',desc:'HIIT, Tabata y pirámides. Alta intensidad, corto y explosivo.'},
+  {key:'fuerza',name:'Fuerza-resistencia',icon:'💪',color:'var(--purple)',cb:'var(--purple-bg)',bc:'rgba(168,85,247,.35)',desc:'Damper alto, paladas potentes a baja cadencia.'},
+];
+const MAP={
+  0:{tecnica:['P-T1'],recuperacion:['P-R1'],grasa:['P-1','P-3'],resistencia:['P-2','P-A2'],potencia:['P-P1'],fuerza:['P-F1']},
+  1:{tecnica:['M-T1'],recuperacion:['M-R1'],grasa:['M-1','M-4'],resistencia:['M-A2','M-4'],potencia:['M-2','M-3'],fuerza:['M-F1']},
+  2:{tecnica:['A-T1'],recuperacion:['A-R1'],grasa:['A-G2','A-1'],resistencia:['A-A2','A-2'],potencia:['A-3','A-5'],fuerza:['A-4','A-F2']},
+};
+
+// ═══════════════════════════════════════════════════
+// PLAN 8 SEMANAS [semana][{d:dayOfWeek0=Mon,s:sessId}]
+// ═══════════════════════════════════════════════════
+const PROG_PLAN={
+  0:[ // Principiante
+    [{d:0,s:'P-2'},{d:2,s:'P-1'},{d:4,s:'P-3'}],
+    [{d:0,s:'P-2'},{d:2,s:'P-1'},{d:4,s:'P-3'}],
+    [{d:0,s:'P-2'},{d:4,s:'P-3'}],
+    [{d:0,s:'P-2'},{d:2,s:'P-1'},{d:4,s:'P-3'}],
+    [{d:0,s:'P-3'},{d:2,s:'P-2'},{d:4,s:'P-3'}],
+    [{d:0,s:'P-3'},{d:2,s:'P-2'},{d:4,s:'P-3'},{d:5,s:'P-1'}],
+    [{d:0,s:'P-3'},{d:2,s:'M-1'},{d:4,s:'P-3'},{d:5,s:'P-2'}],
+    [{d:0,s:'M-1'},{d:2,s:'P-3'},{d:4,s:'M-2'},{d:5,s:'P-2'}],
+  ],
+  1:[ // Medio
+    [{d:0,s:'M-2'},{d:2,s:'M-1'},{d:4,s:'P-3'}],
+    [{d:0,s:'M-2'},{d:2,s:'M-1'},{d:4,s:'M-4'}],
+    [{d:0,s:'M-2'},{d:2,s:'M-3'},{d:4,s:'M-4'}],
+    [{d:0,s:'M-4'},{d:2,s:'M-2'},{d:4,s:'M-3'},{d:5,s:'M-1'}],
+    [{d:0,s:'M-4'},{d:2,s:'M-1'},{d:4,s:'M-2'}],
+    [{d:0,s:'M-4'},{d:2,s:'M-3'},{d:4,s:'M-2'},{d:5,s:'M-1'}],
+    [{d:0,s:'A-1'},{d:2,s:'M-2'},{d:4,s:'M-3'},{d:5,s:'M-4'}],
+    [{d:0,s:'A-2'},{d:2,s:'M-3'},{d:4,s:'A-3'},{d:5,s:'M-4'}],
+  ],
+  2:[ // Avanzado
+    [{d:0,s:'A-1'},{d:2,s:'A-3'},{d:4,s:'A-2'}],
+    [{d:0,s:'A-2'},{d:2,s:'A-4'},{d:4,s:'A-1'},{d:5,s:'A-3'}],
+    [{d:0,s:'A-1'},{d:2,s:'A-5'},{d:4,s:'A-2'},{d:5,s:'A-4'}],
+    [{d:0,s:'A-2'},{d:2,s:'A-3'},{d:4,s:'A-1'}],
+    [{d:0,s:'A-1'},{d:2,s:'A-4'},{d:4,s:'A-5'},{d:5,s:'A-2'}],
+    [{d:0,s:'A-2'},{d:2,s:'A-1'},{d:4,s:'A-3'},{d:5,s:'A-4'}],
+    [{d:0,s:'A-1'},{d:2,s:'A-5'},{d:4,s:'A-4'},{d:5,s:'A-2'}],
+    [{d:0,s:'A-2'},{d:2,s:'A-3'},{d:4,s:'A-4'}],
+  ],
+};
+
+// ═══════════════════════════════════════════════════
+// GLOSSARY
+// ═══════════════════════════════════════════════════
+const GLOS={
+pm5:[
+  {t:'Split (tiempo / 500m)',d:'El tiempo que tardarías en recorrer 500 metros a tu velocidad actual. Indicador principal de intensidad.',tip:'Más bajo = más rápido. Si tu split es 2:30, tardás 2 min 30 seg por cada 500m.'},
+  {t:'SPM — Strokes Per Minute',d:'Paladas por minuto. Tu cadencia. No confundir con intensidad: podés remar fuerte a 18 SPM o suave a 26 SPM. Son variables independientes.',tip:'Cadencia alta ≠ más esfuerzo. El error más común: acelerar los SPM en vez de aumentar la potencia por palada.'},
+  {t:'Watts',d:'Potencia generada por palada. Más estable que el split como indicador de esfuerzo real.',tip:'Los atletas avanzados entrenan con objetivo de Watts en vez de split.'},
+  {t:'Cal / hora',d:'Estimación de calorías quemadas por hora. Útil para referencia energética. No es exacto pero sí consistente.',tip:'No compararlo entre personas — depende del peso y la técnica.'},
+  {t:'FC — Frecuencia Cardíaca',d:'Pulsaciones por minuto. Se muestra en PM5 solo con sensor externo: banda de pecho HRM via Bluetooth o ANT+.',tip:'La banda de pecho es más precisa que la pulsera en ejercicio de alta intensidad.'},
+  {t:'Distancia (metros)',d:'Metros recorridos desde el inicio. Útil para protocolos con objetivo de distancia fija (500m, 2000m).',tip:'El test estándar de benchmark es 2000m. Usalo para medir progreso.'},
+  {t:'Drag Factor',d:'Resistencia real del flywheel medida por el monitor. Más preciso que el número del damper.',tip:'Utilities → Display Drag Factor. Para aeróbico: apuntá a 110–130.'},
+  {t:'Pace Boat',d:'Barco virtual en pantalla que representa tu split objetivo. Si el barco está adelante → vas más lento. Si está atrás → vas más rápido.',tip:'Activalo desde el botón Display. Muy útil en Steady State.'},
+],
+tecnica:[
+  {t:'Catch — El agarre',d:'Posición inicial: rodillas flexionadas al máximo, brazos extendidos, cuerpo ligeramente inclinado al frente. Donde "enganchás" el agua.',tip:'Requiere flexibilidad en tobillos y caderas. Si no llegás, trabajá la movilidad.'},
+  {t:'Drive — La palada',d:'Fase de trabajo. Orden obligatorio: 1) PIERNAS empujan. 2) CADERA se recuesta. 3) BRAZOS traccionan al abdomen.',tip:'El error más común: tirar con los brazos antes de que terminen las piernas. Las piernas generan el 60% de la potencia.'},
+  {t:'Finish / Release — El final',d:'Posición al terminar el drive: levemente recostado, codos detrás de las caderas, manubrio al abdomen bajo.',tip:'No echarse demasiado atrás — la inclinación ideal es unos 30°.'},
+  {t:'Recovery — El retorno',d:'Vuelta al catch. Orden inverso: 1) BRAZOS se extienden. 2) CUERPO inclina al frente. 3) PIERNAS deslizan el asiento.',tip:'El recovery debe ser fluido y más lento que el drive. La mayoría lo apresura — destruye el ratio.'},
+  {t:'Ratio — La proporción',d:'Relación entre la velocidad del drive y el recovery. Un ratio 1:2 significa que el recovery dura el doble que el drive.',tip:'Recovery igual de rápido que el drive = sacudidas y pérdida de eficiencia.'},
+  {t:'Damper — La palanca lateral',d:'Controla cuánto aire entra al flywheel. No es "la dificultad" — es el drag factor, la masa de aire que el flywheel mueve por palada.',tip:'Más alto = cada palada más pesada y lenta. Rango óptimo para la mayoría: 3–5.'},
+  {t:'Check — El frenazo',d:'Error técnico: el carro frena o sacude abruptamente al llegar al catch. Indica que llegás demasiado rápido o con fuerza descontrolada.',tip:'Si escuchás un golpe seco al llegar adelante → eso es un check. Bajá la velocidad del recovery.'},
+  {t:'Run — El deslizamiento',d:'El deslizamiento libre de la máquina entre paladas. A mayor calidad técnica y eficiencia, mayor run.',tip:'Más run = mejor técnica. Si la máquina para casi de golpe entre paladas → algo técnico hay que mejorar.'},
+  {t:'Proporción 60/20/20',d:'Las piernas generan el 60% de la potencia. La cadera el 20%. Los brazos solo el 20% restante.',tip:'Si los brazos o hombros se fatigan primero → estás remando con los brazos. Revisá el drive.'},
+  {t:'Hang — La suspensión',d:'Técnica avanzada: al inicio del catch, colgás el peso del cuerpo del manubrio un instante antes de activar las piernas.',tip:'Solo intentarlo con técnica base automatizada. Es el siguiente nivel de eficiencia.'},
+]};
+
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+let S={
+  level:null,objKey:null,sessId:null,session:null,
+  phIdx:0,phTimer:0,playing:false,iv:null,
+  startAt:null,totalSec:0,donePhs:0,
+  prevScr:'s-level',objColor:'var(--green)',
+  calories:0
+};
+let wl=null; // WakeLock sentinel
+let progSetupLevel=null;
+
+// ═══════════════════════════════════════════════════
+// AUDIO
+// ═══════════════════════════════════════════════════
+let actx=null;
+function ensureAudio(){if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();}
+function beep(f=880,d=.08,v=.18){
+  try{ensureAudio();const o=actx.createOscillator(),g=actx.createGain();
+  o.connect(g);g.connect(actx.destination);o.type='sine';o.frequency.value=f;
+  g.gain.setValueAtTime(v,actx.currentTime);g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+d);
+  o.start();o.stop(actx.currentTime+d);}catch(e){}
+}
+function beepEnd(){beep(880,.07);setTimeout(()=>beep(880,.07),120);setTimeout(()=>beep(1100,.12),250);}
+function vib(pattern){try{if(navigator.vibrate)navigator.vibrate(pattern);}catch(e){}}
+
+// ═══════════════════════════════════════════════════
+// WAKELOCK
+// ═══════════════════════════════════════════════════
+async function requestWL(){
+  try{
+    if('wakeLock' in navigator){
+      wl=await navigator.wakeLock.request('screen');
+      wl.addEventListener('release',()=>setWLStatus(false));
+      setWLStatus(true);
+    }
+  }catch(e){setWLStatus(false);}
+}
+function releaseWL(){
+  if(wl){wl.release().catch(()=>{});wl=null;}
+  setWLStatus(false);
+}
+function setWLStatus(on){
+  const dot=document.getElementById('wl-dot');
+  const st=document.getElementById('wl-status');
+  const tag=document.getElementById('wl-tag');
+  if(dot){dot.classList.toggle('on',on);}
+  if(st){st.textContent=on?'Activo — pantalla bloqueada de apagarse':'Inactivo';}
+  if(tag){tag.style.color=on?'var(--green)':'';tag.title=on?'Pantalla encendida (WakeLock activo)':'PM5';}
+}
+
+// ═══════════════════════════════════════════════════
+// CALORIES
+// ═══════════════════════════════════════════════════
+function getWeight(){return parseFloat(localStorage.getItem('rm_weight'))||75;}
+function calcCalPerSec(zona){
+  const met=MET_Z[zona]||6;
+  return(met*getWeight())/3600;
+}
+function calcSessionEst(sess){
+  if(!sess)return 0;
+  const w=getWeight();
+  let cal=0;
+  sess.phases.forEach(p=>{const met=MET_Z[p.zona]||6;cal+=(met*w*p.dur)/3600;});
+  return Math.round(cal);
+}
+
+// ═══════════════════════════════════════════════════
+// LOCALSTORAGE — HISTORIAL
+// ═══════════════════════════════════════════════════
+function loadHist(){try{return JSON.parse(localStorage.getItem('rm_hist'))||[];}catch(e){return[];}}
+function saveHistEntry(entry){
+  const h=loadHist();
+  h.unshift(entry);
+  if(h.length>10)h.length=10;
+  localStorage.setItem('rm_hist',JSON.stringify(h));
+}
+function clearHist(){
+  if(confirm('¿Borrás todo el historial?')){
+    localStorage.removeItem('rm_hist');
+    renderHist();
+  }
+}
+function renderHist(){
+  const h=loadHist();
+  const list=document.getElementById('hist-list');
+  if(!h.length){
+    list.innerHTML=`<div class="hist-empty"><div class="hist-ico">🚣</div><p>Todavía no hay sesiones registradas.<br>Completá tu primera sesión para verla acá.</p></div>`;
+    return;
+  }
+  const lc=['var(--green)','var(--yellow)','var(--red)'];
+  list.innerHTML=h.map(e=>`
+    <div class="hist-item">
+      <div class="hist-color" style="background:${lc[e.level]||'var(--green)'}"></div>
+      <div class="hist-info">
+        <div class="hist-sess">${e.sessName}</div>
+        <div class="hist-meta">${LVLNAMES[e.level]||''} · ${e.objName||''} · ${e.phases} fases</div>
+      </div>
+      <div class="hist-right">
+        <div class="hist-time">${fmt(e.duration)}</div>
+        ${e.calories?`<div class="hist-cal">🔥 ${e.calories} kcal</div>`:''}
+        <div class="hist-date">${new Date(e.date).toLocaleDateString('es-AR')}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════
+// LOCALSTORAGE — PROGRESIÓN
+// ═══════════════════════════════════════════════════
+function loadProgConfig(){try{return JSON.parse(localStorage.getItem('rm_prog'))||null;}catch(e){return null;}}
+function saveProgConfig(cfg){localStorage.setItem('rm_prog',JSON.stringify(cfg));}
+
+function getTodaySession(level,startDateStr){
+  const start=new Date(startDateStr);
+  start.setHours(0,0,0,0);
+  const today=new Date();today.setHours(0,0,0,0);
+  const daysSince=Math.floor((today-start)/86400000);
+  if(daysSince<0||daysSince>=56)return null;
+  const weekIdx=Math.floor(daysSince/7);
+  // JS getDay(): 0=Sun,1=Mon...6=Sat → convertir a 0=Mon...6=Sun
+  const dow=(today.getDay()+6)%7;
+  const week=PROG_PLAN[level]?.[weekIdx]||[];
+  const entry=week.find(x=>x.d===dow);
+  return{week:weekIdx+1,weekIdx,sessId:entry?.s||null,isTraining:!!entry,dow,daysSince,weekPlan:week};
+}
+
+function renderProg(){
+  const cfg=loadProgConfig();
+  const setupBlock=document.getElementById('prog-setup-block');
+  const todayBlock=document.getElementById('prog-today-block');
+  const weeksBlock=document.getElementById('prog-weeks-block');
+  const resetBtn=document.getElementById('prog-reset-btn');
+  const sub=document.getElementById('prog-sub');
+
+  if(!cfg){
+    setupBlock.style.display='block';
+    todayBlock.style.display='none';
+    weeksBlock.style.display='none';
+    resetBtn.style.display='none';
+    // Pre-fill date with today
+    const d=new Date();
+    document.getElementById('prog-date').value=d.toISOString().split('T')[0];
+    return;
+  }
+
+  setupBlock.style.display='none';
+  todayBlock.style.display='block';
+  weeksBlock.style.display='block';
+  resetBtn.style.display='block';
+  sub.textContent=`${LVLNAMES[cfg.level]} · desde ${new Date(cfg.startDate).toLocaleDateString('es-AR')}`;
+
+  const info=getTodaySession(cfg.level,cfg.startDate);
+  const lc=['var(--green)','var(--yellow)','var(--red)'][cfg.level];
+
+  // HOY block
+  if(!info){
+    todayBlock.innerHTML=`<div class="prog-today" style="border-color:${lc}">
+      <div class="prog-today-week">Plan completado</div>
+      <div class="prog-rest">Las 8 semanas terminaron 🎉</div>
+      <div class="prog-today-meta">Reiniciá el plan o pasá al siguiente nivel.</div>
+    </div>`;
+  } else if(!info.isTraining){
+    todayBlock.innerHTML=`<div class="prog-today" style="border-color:var(--bg4)">
+      <div class="prog-today-week">SEMANA ${info.week} · DÍA DE DESCANSO</div>
+      <div class="prog-rest">Hoy descansás 🔄</div>
+      <div class="prog-today-meta">El descanso es parte del entrenamiento.</div>
+    </div>`;
+  } else {
+    const sess=DB[info.sessId];
+    todayBlock.innerHTML=`<div class="prog-today" style="border-color:${lc}">
+      <div class="prog-today-week">SEMANA ${info.week} · ${DAY_NAMES[info.dow]?.toUpperCase()}</div>
+      <div class="prog-today-sess">${sess?.name||info.sessId}</div>
+      <div class="prog-today-meta">${sess?.sub||''} · ${sess?.dur||''} · Damper ${sess?.damper||'–'}</div>
+      <button class="btn-start" onclick="launchFromProg('${info.sessId}')" style="padding:12px;font-size:14px">Iniciar esta sesión →</button>
+    </div>`;
+  }
+
+  // SEMANAS block
+  const today=new Date();today.setHours(0,0,0,0);
+  const start=new Date(cfg.startDate);start.setHours(0,0,0,0);
+  const daysSince=Math.floor((today-start)/86400000);
+  const currentWeek=Math.min(7,Math.floor(daysSince/7));
+
+  let weeksHtml='<div class="lbl" style="margin-top:4px">Calendario completo</div>';
+  PROG_PLAN[cfg.level].forEach((week,wi)=>{
+    const isCurrentW=(wi===currentWeek&&daysSince>=0&&daysSince<56);
+    const isPastW=wi<currentWeek&&daysSince>=0;
+    const pct=isPastW?100:isCurrentW?Math.round((daysSince%7)/7*100):0;
+    const sessInW=week.length;
+    weeksHtml+=`<div class="week-block">
+      <div class="week-hdr">
+        <div class="week-num">SEMANA ${wi+1}</div>
+        <div class="week-bar-wrap"><div class="week-bar-fill" style="width:${pct}%"></div></div>
+        <div class="week-pct">${pct}%</div>
+      </div>
+      <div class="week-days">`;
+    week.forEach(({d,s})=>{
+      const sess=DB[s];
+      const absDay=wi*7+d;
+      const isToday=(absDay===daysSince&&daysSince>=0&&daysSince<56);
+      const isPast=absDay<daysSince&&daysSince>=0;
+      weeksHtml+=`<div class="week-day-item ${isToday?'today-item':''} ${!sess?'rest-item':''}">
+        <div class="wdi-day">${DAY_NAMES[d]}</div>
+        <div class="wdi-sess">${sess?.name||s}</div>
+        <div class="wdi-type" style="color:${isPast?'var(--muted)':isToday?lc:'var(--muted)'}">${sess?.type||''}</div>
+        ${isToday?`<button class="wdi-go" onclick="launchFromProg('${s}')">→ Iniciar</button>`:''}
+      </div>`;
+    });
+    weeksHtml+=`</div></div>`;
+  });
+  weeksBlock.innerHTML=weeksHtml;
+}
+
+function setPL(idx){
+  progSetupLevel=idx;
+  document.querySelectorAll('.setup-btn').forEach((b,i)=>b.classList.toggle('sel',i===idx));
+}
+function saveProg(){
+  if(progSetupLevel===null){alert('Elegí un nivel primero.');return;}
+  const d=document.getElementById('prog-date').value;
+  if(!d){alert('Elegí una fecha de inicio.');return;}
+  saveProgConfig({level:progSetupLevel,startDate:d});
+  renderProg();
+}
+function resetProg(){
+  if(confirm('¿Reiniciás el plan? Se borra la configuración actual.')){
+    localStorage.removeItem('rm_prog');
+    progSetupLevel=null;
+    document.querySelectorAll('.setup-btn').forEach(b=>b.classList.remove('sel'));
+    renderProg();
+  }
+}
+function launchFromProg(sessId){
+  // Lanzar sesión directamente desde la progresión
+  const cfg=loadProgConfig();
+  if(!cfg)return;
+  S.level=cfg.level;
+  S.objKey='resistencia'; // fallback
+  S.objColor=LVLC[cfg.level];
+  // Buscar el objetivo correcto para esta sesión
+  const objMap=MAP[cfg.level];
+  for(const[key,ids] of Object.entries(objMap)){
+    if(ids.includes(sessId)){S.objKey=key;const ob=OBJS.find(o=>o.key===key);if(ob)S.objColor=ob.color;break;}
+  }
+  S.sessId=sessId;
+  S.session=DB[sessId];
+  if(!S.session){alert('Sesión no encontrada.');return;}
+  // Iniciar
+  initActiveSession();
+  showScr('s-active');
+  document.getElementById('btn-back').style.display='block';
+}
+
+// ═══════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════
+function showScr(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');window.scrollTo(0,0);}
+function showBack(v){document.getElementById('btn-back').style.display=v?'block':'none';}
+
+function goBack(){
+  const cur=document.querySelector('.scr.on')?.id;
+  if(cur==='s-glos'){showScr(S.prevScr);if(S.prevScr==='s-level')showBack(false);else showBack(true);return;}
+  if(cur==='s-hist'||cur==='s-prog'||cur==='s-config'){showScr('s-level');showBack(false);return;}
+  if(cur==='s-obj'){showScr('s-level');showBack(false);return;}
+  if(cur==='s-sess'){showScr('s-obj');return;}
+  if(cur==='s-active'){
+    if(S.playing){clearInterval(S.iv);S.playing=false;setPlayIcon(false);}
+    if(confirm('¿Abandonás la sesión?')){releaseWL();showScr('s-sess');showBack(true);}
+    return;
+  }
+}
+
+function selectLevel(idx){
+  S.level=idx;S.objKey=null;S.sessId=null;
+  document.querySelectorAll('.lvl-card').forEach((c,i)=>c.classList.toggle('sel',i===idx));
+  const banner=document.getElementById('obj-banner');
+  banner.querySelector('.dot').style.background=LVLC[idx];
+  document.getElementById('obj-lv-name').textContent=LVLNAMES[idx];
+  buildObjGrid();
+  showBack(true);showScr('s-obj');
+}
+
+function buildObjGrid(){
+  const grid=document.getElementById('obj-grid');
+  grid.innerHTML=OBJS.map((o,i)=>{
+    const ids=MAP[S.level][o.key]||[];
+    return`<div class="obj-card" id="oc${i}" onclick="selectObj('${o.key}')" style="--oc:${o.color}">
+      <span class="obj-icon">${o.icon}</span>
+      <div class="obj-name" style="color:${o.color}">${o.name}</div>
+      <div class="obj-desc">${o.desc}</div>
+      <div class="obj-count">${ids.length} sesión${ids.length!==1?'es':''}</div>
+    </div>`;
+  }).join('');
+}
+
+function selectObj(key){
+  S.objKey=key;S.sessId=null;
+  const obj=OBJS.find(o=>o.key===key);
+  S.objColor=obj.color;
+  document.querySelectorAll('.obj-card').forEach((c,i)=>c.classList.toggle('sel',OBJS[i].key===key));
+  document.getElementById('breadcrumb').innerHTML=
+    `<span>${LVLNAMES[S.level]}</span><span class="sep">›</span><span style="color:${obj.color}">${obj.icon} ${obj.name}</span>`;
+  buildSessList();
+  document.getElementById('cfg-row').style.display='none';
+  document.getElementById('cal-est-row').style.display='none';
+  document.getElementById('btn-start').disabled=true;
+  document.getElementById('btn-start').style.background=obj.color;
+  showScr('s-sess');
+}
+
+function buildSessList(){
+  const ids=MAP[S.level][S.objKey]||[];
+  const obj=OBJS.find(o=>o.key===S.objKey);
+  const list=document.getElementById('sess-list');
+  list.innerHTML=ids.map(id=>{
+    const s=DB[id];
+    return`<div class="sess-card" id="sc-${id}" onclick="selectSess('${id}')">
+      <div class="sess-badge" style="background:${obj.color}">${id}</div>
+      <div class="sess-info"><div class="sess-name">${s.name}</div><div class="sess-sub">${s.sub} · Damper ${s.damper}</div></div>
+      <div class="sess-dur">${s.dur}</div>
+    </div>`;
+  }).join('');
+}
+
+function selectSess(id){
+  S.sessId=id;
+  const s=DB[id];
+  document.querySelectorAll('.sess-card').forEach(c=>c.classList.remove('sel'));
+  const card=document.getElementById('sc-'+id);
+  if(card)card.classList.add('sel');
+  document.getElementById('cfg-d').textContent=s.damper;
+  document.getElementById('cfg-t').textContent=s.type;
+  document.getElementById('cfg-dur').textContent=s.dur;
+  document.getElementById('cfg-ph').textContent=s.phases.length;
+  document.getElementById('cfg-row').style.display='flex';
+  // Calorie estimate
+  const estCal=calcSessionEst(s);
+  document.getElementById('cal-est-val').textContent=`~${estCal} kcal`;
+  document.getElementById('cal-est-row').style.display='flex';
+  document.getElementById('btn-start').disabled=false;
+}
+
+function openGlos(){
+  S.prevScr=document.querySelector('.scr.on')?.id||'s-level';
+  buildGlossary();
+  showBack(true);showScr('s-glos');
+}
+function switchGlosTab(idx){
+  document.getElementById('gt0').classList.toggle('on',idx===0);
+  document.getElementById('gt1').classList.toggle('on',idx===1);
+  document.getElementById('gp0').classList.toggle('on',idx===0);
+  document.getElementById('gp1').classList.toggle('on',idx===1);
+}
+function buildGlossary(){
+  ['pm5','tecnica'].forEach((k,i)=>{
+    const p=document.getElementById('gp'+i);
+    p.innerHTML=GLOS[k].map(g=>`
+      <div class="gterm">
+        <div class="gterm-name">${g.t}</div>
+        <div class="gterm-def">${g.d}</div>
+        ${g.tip?`<div class="gterm-tip">💡 ${g.tip}</div>`:''}
+      </div>`).join('');
+  });
+}
+
+function openHist(){
+  S.prevScr=document.querySelector('.scr.on')?.id||'s-level';
+  renderHist();showBack(true);showScr('s-hist');
+}
+function openProg(){
+  S.prevScr=document.querySelector('.scr.on')?.id||'s-level';
+  renderProg();showBack(true);showScr('s-prog');
+}
+function openConfig(){
+  S.prevScr=document.querySelector('.scr.on')?.id||'s-level';
+  const w=localStorage.getItem('rm_weight');
+  if(w)document.getElementById('weight-input').value=w;
+  showBack(true);showScr('s-config');
+}
+function saveWeight(){
+  const v=parseFloat(document.getElementById('weight-input').value);
+  if(!v||v<30||v>250){alert('Ingresá un peso válido (30–250 kg).');return;}
+  localStorage.setItem('rm_weight',v);
+  alert(`✓ Peso guardado: ${v} kg`);
+}
+
+// ═══════════════════════════════════════════════════
+// SESSION
+// ═══════════════════════════════════════════════════
+function startSession(){
+  if(!S.sessId)return;
+  ensureAudio();
+  S.session=DB[S.sessId];
+  initActiveSession();
+  showScr('s-active');
+  showBack(true);
+}
+
+function initActiveSession(){
+  S.phIdx=0;S.phTimer=S.session.phases[0].dur;
+  S.playing=false;S.startAt=null;S.totalSec=0;S.donePhs=0;S.calories=0;
+  const s=S.session;
+  const obj=OBJS.find(o=>o.key===S.objKey)||OBJS[0];
+  document.getElementById('act-title').textContent=s.name;
+  document.getElementById('act-meta').innerHTML=
+    `<span>${LVLNAMES[S.level]||''}</span><span class="meta-sep">·</span>`+
+    `<span style="color:${obj.color}">${obj.icon} ${obj.name}</span><span class="meta-sep">·</span>`+
+    `<span>Damper ${s.damper}</span>`;
+  document.getElementById('prog-fill').style.background=S.objColor;
+  document.getElementById('m-cal').textContent='0';
+  setPlayIcon(false);
+  updateActiveUI();
+}
+
+function updateActiveUI(){
+  const p=S.session.phases[S.phIdx];
+  const zc=ZC[p.zona]||'var(--z2)';
+  document.getElementById('timer-panel').style.setProperty('--zc',zc);
+  document.getElementById('phase-nm').textContent=p.name;
+  document.getElementById('timer-dig').textContent=fmt(S.phTimer);
+  document.getElementById('phase-ins').textContent=p.instr;
+  document.getElementById('m-spm').textContent=p.spm;
+  document.getElementById('m-zona').innerHTML=`<span class="zp z${p.zona}">${p.zona}</span>`;
+  document.getElementById('m-fase').textContent=`${S.phIdx+1}/${S.session.phases.length}`;
+  const nxt=S.session.phases[S.phIdx+1];
+  if(nxt){
+    document.getElementById('next-row').style.display='flex';
+    document.getElementById('next-val').textContent=nxt.name;
+    document.getElementById('next-dur').textContent=fmt(nxt.dur);
+  } else document.getElementById('next-row').style.display='none';
+  updateProg();renderPhList();
+}
+
+function updateProg(){
+  const phs=S.session.phases;
+  const tot=phs.reduce((a,p)=>a+p.dur,0);
+  const done=phs.slice(0,S.phIdx).reduce((a,p)=>a+p.dur,0);
+  const cur=phs[S.phIdx].dur-S.phTimer;
+  document.getElementById('prog-fill').style.width=Math.min(100,Math.round((done+cur)/tot*100))+'%';
+}
+
+function renderPhList(){
+  const list=document.getElementById('phase-list');
+  list.innerHTML=S.session.phases.map((p,i)=>{
+    const zc=ZC[p.zona]||'var(--z2)';
+    const cls=i<S.phIdx?'done':i===S.phIdx?'cur':'';
+    return`<div class="ph-row ${cls}" id="pi${i}">
+      <div class="ph-dot" style="background:${zc}"></div>
+      <div class="ph-name">${p.name}</div>
+      <span class="zp z${p.zona}" style="font-size:8px;padding:2px 5px">${p.zona}</span>
+      <div class="ph-dur">${fmt(p.dur)}</div>
+    </div>`;
+  }).join('');
+  const el=document.getElementById('pi'+S.phIdx);
+  if(el)el.scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+
+function setPlayIcon(playing){
+  const btn=document.getElementById('btn-play');
+  document.getElementById('ic-play').style.display=playing?'none':'block';
+  document.getElementById('ic-pause').style.display=playing?'block':'none';
+  if(playing){btn.classList.remove('off');btn.style.background='var(--green)';btn.style.color='var(--bg)';}
+  else{btn.classList.add('off');btn.style.background='';btn.style.color='';}
+}
+
+function togglePlay(){
+  ensureAudio();
+  if(!S.startAt)S.startAt=Date.now();
+  S.playing=!S.playing;
+  setPlayIcon(S.playing);
+  if(S.playing){
+    requestWL();
+    S.iv=setInterval(tick,1000);
+  } else {
+    clearInterval(S.iv);
+    releaseWL();
+  }
+}
+
+function tick(){
+  S.totalSec++;
+  S.phTimer--;
+  // Calorías en tiempo real
+  const p=S.session.phases[S.phIdx];
+  S.calories+=calcCalPerSec(p.zona);
+  document.getElementById('m-cal').textContent=Math.round(S.calories);
+  // Countdown warning
+  if(S.phTimer<=3&&S.phTimer>0){
+    beep(660,.05,.1);
+    vib([50]);
+    document.getElementById('timer-dig').classList.add('warn');
+  } else document.getElementById('timer-dig').classList.remove('warn');
+  if(S.phTimer<=0){
+    beepEnd();
+    vib([100,50,100]);
+    S.donePhs++;
+    document.getElementById('timer-dig').classList.remove('warn');
+    if(S.phIdx<S.session.phases.length-1){
+      S.phIdx++;
+      S.phTimer=S.session.phases[S.phIdx].dur;
+      updateActiveUI();
+    } else finishSess();
+  } else {
+    document.getElementById('timer-dig').textContent=fmt(S.phTimer);
+    updateProg();
+  }
+}
+
+function nextPh(){
+  if(S.phIdx<S.session.phases.length-1){
+    beep(660,.06);vib([60]);
+    S.donePhs++;S.phIdx++;S.phTimer=S.session.phases[S.phIdx].dur;updateActiveUI();
+  } else finishSess();
+}
+function prevPh(){
+  if(S.phIdx>0){S.phIdx--;S.phTimer=S.session.phases[S.phIdx].dur;updateActiveUI();}
+}
+function stopSess(){if(confirm('¿Terminás la sesión?'))finishSess();}
+
+// ═══════════════════════════════════════════════════
+// FINISH
+// ═══════════════════════════════════════════════════
+function finishSess(){
+  clearInterval(S.iv);S.playing=false;releaseWL();
+  vib([100,30,100,30,200]);
+  const elapsed=S.startAt?Math.round((Date.now()-S.startAt)/1000):S.totalSec;
+  const cal=Math.round(S.calories);
+  const obj=OBJS.find(o=>o.key===S.objKey)||OBJS[0];
+  // Guardar en historial
+  saveHistEntry({
+    date:new Date().toISOString(),
+    level:S.level,
+    levelName:LVLNAMES[S.level],
+    objKey:S.objKey,
+    objName:obj.name,
+    sessId:S.sessId,
+    sessName:S.session.name,
+    duration:elapsed,
+    phases:`${S.donePhs}/${S.session.phases.length}`,
+    calories:cal
+  });
+  // Pantalla done
+  const msgs=['Bien hecho. Registrá la sesión en ErgData.','Excelente consistencia. Anotá el split promedio.','Sesión de alto nivel completada.'];
+  document.getElementById('done-sub').textContent=msgs[S.level]||msgs[0];
+  document.getElementById('d-sess').textContent=S.session.name;
+  document.getElementById('d-time').textContent=fmt(elapsed);
+  document.getElementById('d-cal').textContent=cal?`~${cal} kcal`:'–';
+  document.getElementById('d-phs').textContent=`${S.donePhs}/${S.session.phases.length}`;
+  showBack(false);showScr('s-done');
+}
+
+function resetApp(){
+  clearInterval(S.iv);releaseWL();
+  S={level:null,objKey:null,sessId:null,session:null,phIdx:0,phTimer:0,playing:false,iv:null,startAt:null,totalSec:0,donePhs:0,prevScr:'s-level',objColor:'var(--green)',calories:0};
+  document.querySelectorAll('.lvl-card').forEach(c=>c.classList.remove('sel'));
+  showBack(false);showScr('s-level');
+}
+
+// Prevenir doble tap zoom
+document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});
+// Rebuilds WakeLock si el documento vuelve a estar visible
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&S.playing)requestWL();});
+
+
+function remoInit() {
+  // Reset al abrir desde el dashboard
+  if(typeof resetApp === 'function') resetApp();
+}
 </script>
 </body>
 </html>
