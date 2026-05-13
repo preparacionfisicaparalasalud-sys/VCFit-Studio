@@ -9145,7 +9145,7 @@ GOD WORKOUTS MODULE — Estilos (prefijo gw-)
     justify-content: center;
     padding: 16px;
   }
-  .gw-modal-overlay.open { display: flex; }
+  .gw-modal-overlay.gw-open { display: flex; }
   .gw-modal {
     background: var(--navy-l);
     border: 1px solid var(--slate);
@@ -12172,7 +12172,7 @@ async function checkInitialAnamnesisCount() {
 // PWA: register service worker si está disponible
 if ('serviceWorker' in navigator) {
   const swCode = `
-    const CACHE = 'vcfit-v9';
+    const CACHE = 'vcfit-v10';
     const ASSETS = ['/'];
     self.addEventListener('install', e => {
       e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
@@ -12705,136 +12705,138 @@ document.head.appendChild(link);
 
 </div><!-- /app -->
 
+
+  <!-- ══════════════ MODALES (dentro del screen para herencia display:none) ══════════════ -->
+  <!-- ══════════════ MODAL EJERCICIO ══════════════ -->
+  <div class="gw-modal-overlay" id="modal-ejercicio">
+    <div class="gw-modal">
+      <div class="gw-modal-title">
+        <span id="modal-ej-title">Nuevo Ejercicio</span>
+        <button class="gw-btn-icon" onclick="cerrarModal('modal-ejercicio')">✕</button>
+      </div>
+      <div class="gw-modal-grid">
+        <div class="gw-field-group gw-full">
+          <label class="gw-field-label">Nombre *</label>
+          <input type="text" id="ej-nombre" placeholder="Ej: Pistol Squat">
+        </div>
+        <div class="gw-field-group">
+          <label class="gw-field-label">Tipo *</label>
+          <select id="ej-tipo">
+            <option value="bodyweight">Peso corporal</option>
+            <option value="barra">Barra</option>
+            <option value="mancuerna">Mancuerna</option>
+          </select>
+        </div>
+        <div class="gw-field-group">
+          <label class="gw-field-label">Patrón *</label>
+          <select id="ej-patron">
+            <option value="empuje">Empuje</option>
+            <option value="tiron">Tirón</option>
+            <option value="piernas">Piernas</option>
+            <option value="core">Core</option>
+            <option value="full">Full body</option>
+            <option value="cardio">Cardio</option>
+          </select>
+        </div>
+        <div class="gw-field-group">
+          <label class="gw-field-label">Fase *</label>
+          <select id="ej-fase">
+            <option value="activacion">Activación</option>
+            <option value="principal">Principal</option>
+            <option value="core">Core</option>
+            <option value="finisher">Finisher</option>
+          </select>
+        </div>
+        <div class="gw-field-group">
+          <label class="gw-field-label">Nivel mínimo</label>
+          <select id="ej-nivel">
+            <option value="1">Principiante</option>
+            <option value="2">Intermedio</option>
+            <option value="3">Avanzado</option>
+          </select>
+        </div>
+        <div class="gw-field-group">
+          <label class="gw-field-label">Músculo principal</label>
+          <input type="text" id="ej-musculo" placeholder="ej: cuádriceps">
+        </div>
+        <div class="gw-field-group">
+          <label class="gw-field-label">Demanda neural (1-3)</label>
+          <select id="ej-neural">
+            <option value="1">1 — Baja</option>
+            <option value="2" selected>2 — Media</option>
+            <option value="3">3 — Alta</option>
+          </select>
+        </div>
+        <div class="gw-field-group">
+          <label class="gw-field-label">Demanda metabólica (1-3)</label>
+          <select id="ej-metabolica">
+            <option value="1">1 — Baja</option>
+            <option value="2" selected>2 — Media</option>
+            <option value="3">3 — Alta</option>
+          </select>
+        </div>
+        <div class="gw-field-group">
+          <label class="gw-field-label">Reps Principiante</label>
+          <input type="text" id="ej-reps-p" placeholder="10">
+        </div>
+        <div class="gw-field-group">
+          <label class="gw-field-label">Reps Intermedio</label>
+          <input type="text" id="ej-reps-i" placeholder="15">
+        </div>
+        <div class="gw-field-group gw-full">
+          <label class="gw-field-label">Reps Avanzado</label>
+          <input type="text" id="ej-reps-a" placeholder="20">
+        </div>
+        <div class="gw-field-group gw-full">
+          <label class="gw-field-label">Objetivos (separados por coma)</label>
+          <input type="text" id="ej-objetivos" placeholder="grasa, resistencia">
+        </div>
+        <div class="gw-field-group gw-full">
+          <label class="gw-field-label">Fatiga local (separada por coma)</label>
+          <input type="text" id="ej-fatiga" placeholder="hombros, tríceps">
+        </div>
+        <div class="gw-field-group gw-full">
+          <label class="gw-field-label">Descripción</label>
+          <textarea id="ej-desc" style="height:70px;" placeholder="Descripción del ejercicio..."></textarea>
+        </div>
+      </div>
+      <div class="gw-modal-actions">
+        <button class="gw-btn gw-btn-secondary" onclick="cerrarModal('modal-ejercicio')">Cancelar</button>
+        <button class="gw-btn gw-btn-primary" onclick="guardarEjercicio()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ MODAL FINALIZAR ══════════════ -->
+  <div class="gw-modal-overlay" id="modal-finish">
+    <div class="gw-modal" style="max-width:420px;">
+      <div class="gw-modal-title" style="justify-content:center;">
+        <span>¡Workout Completado!</span>
+      </div>
+      <div class="gw-finish-body">
+        <div style="font-family:'Barlow Condensed',sans-serif; font-size:13px; letter-spacing:3px; color:var(--text-dim); text-transform:uppercase;" id="fin-nombre"></div>
+        <div class="gw-finish-time" id="fin-tiempo"></div>
+        <div style="font-family:'Barlow Condensed',sans-serif; font-size:12px; letter-spacing:2px; color:var(--text-mute); text-transform:uppercase; margin-bottom:8px;">¿Cómo te sentiste?</div>
+        <div class="gw-sensacion-btns" id="sensacion-btns">
+          <button class="gw-sen-btn" onclick="seleccionarSensacion(1, this)">😵<span class="gw-sen-label">Destroza</span></button>
+          <button class="gw-sen-btn" onclick="seleccionarSensacion(2, this)">😓<span class="gw-sen-label">Difícil</span></button>
+          <button class="gw-sen-btn" onclick="seleccionarSensacion(3, this)">💪<span class="gw-sen-label">Bien</span></button>
+          <button class="gw-sen-btn" onclick="seleccionarSensacion(4, this)">🔥<span class="gw-sen-label">Excelente</span></button>
+          <button class="gw-sen-btn" onclick="seleccionarSensacion(5, this)">⚡<span class="gw-sen-label">Bestial</span></button>
+        </div>
+        <div class="gw-field-group" style="margin-top:12px; text-align:left;">
+          <label class="gw-field-label">Nota (opcional)</label>
+          <textarea class="gw-finish-nota" id="fin-nota" placeholder="¿Algo para recordar de esta sesión?"></textarea>
+        </div>
+      </div>
+      <div class="gw-modal-actions">
+        <button class="gw-btn gw-btn-secondary" onclick="cerrarModal('modal-finish')">Cancelar</button>
+        <button class="gw-btn gw-btn-primary" onclick="guardarRegistro()">Guardar Registro</button>
+      </div>
+    </div>
+  </div>
+
   </div><!-- /content -->
-
-<!-- ══════════════ MODAL EJERCICIO ══════════════ -->
-<div class="gw-modal-overlay" id="modal-ejercicio">
-  <div class="gw-modal">
-    <div class="gw-modal-title">
-      <span id="modal-ej-title">Nuevo Ejercicio</span>
-      <button class="gw-btn-icon" onclick="cerrarModal('modal-ejercicio')">✕</button>
-    </div>
-    <div class="gw-modal-grid">
-      <div class="gw-field-group gw-full">
-        <label class="gw-field-label">Nombre *</label>
-        <input type="text" id="ej-nombre" placeholder="Ej: Pistol Squat">
-      </div>
-      <div class="gw-field-group">
-        <label class="gw-field-label">Tipo *</label>
-        <select id="ej-tipo">
-          <option value="bodyweight">Peso corporal</option>
-          <option value="barra">Barra</option>
-          <option value="mancuerna">Mancuerna</option>
-        </select>
-      </div>
-      <div class="gw-field-group">
-        <label class="gw-field-label">Patrón *</label>
-        <select id="ej-patron">
-          <option value="empuje">Empuje</option>
-          <option value="tiron">Tirón</option>
-          <option value="piernas">Piernas</option>
-          <option value="core">Core</option>
-          <option value="full">Full body</option>
-          <option value="cardio">Cardio</option>
-        </select>
-      </div>
-      <div class="gw-field-group">
-        <label class="gw-field-label">Fase *</label>
-        <select id="ej-fase">
-          <option value="activacion">Activación</option>
-          <option value="principal">Principal</option>
-          <option value="core">Core</option>
-          <option value="finisher">Finisher</option>
-        </select>
-      </div>
-      <div class="gw-field-group">
-        <label class="gw-field-label">Nivel mínimo</label>
-        <select id="ej-nivel">
-          <option value="1">Principiante</option>
-          <option value="2">Intermedio</option>
-          <option value="3">Avanzado</option>
-        </select>
-      </div>
-      <div class="gw-field-group">
-        <label class="gw-field-label">Músculo principal</label>
-        <input type="text" id="ej-musculo" placeholder="ej: cuádriceps">
-      </div>
-      <div class="gw-field-group">
-        <label class="gw-field-label">Demanda neural (1-3)</label>
-        <select id="ej-neural">
-          <option value="1">1 — Baja</option>
-          <option value="2" selected>2 — Media</option>
-          <option value="3">3 — Alta</option>
-        </select>
-      </div>
-      <div class="gw-field-group">
-        <label class="gw-field-label">Demanda metabólica (1-3)</label>
-        <select id="ej-metabolica">
-          <option value="1">1 — Baja</option>
-          <option value="2" selected>2 — Media</option>
-          <option value="3">3 — Alta</option>
-        </select>
-      </div>
-      <div class="gw-field-group">
-        <label class="gw-field-label">Reps Principiante</label>
-        <input type="text" id="ej-reps-p" placeholder="10">
-      </div>
-      <div class="gw-field-group">
-        <label class="gw-field-label">Reps Intermedio</label>
-        <input type="text" id="ej-reps-i" placeholder="15">
-      </div>
-      <div class="gw-field-group gw-full">
-        <label class="gw-field-label">Reps Avanzado</label>
-        <input type="text" id="ej-reps-a" placeholder="20">
-      </div>
-      <div class="gw-field-group gw-full">
-        <label class="gw-field-label">Objetivos (separados por coma)</label>
-        <input type="text" id="ej-objetivos" placeholder="grasa, resistencia">
-      </div>
-      <div class="gw-field-group gw-full">
-        <label class="gw-field-label">Fatiga local (separada por coma)</label>
-        <input type="text" id="ej-fatiga" placeholder="hombros, tríceps">
-      </div>
-      <div class="gw-field-group gw-full">
-        <label class="gw-field-label">Descripción</label>
-        <textarea id="ej-desc" style="height:70px;" placeholder="Descripción del ejercicio..."></textarea>
-      </div>
-    </div>
-    <div class="gw-modal-actions">
-      <button class="gw-btn gw-btn-secondary" onclick="cerrarModal('modal-ejercicio')">Cancelar</button>
-      <button class="gw-btn gw-btn-primary" onclick="guardarEjercicio()">Guardar</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════ MODAL FINALIZAR ══════════════ -->
-<div class="gw-modal-overlay" id="modal-finish">
-  <div class="gw-modal" style="max-width:420px;">
-    <div class="gw-modal-title" style="justify-content:center;">
-      <span>¡Workout Completado!</span>
-    </div>
-    <div class="gw-finish-body">
-      <div style="font-family:'Barlow Condensed',sans-serif; font-size:13px; letter-spacing:3px; color:var(--text-dim); text-transform:uppercase;" id="fin-nombre"></div>
-      <div class="gw-finish-time" id="fin-tiempo"></div>
-      <div style="font-family:'Barlow Condensed',sans-serif; font-size:12px; letter-spacing:2px; color:var(--text-mute); text-transform:uppercase; margin-bottom:8px;">¿Cómo te sentiste?</div>
-      <div class="gw-sensacion-btns" id="sensacion-btns">
-        <button class="gw-sen-btn" onclick="seleccionarSensacion(1, this)">😵<span class="gw-sen-label">Destroza</span></button>
-        <button class="gw-sen-btn" onclick="seleccionarSensacion(2, this)">😓<span class="gw-sen-label">Difícil</span></button>
-        <button class="gw-sen-btn" onclick="seleccionarSensacion(3, this)">💪<span class="gw-sen-label">Bien</span></button>
-        <button class="gw-sen-btn" onclick="seleccionarSensacion(4, this)">🔥<span class="gw-sen-label">Excelente</span></button>
-        <button class="gw-sen-btn" onclick="seleccionarSensacion(5, this)">⚡<span class="gw-sen-label">Bestial</span></button>
-      </div>
-      <div class="gw-field-group" style="margin-top:12px; text-align:left;">
-        <label class="gw-field-label">Nota (opcional)</label>
-        <textarea class="gw-finish-nota" id="fin-nota" placeholder="¿Algo para recordar de esta sesión?"></textarea>
-      </div>
-    </div>
-    <div class="gw-modal-actions">
-      <button class="gw-btn gw-btn-secondary" onclick="cerrarModal('modal-finish')">Cancelar</button>
-      <button class="gw-btn gw-btn-primary" onclick="guardarRegistro()">Guardar Registro</button>
-    </div>
-  </div>
-</div>
 
 <!-- TOAST (GW) -->
 <div id="gw-toast"></div>
