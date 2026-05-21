@@ -16603,6 +16603,7 @@ function handleImportStudentFile(event) {
 function showImportConfirmModal(importedStudent) {
   const modal = document.createElement('div');
   modal.className = 'modal-overlay';
+  modal.dataset.importStudent = 'true';
   modal.innerHTML = `
     <div class="modal" style="max-width:500px">
       <div class="modal-header">
@@ -16706,14 +16707,16 @@ function confirmImportStudent() {
   saveState();
   
   // Cerrar modal
-  document.querySelector('.modal-overlay').remove();
+  const importModal = document.querySelector('.modal-overlay[data-import-student]');
+  if (importModal) importModal.remove();
+  else document.querySelectorAll('.modal-overlay').forEach(m => { if (m.querySelector('#import-mode-select')) m.remove(); });
   delete window._importStudentData;
   
   // Mostrar confirmación
   alert(`✅ Alumno "${newName}" importado exitosamente\n\nModo: ${mode === 'full' ? 'TODO' : mode === 'config' ? 'CONFIGURACIÓN' : 'PLANTILLA'}`);
   
   // Actualizar lista
-  renderStudents();
+  renderStudentsList();
 }
 
 // ═══════════════════════════════════════════════════════════════
