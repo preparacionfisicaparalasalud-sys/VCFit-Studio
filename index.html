@@ -1852,7 +1852,9 @@
       <div class="topbar-title" id="detail-student-name">—</div>
       <div class="topbar-sub" id="detail-student-meta">—</div>
     </div>
-    <button class="btn btn-secondary btn-sm" onclick="exportCurrentStudent()" title="Exportar datos del alumno">📦 Exportar</button>
+    <button class="theme-toggle-btn" onclick="editStudentName()" title="Editar nombre"
+      style="font-size:1rem;border-color:var(--orange-border);color:var(--orange)">✏️</button>
+    <button class="btn btn-secondary btn-sm" onclick="openExportStudentModal()" title="Exportar datos del alumno">📦 Exportar</button>
     <button class="theme-toggle-btn" onclick="openAIChatFromStudent()" title="Consultar IA sobre este alumno"
       style="font-size:1rem;border-color:var(--orange-border);color:var(--orange)">🤖</button>
   </div>
@@ -3234,80 +3236,185 @@ ALMUERZO
       <button class="btn-icon" onclick="closeImportStudentModal()">✕</button>
     </div>
     <div class="modal-body">
-      
+
       <div class="mb-2">
         <div class="label">Archivo de backup (.json)</div>
-        <input type="file" id="import-file-input" accept=".json" class="input-field" 
+        <input type="file" id="import-file-input" accept=".json" class="input-field"
           onchange="loadImportFile(event)" style="font-size:0.85rem">
-        <div class="text-small text-gray mt-1">
-          Seleccioná el archivo JSON exportado previamente
-        </div>
+        <div class="text-small text-gray mt-1">Seleccioná el archivo JSON exportado previamente</div>
       </div>
 
       <div id="import-preview" style="display:none">
+
+        <!-- Vista previa del archivo -->
         <div class="card mt-2" style="background:var(--dark3);border-color:var(--orange-border)">
           <div class="card-title" style="color:var(--orange)">Vista Previa</div>
           <div class="text-small">
             <div><strong>Nombre:</strong> <span id="import-prev-name">—</span></div>
             <div class="mt-1"><strong>Rutina:</strong> <span id="import-prev-routine">—</span></div>
             <div class="mt-1"><strong>Métricas:</strong> <span id="import-prev-metrics">—</span></div>
-            <div class="mt-1"><strong>Pagos registrados:</strong> <span id="import-prev-payments">—</span></div>
+            <div class="mt-1"><strong>Pagos:</strong> <span id="import-prev-payments">—</span></div>
           </div>
         </div>
 
+        <!-- Presets rápidos -->
         <div class="mt-2">
-          <div class="label">¿Qué datos querés importar?</div>
+          <div class="label" style="margin-bottom:0.4rem">¿Qué datos importar?</div>
+          <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.6rem">
+            <button class="btn btn-secondary btn-sm" onclick="setImportPreset('all')">✅ Todo</button>
+            <button class="btn btn-secondary btn-sm" onclick="setImportPreset('config')">⚙️ Config</button>
+            <button class="btn btn-secondary btn-sm" onclick="setImportPreset('template')">📋 Plantilla</button>
+            <button class="btn btn-secondary btn-sm" onclick="setImportPreset('none')">☐ Ninguno</button>
+          </div>
           <div class="card" style="background:var(--dark3)">
-            <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;margin-bottom:0.6rem">
-              <input type="radio" name="import-mode" value="all" checked onchange="updateImportModeDescription()">
-              <div>
-                <div class="bold" style="font-size:0.9rem">✅ TODO</div>
-                <div class="text-small text-gray">Rutina, plan, métricas, historial, pagos, pizarras, todo</div>
-              </div>
+            <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
+              <input type="checkbox" id="imp-rutina" checked> <span class="text-small">💪 Rutina</span>
             </label>
-            <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;margin-bottom:0.6rem">
-              <input type="radio" name="import-mode" value="config" onchange="updateImportModeDescription()">
-              <div>
-                <div class="bold" style="font-size:0.9rem">⚙️ SOLO CONFIGURACIÓN</div>
-                <div class="text-small text-gray">Rutina, plan nutricional, pizarras (sin historial ni pagos)</div>
-              </div>
+            <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
+              <input type="checkbox" id="imp-nutricion" checked> <span class="text-small">🥗 Plan nutricional</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
+              <input type="checkbox" id="imp-anamnesis" checked> <span class="text-small">📋 Anamnesis</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
+              <input type="checkbox" id="imp-metricas" checked> <span class="text-small">📊 Métricas</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
+              <input type="checkbox" id="imp-historial" checked> <span class="text-small">📅 Historial de sesiones</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
+              <input type="checkbox" id="imp-pagos" checked> <span class="text-small">💰 Pagos</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
+              <input type="checkbox" id="imp-pizarras" checked> <span class="text-small">📌 Pizarras</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
+              <input type="checkbox" id="imp-fotos" checked> <span class="text-small">📸 Fotos de progreso</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
+              <input type="checkbox" id="imp-notas" checked> <span class="text-small">📝 Notas de rutina</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Destino: nuevo o existente -->
+        <div class="mt-2">
+          <div class="label" style="margin-bottom:0.4rem">¿A dónde importar?</div>
+          <div class="card" style="background:var(--dark3)">
+            <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;margin-bottom:0.5rem">
+              <input type="radio" name="import-target" value="new" checked onchange="updateImportTarget()">
+              <span class="text-small bold">➕ Alumno nuevo</span>
             </label>
             <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer">
-              <input type="radio" name="import-mode" value="template" onchange="updateImportModeDescription()">
-              <div>
-                <div class="bold" style="font-size:0.9rem">📋 SOLO PLANTILLA</div>
-                <div class="text-small text-gray">Anamnesis, rutina, plan (sin datos personales ni historial)</div>
-              </div>
+              <input type="radio" name="import-target" value="existing" onchange="updateImportTarget()">
+              <span class="text-small bold">👤 Alumno existente</span>
             </label>
           </div>
         </div>
 
-        <div class="mt-2">
+        <!-- Campos para alumno nuevo -->
+        <div id="import-target-new" class="mt-2">
           <div class="label">Nombre del nuevo alumno</div>
-          <input type="text" id="import-new-name" class="input-field" 
+          <input type="text" id="import-new-name" class="input-field"
             placeholder="Dejá vacío para usar el nombre original">
+          <div class="label mt-1">PIN de acceso</div>
+          <input type="text" id="import-new-pin" class="input-field" maxlength="4"
+            placeholder="Dejá vacío para usar 0000">
         </div>
 
-        <div class="mt-2">
-          <div class="label">PIN del nuevo alumno</div>
-          <input type="text" id="import-new-pin" class="input-field" maxlength="6"
-            placeholder="Dejá vacío para generar PIN automático (0000)">
-        </div>
-
-        <div class="card mt-2" style="background:rgba(234,179,8,0.1);border-color:rgba(234,179,8,0.3)">
-          <div class="text-small" style="color:var(--yellow)">
-            ⚠️ <strong>Importante:</strong> Se creará un alumno nuevo con estos datos. 
-            El alumno original (si existe) no se modifica.
+        <!-- Selector de alumno existente -->
+        <div id="import-target-existing" class="mt-2" style="display:none">
+          <div class="label">Seleccioná el alumno</div>
+          <select id="import-existing-student" class="input-field"></select>
+          <div class="card mt-1" style="background:rgba(234,179,8,0.1);border-color:rgba(234,179,8,0.3)">
+            <div class="text-small" style="color:var(--yellow)">⚠️ Los campos seleccionados del alumno existente serán <strong>reemplazados</strong>. Esta acción no se puede deshacer.</div>
           </div>
         </div>
+
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeImportStudentModal()">Cancelar</button>
+      <button class="btn btn-primary" id="btn-confirm-import" onclick="confirmImportStudent()" style="display:none">📥 Importar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL EXPORTAR ALUMNO (granular)
+     ═══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-export-student">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">📦 Exportar Datos de Alumno</div>
+      <button class="btn-icon" onclick="closeModal('modal-export-student')">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="card" style="background:var(--dark3);margin-bottom:1rem">
+        <div class="text-small"><strong>Alumno:</strong> <span id="export-student-name">—</span></div>
+      </div>
+
+      <div class="label" style="margin-bottom:0.4rem">¿Qué datos exportar?</div>
+      <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.6rem">
+        <button class="btn btn-secondary btn-sm" onclick="setExportPreset('all')">✅ Todo</button>
+        <button class="btn btn-secondary btn-sm" onclick="setExportPreset('config')">⚙️ Config</button>
+        <button class="btn btn-secondary btn-sm" onclick="setExportPreset('none')">☐ Ninguno</button>
+      </div>
+      <div class="card" style="background:var(--dark3)">
+        <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
+          <input type="checkbox" id="exp-rutina" checked> <span class="text-small">💪 Rutina</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
+          <input type="checkbox" id="exp-nutricion" checked> <span class="text-small">🥗 Plan nutricional</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
+          <input type="checkbox" id="exp-anamnesis" checked> <span class="text-small">📋 Anamnesis</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
+          <input type="checkbox" id="exp-metricas" checked> <span class="text-small">📊 Métricas</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
+          <input type="checkbox" id="exp-historial" checked> <span class="text-small">📅 Historial de sesiones</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
+          <input type="checkbox" id="exp-pagos" checked> <span class="text-small">💰 Pagos</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
+          <input type="checkbox" id="exp-pizarras" checked> <span class="text-small">📌 Pizarras</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
+          <input type="checkbox" id="exp-fotos" checked> <span class="text-small">📸 Fotos de progreso</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
+          <input type="checkbox" id="exp-notas" checked> <span class="text-small">📝 Notas de rutina</span>
+        </label>
       </div>
 
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeImportStudentModal()">Cancelar</button>
-      <button class="btn btn-primary" id="btn-confirm-import" onclick="confirmImportStudent()" style="display:none">
-        📥 Importar
-      </button>
+      <button class="btn btn-secondary" onclick="closeModal('modal-export-student')">Cancelar</button>
+      <button class="btn btn-primary" onclick="doExportStudent()">📦 Descargar JSON</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL EDITAR NOMBRE ALUMNO
+     ═══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-edit-student-name">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <div class="modal-title">✏️ Editar Nombre</div>
+      <button class="btn-icon" onclick="closeModal('modal-edit-student-name')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="label">Nombre del alumno</div>
+      <input type="text" id="edit-student-name-input" class="input-field" placeholder="Nombre completo">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-edit-student-name')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveStudentName()">✅ Guardar</button>
     </div>
   </div>
 </div>
@@ -16526,71 +16633,135 @@ function setPill(groupId, selectId, value, btn) {
 // BACKUP/RESTORE DE ALUMNOS
 // ═══════════════════════════════════════════════════════════════
 
-function exportCurrentStudent() {
-  const studentId = state.currentStudentId;
-  if (!studentId) {
-    alert('No hay alumno seleccionado');
-    return;
-  }
-  
-  const student = state.students.find(s => s.id === studentId);
-  if (!student) {
-    alert('Alumno no encontrado');
-    return;
-  }
-  
-  // Crear objeto de backup con metadatos
-  const backup = {
-    version: '1.0',
-    exportDate: new Date().toISOString(),
-    exportedBy: 'VC Fit Studio',
-    studentData: student
+
+// ── EDITAR NOMBRE DEL ALUMNO ──────────────────────────────────
+
+function editStudentName() {
+  const s = state.students.find(x => x.id === state.currentStudentId);
+  if (!s) return;
+  document.getElementById('edit-student-name-input').value = s.name;
+  openModal('modal-edit-student-name');
+}
+
+function saveStudentName() {
+  const s = state.students.find(x => x.id === state.currentStudentId);
+  if (!s) return;
+  const newName = document.getElementById('edit-student-name-input').value.trim();
+  if (!newName) { alert('El nombre no puede estar vacío'); return; }
+  s.name = newName;
+  saveState();
+  document.getElementById('detail-student-name').textContent = newName;
+  renderStudentsList();
+  closeModal('modal-edit-student-name');
+}
+
+// ── EXPORTAR ALUMNO — granular con checkboxes ─────────────────
+
+function openExportStudentModal() {
+  const s = state.students.find(x => x.id === state.currentStudentId);
+  if (!s) return;
+  document.getElementById('export-student-name').textContent = s.name;
+  setExportPreset('all');
+  openModal('modal-export-student');
+}
+
+function setExportPreset(preset) {
+  const campos = ['rutina','nutricion','anamnesis','metricas','historial','pagos','pizarras','fotos','notas'];
+  const config   = ['rutina','nutricion','pizarras','notas'];
+  const template = ['rutina','nutricion','anamnesis'];
+  campos.forEach(f => {
+    const el = document.getElementById('exp-' + f);
+    if (!el) return;
+    if (preset === 'all')      el.checked = true;
+    else if (preset === 'none') el.checked = false;
+    else if (preset === 'config')   el.checked = config.includes(f);
+    else if (preset === 'template') el.checked = template.includes(f);
+  });
+}
+
+function doExportStudent() {
+  const s = state.students.find(x => x.id === state.currentStudentId);
+  if (!s) return;
+  const g = id => document.getElementById(id)?.checked;
+
+  const exported = {
+    id: s.id, name: s.name, pin: s.pin,
+    email: s.email || '', phone: s.phone || '',
+    photo: s.photo || null,
+    selfData: s.selfData || {},
+    lastCompleted: s.lastCompleted || {},
+    proximasSesiones: s.proximasSesiones || [],
+    classPacks: s.classPacks || [],
+    routineUpdated: false,
+    progressPhotos: g('exp-fotos') ? (s.progressPhotos || {}) : {}
   };
-  
-  // Convertir a JSON
-  const json = JSON.stringify(backup, null, 2);
-  
-  // Crear blob y descargar
-  const blob = new Blob([json], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  
-  // Nombre del archivo: nombre_apellido_backup_fecha.json
-  const safeName = student.name.toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // quitar acentos
-    .replace(/[^a-z0-9]/g, '_');
-  const dateStr = new Date().toISOString().split('T')[0];
-  a.download = `${safeName}_backup_${dateStr}.json`;
-  
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  if (g('exp-rutina'))    { exported.assignedWorkoutId = s.assignedWorkoutId || null; exported.exclusiveWorkout = s.exclusiveWorkout || null; exported.customWorkoutContent = null; }
+  if (g('exp-nutricion')) exported.nutritionPlan     = s.nutritionPlan || '';
+  if (g('exp-anamnesis')) exported.anamnesis         = s.anamnesis     || {};
+  if (g('exp-metricas'))  exported.metricsLog        = s.metricsLog    || [];
+  if (g('exp-historial')) exported.progressLog       = s.progressLog   || [];
+  if (g('exp-pagos'))     exported.payments          = s.payments      || [];
+  if (g('exp-pizarras'))  { exported.pizarraBienvenida = s.pizarraBienvenida || ''; exported.pizarraMotivacion = s.pizarraMotivacion || ''; }
+  if (g('exp-notas'))     exported.workoutNote       = s.workoutNote   || '';
+
+  const backup = { version: '1.0', exportDate: new Date().toISOString(), exportedBy: 'VC Fit Studio', studentData: exported };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  const safe = s.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'_');
+  a.download = `${safe}_backup_${new Date().toISOString().split('T')[0]}.json`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  
-  alert(`✅ Datos de ${student.name} exportados exitosamente`);
+  closeModal('modal-export-student');
+  alert(`✅ Datos de ${s.name} exportados`);
 }
 
 // ── IMPORTAR ALUMNO — implementación unificada sobre modal estático ──
 
 function openImportStudentModal() {
-  // Resetear estado del modal estático
   const fileInput = document.getElementById('import-file-input');
   if (fileInput) fileInput.value = '';
   document.getElementById('import-preview').style.display = 'none';
   document.getElementById('btn-confirm-import').style.display = 'none';
-  const radioAll = document.querySelector('input[name="import-mode"][value="all"]');
-  if (radioAll) radioAll.checked = true;
+  setImportPreset('all');
+  const radioNew = document.querySelector('input[name="import-target"][value="new"]');
+  if (radioNew) radioNew.checked = true;
+  updateImportTarget();
   document.getElementById('import-new-name').value = '';
-  document.getElementById('import-new-pin').value = '';
+  document.getElementById('import-new-pin').value  = '';
   window._importStudentData = null;
-  // Abrir modal estático
   openModal('modal-import-student');
 }
 
 function closeImportStudentModal() {
   closeModal('modal-import-student');
   window._importStudentData = null;
+}
+
+function setImportPreset(preset) {
+  const campos = ['rutina','nutricion','anamnesis','metricas','historial','pagos','pizarras','fotos','notas'];
+  const config   = ['rutina','nutricion','pizarras','notas'];
+  const template = ['rutina','nutricion','anamnesis'];
+  campos.forEach(f => {
+    const el = document.getElementById('imp-' + f);
+    if (!el) return;
+    if (preset === 'all')      el.checked = true;
+    else if (preset === 'none') el.checked = false;
+    else if (preset === 'config')   el.checked = config.includes(f);
+    else if (preset === 'template') el.checked = template.includes(f);
+  });
+}
+
+function updateImportTarget() {
+  const isNew = document.querySelector('input[name="import-target"]:checked')?.value === 'new';
+  document.getElementById('import-target-new').style.display      = isNew ? 'block' : 'none';
+  document.getElementById('import-target-existing').style.display = isNew ? 'none'  : 'block';
+  if (!isNew) {
+    // Poblar selector con alumnos actuales
+    const sel = document.getElementById('import-existing-student');
+    sel.innerHTML = state.students.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+  }
 }
 
 function loadImportFile(event) {
@@ -16600,74 +16771,81 @@ function loadImportFile(event) {
   reader.onload = function(e) {
     try {
       const backup = JSON.parse(e.target.result);
-      if (!backup.studentData || !backup.version) {
-        alert('❌ Archivo inválido: no es un backup de VC Fit Studio');
-        return;
-      }
+      if (!backup.studentData || !backup.version) { alert('❌ Archivo inválido: no es un backup de VC Fit Studio'); return; }
       const s = backup.studentData;
       window._importStudentData = s;
-      // Llenar vista previa
       document.getElementById('import-prev-name').textContent    = s.name || '—';
       document.getElementById('import-prev-routine').textContent = s.exclusiveWorkout ? 'Rutina exclusiva' : s.assignedWorkoutId ? 'Rutina asignada' : 'Sin rutina';
-      document.getElementById('import-prev-metrics').textContent = (s.metricsLog ? s.metricsLog.length : 0) + ' registros';
-      document.getElementById('import-prev-payments').textContent= (s.payments ? s.payments.length : 0) + ' pagos';
-      // Valores por defecto
+      document.getElementById('import-prev-metrics').textContent = (s.metricsLog  ? s.metricsLog.length  : 0) + ' registros';
+      document.getElementById('import-prev-payments').textContent= (s.payments    ? s.payments.length    : 0) + ' pagos';
       document.getElementById('import-new-name').value = s.name + ' (copia)';
       document.getElementById('import-new-pin').value  = '0000';
-      // Mostrar sección de opciones y botón confirmar
-      document.getElementById('import-preview').style.display = 'block';
-      document.getElementById('btn-confirm-import').style.display = 'block';
-    } catch (err) {
-      alert('❌ Error al leer el archivo: ' + err.message);
-    }
+      document.getElementById('import-preview').style.display        = 'block';
+      document.getElementById('btn-confirm-import').style.display    = 'block';
+    } catch (err) { alert('❌ Error al leer el archivo: ' + err.message); }
   };
   reader.readAsText(file);
 }
 
 function confirmImportStudent() {
-  const importedStudent = window._importStudentData;
-  if (!importedStudent) {
-    alert('Seleccioná un archivo de backup primero');
-    return;
+  const src = window._importStudentData;
+  if (!src) { alert('Seleccioná un archivo de backup primero'); return; }
+
+  const g      = id => document.getElementById(id)?.checked;
+  const isNew  = document.querySelector('input[name="import-target"]:checked')?.value === 'new';
+
+  // Construir objeto de campos a copiar según checkboxes
+  const fields = {};
+  if (g('imp-rutina'))    { fields.assignedWorkoutId = src.assignedWorkoutId || null; fields.exclusiveWorkout = src.exclusiveWorkout || null; fields.customWorkoutContent = null; fields.routineUpdated = true; }
+  if (g('imp-nutricion')) fields.nutritionPlan     = src.nutritionPlan  || '';
+  if (g('imp-anamnesis')) fields.anamnesis         = src.anamnesis      || {};
+  if (g('imp-metricas'))  fields.metricsLog        = src.metricsLog     || [];
+  if (g('imp-historial')) fields.progressLog       = src.progressLog    || [];
+  if (g('imp-pagos'))     { fields.payments = src.payments || []; fields.classPacks = src.classPacks || []; }
+  if (g('imp-pizarras'))  { fields.pizarraBienvenida = src.pizarraBienvenida || ''; fields.pizarraMotivacion = src.pizarraMotivacion || ''; }
+  if (g('imp-fotos'))     fields.progressPhotos    = src.progressPhotos || {};
+  if (g('imp-notas'))     fields.workoutNote       = src.workoutNote    || '';
+
+  if (isNew) {
+    // ── ALUMNO NUEVO ──
+    const newName = document.getElementById('import-new-name').value.trim() || src.name;
+    const newPin  = document.getElementById('import-new-pin').value.trim()  || '0000';
+    if (!newName) { alert('Ingresá un nombre para el alumno'); return; }
+    if (newPin.length !== 4) { alert('El PIN debe tener exactamente 4 dígitos'); return; }
+
+    const newStudent = {
+      id: 'imp_' + Date.now() + '_' + Math.random().toString(36).substr(2,9),
+      name: newName, pin: newPin,
+      email: src.email || '', phone: src.phone || '',
+      photo: src.photo || null,
+      selfData: src.selfData || { weight:'', note:'' },
+      lastCompleted: src.lastCompleted || { date:'', workoutName:'' },
+      proximasSesiones: [], classPacks: [],
+      payments: [], metricsLog: [], progressLog: [], progressPhotos: {},
+      anamnesis: {}, nutritionPlan: '', workoutNote: '',
+      assignedWorkoutId: null, exclusiveWorkout: null, customWorkoutContent: null,
+      pizarraBienvenida: '', pizarraMotivacion: '', routineUpdated: false,
+      ...fields
+    };
+    state.students.push(newStudent);
+    saveState();
+    closeImportStudentModal();
+    alert(`✅ Alumno "${newName}" creado exitosamente`);
+    renderStudentsList();
+
+  } else {
+    // ── ALUMNO EXISTENTE ──
+    const targetId = document.getElementById('import-existing-student').value;
+    const target   = state.students.find(x => x.id === targetId);
+    if (!target) { alert('Alumno no encontrado'); return; }
+    Object.assign(target, fields);
+    saveState();
+    closeImportStudentModal();
+    alert(`✅ Datos actualizados en "${target.name}"`);
+    renderStudentsList();
+    // Si estamos viendo ese alumno, refrescar
+    if (state.currentStudentId === targetId) openStudentDetail(targetId);
   }
-  const modeEl = document.querySelector('input[name="import-mode"]:checked');
-  const mode   = modeEl ? modeEl.value : 'all';
-  const newName = document.getElementById('import-new-name').value.trim();
-  const newPin  = document.getElementById('import-new-pin').value.trim() || '0000';
-  if (!newName) { alert('Ingresá un nombre para el alumno'); return; }
-  if (newPin.length !== 4) { alert('El PIN debe tener exactamente 4 dígitos'); return; }
-
-  const newStudent = {
-    id: 'imp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-    name:  newName,
-    pin:   newPin,
-    email: mode === 'template' ? '' : (importedStudent.email  || ''),
-    phone: mode === 'template' ? '' : (importedStudent.phone  || ''),
-    photo: mode === 'template' ? null : (importedStudent.photo || null),
-    classPacks:    [],
-    payments:      mode === 'all' ? (importedStudent.payments      || []) : [],
-    metricsLog:    mode === 'all' ? (importedStudent.metricsLog    || []) : [],
-    progressLog:   mode === 'all' ? (importedStudent.progressLog   || []) : [],
-    progressPhotos:mode === 'all' ? (importedStudent.progressPhotos|| {}) : {},
-    anamnesis:           importedStudent.anamnesis           || {},
-    assignedWorkoutId:   importedStudent.assignedWorkoutId   || null,
-    exclusiveWorkout:    importedStudent.exclusiveWorkout    || null,
-    customWorkoutContent:importedStudent.customWorkoutContent|| null,
-    nutritionPlan:       importedStudent.nutritionPlan       || '',
-    workoutNote:         importedStudent.workoutNote         || '',
-    pizarraBienvenida: (mode === 'all' || mode === 'config') ? (importedStudent.pizarraBienvenida || '') : '',
-    pizarraMotivacion: (mode === 'all' || mode === 'config') ? (importedStudent.pizarraMotivacion || '') : '',
-    selfData:     mode === 'template' ? { weight:'', note:'' } : (importedStudent.selfData || { weight:'', note:'' }),
-    lastCompleted:mode === 'all' ? (importedStudent.lastCompleted || { date:'', workoutName:'' }) : { date:'', workoutName:'' },
-    routineUpdated: false,
-    proximasSesiones: []
-  };
-
-  state.students.push(newStudent);
-  saveState();
-  closeImportStudentModal();
-  alert(`✅ Alumno "${newName}" importado exitosamente\n\nModo: ${mode === 'all' ? 'TODO' : mode === 'config' ? 'CONFIGURACIÓN' : 'PLANTILLA'}`);
-  renderStudentsList();
 }
 
 // ═══════════════════════════════════════════════════════════════
