@@ -6392,9 +6392,9 @@ function smartMerge(localState, remoteState, currentRole, currentStudentId) {
       // routineUpdated, payments, classPacks, trainerNotes, anamnesis, etc.
       // → ya quedan como vienen del servidor, no hacer nada
 
-      // Caso especial: si el entrenador acaba de cambiar la rutina (routineUpdated=true en server),
-      // limpiar customWorkoutContent local porque la rutina cambió
-      if (remoteStudent.routineUpdated && remoteStudent.assignedWorkoutId !== localStudent.assignedWorkoutId) {
+      // Caso especial: si el entrenador actualizó la rutina (routineUpdated=true en server),
+      // limpiar customWorkoutContent local — aplica aunque el ID no cambie (ej: rutina exclusiva editada)
+      if (remoteStudent.routineUpdated) {
         remoteStudent.customWorkoutContent = null;
       }
     }
