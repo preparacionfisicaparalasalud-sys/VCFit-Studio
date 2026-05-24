@@ -16852,5 +16852,333 @@ function confirmImportStudent() {
 // FIN GOD WORKOUTS MODULE
 // ═══════════════════════════════════════════════════════════════
 </script>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MUSIC PLAYER FLOTANTE — VC FIT STUDIO
+     ═══════════════════════════════════════════════════════════ -->
+<style>
+#vc-music-player {
+  position: fixed;
+  bottom: 1.2rem;
+  right: 1.2rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  font-family: var(--font-body);
+}
+
+#vc-music-fab {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--orange);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  box-shadow: 0 4px 16px rgba(255,107,0,0.45);
+  transition: transform 0.15s, box-shadow 0.15s;
+  flex-shrink: 0;
+}
+#vc-music-fab:hover { transform: scale(1.08); box-shadow: 0 6px 20px rgba(255,107,0,0.6); }
+#vc-music-fab.playing { animation: vc-pulse 2s infinite; }
+@keyframes vc-pulse {
+  0%,100% { box-shadow: 0 4px 16px rgba(255,107,0,0.45); }
+  50%      { box-shadow: 0 4px 28px rgba(255,107,0,0.75); }
+}
+
+#vc-music-panel {
+  background: var(--dark2);
+  border: 1px solid var(--orange-border);
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  width: 260px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  display: none;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+#vc-music-panel.open { display: flex; }
+
+.vc-mp-title {
+  font-family: var(--font-label);
+  font-weight: 700;
+  font-size: 0.78rem;
+  color: var(--orange);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.vc-mp-track {
+  font-size: 0.83rem;
+  color: var(--white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+.vc-mp-track span {
+  font-size: 0.72rem;
+  color: var(--white-dim);
+  display: block;
+  margin-top: 0.1rem;
+}
+.vc-mp-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.vc-mp-btn {
+  background: var(--dark3);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: var(--white);
+  font-size: 1rem;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+.vc-mp-btn:hover { background: var(--orange-dim); border-color: var(--orange-border); }
+.vc-mp-btn.active { background: var(--orange); border-color: var(--orange); }
+.vc-mp-btn.play-btn {
+  width: 40px; height: 40px;
+  background: var(--orange);
+  border-color: var(--orange);
+  font-size: 1.1rem;
+}
+.vc-mp-btn.play-btn:hover { background: var(--orange-light); }
+
+.vc-mp-volume {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.vc-mp-volume input[type=range] {
+  flex: 1;
+  accent-color: var(--orange);
+  height: 4px;
+  cursor: pointer;
+}
+.vc-mp-volume span { font-size: 0.9rem; }
+
+.vc-mp-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.vc-mp-progress input[type=range] {
+  flex: 1;
+  accent-color: var(--orange);
+  height: 3px;
+  cursor: pointer;
+}
+.vc-mp-time {
+  font-size: 0.7rem;
+  color: var(--white-dim);
+  white-space: nowrap;
+  min-width: 65px;
+  text-align: right;
+}
+</style>
+
+<div id="vc-music-player">
+  <div id="vc-music-panel">
+    <div class="vc-mp-title">🎵 VC Fit — Music</div>
+    <div class="vc-mp-track" id="vc-mp-track-name">Cargando...</div>
+    <div class="vc-mp-progress">
+      <input type="range" id="vc-mp-seek" min="0" max="100" value="0" oninput="vcMpSeek(this.value)">
+      <div class="vc-mp-time"><span id="vc-mp-cur">0:00</span> / <span id="vc-mp-dur">0:00</span></div>
+    </div>
+    <div class="vc-mp-controls">
+      <button class="vc-mp-btn" onclick="vcMpPrev()" title="Anterior">⏮</button>
+      <button class="vc-mp-btn play-btn" id="vc-mp-play-btn" onclick="vcMpToggle()" title="Play/Pause">▶</button>
+      <button class="vc-mp-btn" onclick="vcMpNext()" title="Siguiente">⏭</button>
+      <button class="vc-mp-btn" id="vc-mp-shuffle-btn" onclick="vcMpToggleShuffle()" title="Shuffle">🔀</button>
+    </div>
+    <div class="vc-mp-volume">
+      <span>🔈</span>
+      <input type="range" id="vc-mp-vol" min="0" max="100" value="60" oninput="vcMpSetVolume(this.value)">
+      <span>🔊</span>
+    </div>
+  </div>
+  <button id="vc-music-fab" onclick="vcMpTogglePanel()" title="Música">🎵</button>
+</div>
+
+<audio id="vc-mp-audio" preload="metadata"></audio>
+
+<script>
+// ── VC FIT MUSIC PLAYER ─────────────────────────────────────────
+// Para agregar tus canciones: subí los MP3 a la carpeta /music/
+// en el repositorio de GitHub y agregá el nombre del archivo
+// en el array vcMpPlaylist abajo.
+
+const vcMpPlaylist = [
+  { file: 'music/Fuego en la sangre 1.mp3',              title: 'Fuego en la Sangre 1',       artist: 'VC Fit' },
+  { file: 'music/Fuego en la sangre 2.mp3',              title: 'Fuego en la Sangre 2',       artist: 'VC Fit' },
+  { file: 'music/Fuego en la sangre 3.mp3',              title: 'Fuego en la Sangre 3',       artist: 'VC Fit' },
+  { file: 'music/Fuego en la sangre 4.mp3',              title: 'Fuego en la Sangre 4',       artist: 'VC Fit' },
+  { file: 'music/Fuego En Sangre (V 5).mp3',             title: 'Fuego en la Sangre V5',      artist: 'VC Fit' },
+  { file: 'music/Fuego En Sangre (V 6).mp3',             title: 'Fuego en la Sangre V6',      artist: 'VC Fit' },
+  { file: 'music/Fuego en la sangre (V epica 1).mp3',    title: 'Fuego en la Sangre — Épica 1', artist: 'VC Fit' },
+  { file: 'music/Fuego en la sangre (V epica 2).mp3',    title: 'Fuego en la Sangre — Épica 2', artist: 'VC Fit' },
+  { file: 'music/Fuego en la sangre (V Epico 3).mp3',    title: 'Fuego en la Sangre — Épico 3', artist: 'VC Fit' },
+  { file: 'music/Fuego en la sangre (V Epico 4).mp3',    title: 'Fuego en la Sangre — Épico 4', artist: 'VC Fit' },
+  { file: 'music/MÁS ALLÁ DEL LÍMITE.mp3',               title: 'Más Allá del Límite',        artist: 'VC Fit' },
+  { file: 'music/MÁS ALLÁ DEL LÍMITE 2.mp3',             title: 'Más Allá del Límite 2',      artist: 'VC Fit' },
+];
+
+// ── Estado interno ───────────────────────────────────────────────
+const vcMp = {
+  idx:     parseInt(localStorage.getItem('vcmp_idx')  || '0'),
+  shuffle: localStorage.getItem('vcmp_shuffle') === '1',
+  vol:     parseInt(localStorage.getItem('vcmp_vol')  || '60'),
+  open:    false,
+  order:   [],   // orden de reproducción (normal o shuffled)
+  seeking: false
+};
+
+const vcMpAudio   = document.getElementById('vc-mp-audio');
+const vcMpPanel   = document.getElementById('vc-music-panel');
+const vcMpFab     = document.getElementById('vc-music-fab');
+const vcMpPlayBtn = document.getElementById('vc-mp-play-btn');
+
+// ── Inicialización ───────────────────────────────────────────────
+function vcMpInit() {
+  if (!vcMpPlaylist.length) return; // sin tracks, no hacer nada
+
+  vcMpAudio.volume = vcMp.vol / 100;
+  document.getElementById('vc-mp-vol').value = vcMp.vol;
+
+  vcMpBuildOrder();
+  vcMpLoadTrack(vcMp.idx, false);
+
+  vcMpAudio.addEventListener('ended',       vcMpNext);
+  vcMpAudio.addEventListener('timeupdate',  vcMpUpdateProgress);
+  vcMpAudio.addEventListener('loadedmetadata', vcMpUpdateDuration);
+
+  // Restaurar shuffle UI
+  document.getElementById('vc-mp-shuffle-btn').classList.toggle('active', vcMp.shuffle);
+}
+
+function vcMpBuildOrder() {
+  vcMp.order = [...Array(vcMpPlaylist.length).keys()];
+  if (vcMp.shuffle) {
+    for (let i = vcMp.order.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [vcMp.order[i], vcMp.order[j]] = [vcMp.order[j], vcMp.order[i]];
+    }
+  }
+}
+
+function vcMpLoadTrack(idx, autoplay) {
+  if (!vcMpPlaylist.length) return;
+  const safeIdx = ((idx % vcMpPlaylist.length) + vcMpPlaylist.length) % vcMpPlaylist.length;
+  vcMp.idx = safeIdx;
+  localStorage.setItem('vcmp_idx', safeIdx);
+
+  const track = vcMpPlaylist[vcMp.order[safeIdx]];
+  vcMpAudio.src = track.file;
+  vcMpAudio.load();
+
+  const nameEl = document.getElementById('vc-mp-track-name');
+  nameEl.innerHTML = `${track.title}<span>${track.artist || ''}</span>`;
+
+  document.getElementById('vc-mp-seek').value = 0;
+  document.getElementById('vc-mp-cur').textContent  = '0:00';
+  document.getElementById('vc-mp-dur').textContent  = '0:00';
+
+  if (autoplay) {
+    vcMpAudio.play().then(() => {
+      vcMpPlayBtn.textContent = '⏸';
+      vcMpFab.classList.add('playing');
+    }).catch(() => {});
+  }
+}
+
+// ── Controles ────────────────────────────────────────────────────
+function vcMpToggle() {
+  if (!vcMpPlaylist.length) {
+    alert('🎵 No hay canciones cargadas.\n\nSubí tus MP3 a la carpeta /music/ del repositorio y agregarlos en el array vcMpPlaylist del código.');
+    return;
+  }
+  if (vcMpAudio.paused) {
+    vcMpAudio.play().then(() => {
+      vcMpPlayBtn.textContent = '⏸';
+      vcMpFab.classList.add('playing');
+    }).catch(() => {});
+  } else {
+    vcMpAudio.pause();
+    vcMpPlayBtn.textContent = '▶';
+    vcMpFab.classList.remove('playing');
+  }
+}
+
+function vcMpNext() {
+  const next = (vcMp.idx + 1) % vcMpPlaylist.length;
+  vcMpLoadTrack(next, true);
+}
+
+function vcMpPrev() {
+  if (vcMpAudio.currentTime > 3) {
+    vcMpAudio.currentTime = 0; return;
+  }
+  const prev = (vcMp.idx - 1 + vcMpPlaylist.length) % vcMpPlaylist.length;
+  vcMpLoadTrack(prev, true);
+}
+
+function vcMpToggleShuffle() {
+  vcMp.shuffle = !vcMp.shuffle;
+  localStorage.setItem('vcmp_shuffle', vcMp.shuffle ? '1' : '0');
+  document.getElementById('vc-mp-shuffle-btn').classList.toggle('active', vcMp.shuffle);
+  vcMpBuildOrder();
+}
+
+function vcMpSetVolume(val) {
+  vcMp.vol = parseInt(val);
+  vcMpAudio.volume = vcMp.vol / 100;
+  localStorage.setItem('vcmp_vol', vcMp.vol);
+}
+
+function vcMpSeek(val) {
+  if (vcMpAudio.duration) {
+    vcMpAudio.currentTime = (val / 100) * vcMpAudio.duration;
+  }
+}
+
+function vcMpTogglePanel() {
+  vcMp.open = !vcMp.open;
+  vcMpPanel.classList.toggle('open', vcMp.open);
+}
+
+// ── Progress bar ─────────────────────────────────────────────────
+function vcMpFmtTime(sec) {
+  if (isNaN(sec)) return '0:00';
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return `${m}:${s.toString().padStart(2,'0')}`;
+}
+
+function vcMpUpdateProgress() {
+  if (!vcMpAudio.duration) return;
+  const pct = (vcMpAudio.currentTime / vcMpAudio.duration) * 100;
+  document.getElementById('vc-mp-seek').value = pct;
+  document.getElementById('vc-mp-cur').textContent = vcMpFmtTime(vcMpAudio.currentTime);
+}
+
+function vcMpUpdateDuration() {
+  document.getElementById('vc-mp-dur').textContent = vcMpFmtTime(vcMpAudio.duration);
+}
+
+// ── Arrancar ─────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', vcMpInit);
+</script>
 </body>
 </html>
