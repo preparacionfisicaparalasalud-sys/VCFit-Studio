@@ -1,0 +1,24 @@
+{
+  "name": "VC Fit Remo Trainer",
+  "short_name": "Remo Trainer",
+  "description": "Entrenador de remo Concept 2 con zonas de FC, watts y guía por voz",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0c0f",
+  "theme_color": "#0a0c0f",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
