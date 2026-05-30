@@ -9,6 +9,10 @@
 <meta name="theme-color" content="#0a0c0f">
 <meta name="description" content="Entrenador de remo Concept 2 con zonas de FC, watts y guía por voz">
 <link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>VC Fit — Remo Trainer</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=JetBrains+Mono:wght@400;600&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -1564,7 +1568,58 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
   const sf=document.getElementById('sex-f');
   if(sm) sm.classList.toggle('sel',sex==='M');
   if(sf) sf.classList.toggle('sel',sex==='F');
+
+  // PRIMER USO — mostrar modal si no hay datos bio
+  const firstRun=!localStorage.getItem('rm_age')||!localStorage.getItem('rm_weight');
+  if(firstRun) setTimeout(showBioModal, 800);
 })();
+
+// ═══════════════════════════════════════════════════
+// MODAL PRIMER USO
+// ═══════════════════════════════════════════════════
+function showBioModal(){
+  const m=document.createElement('div');
+  m.id='bio-modal';
+  m.style.cssText=`
+    position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:10000;
+    display:flex;align-items:center;justify-content:center;padding:20px;
+  `;
+  m.innerHTML=`
+    <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:18px;
+      padding:28px 22px;max-width:340px;width:100%;text-align:center">
+      <div style="font-size:36px;margin-bottom:12px">🚣</div>
+      <div style="font-family:var(--fd);font-size:22px;font-weight:700;
+        letter-spacing:.03em;margin-bottom:8px">¡Bienvenido al Remo Trainer!</div>
+      <div style="font-size:14px;color:var(--muted2);line-height:1.6;margin-bottom:20px">
+        Para calcular tu <strong style="color:var(--green)">frecuencia cardíaca objetivo</strong>
+        y las calorías estimadas necesitás cargar tus datos básicos.<br><br>
+        Solo te lleva 20 segundos.
+      </div>
+      <button onclick="closeBioModal(true)"
+        style="width:100%;padding:13px;background:var(--green);border:none;border-radius:12px;
+        font-family:var(--fd);font-size:16px;font-weight:700;letter-spacing:.06em;
+        color:var(--bg);cursor:pointer;margin-bottom:10px">
+        ⚙️ Cargar mis datos →
+      </button>
+      <button onclick="closeBioModal(false)"
+        style="width:100%;padding:10px;background:none;border:1px solid var(--border2);
+        border-radius:12px;font-family:var(--fd);font-size:13px;font-weight:600;
+        color:var(--muted);cursor:pointer">
+        Ahora no
+      </button>
+    </div>
+  `;
+  document.body.appendChild(m);
+}
+
+function closeBioModal(goToConfig){
+  const m=document.getElementById('bio-modal');
+  if(m) m.remove();
+  if(goToConfig){
+    showScr('s-config');
+    showBack(true);
+  }
+}
 </script>
 </body>
 </html>
