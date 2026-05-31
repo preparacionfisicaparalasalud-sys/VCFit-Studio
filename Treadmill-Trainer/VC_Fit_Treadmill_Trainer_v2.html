@@ -4572,6 +4572,9 @@ function initTraining() {
   appState.lastZone         = null;
   appState.paused           = false;
   appState.countdown10Fired = false;
+  appState._startTime       = Date.now();   // ← reloj real
+  appState._pausedAt        = 0;            // ← tiempo acumulado en pausa
+  appState._totalPausedMs   = 0;
 
   document.getElementById('train-obj-name').textContent  = obj.name;
   document.getElementById('train-sess-name').textContent = sess.name;
@@ -4584,29 +4587,63 @@ function initTraining() {
   const cueBox = document.getElementById('variant-cue-box');
   if (cueBox) cueBox.style.display = 'none';
 
-  // Dibujar gráfica
   buildPhaseChart(sess.phases);
-
   renderPhaseList();
   updateTrainDisplay();
   requestWakeLock();
   showScreen('s-train');
 
-  appState.timerInterval = setInterval(trainTick, 1000);
+  appState.timerInterval = setInterval(trainTick, 500); // 500ms para mayor precisión
+}
+
+function getElapsedSecs() {
+  // Tiempo real transcurrido descontando pausas
+  const rawMs = Date.now() - appState._startTime - appState._totalPausedMs;
+  return Math.floor(rawMs / 1000);
 }
 
 function trainTick() {
   if (appState.paused) return;
 
-  appState.totalElapsed++;
-  appState.phaseElapsed++;
+  const elapsed = getElapsedSecs();
+  if (elapsed === appState.totalElapsed) return; // no pasó el segundo todavía
 
-  const phase = appState.phases[appState.phaseIdx];
-  if (!phase) { completeSession(); return; }
+  appState.totalElapsed = elapsed;
 
+  // Recalcular fase activa según tiempo real
+  let acc = 0;
+  let phaseIdx = 0;
+  for (let i = 0; i < appState.phases.length; i++) {
+    if (elapsed < acc + appState.phases[i].dur) {
+      phaseIdx = i;
+      appState.phaseElapsed = elapsed - acc;
+      break;
+    }
+    acc += appState.phases[i].dur;
+    phaseIdx = i + 1;
+  }
+
+  if (phaseIdx >= appState.phases.length) {
+    completeSession();
+    return;
+  }
+
+  // Detectar cambio de fase
+  if (phaseIdx !== appState.phaseIdx) {
+    document.getElementById('phase-countdown').classList.remove('visible');
+    appState.countdown10Fired = false;
+    appState.phaseIdx = phaseIdx;
+    const newPhase = appState.phases[phaseIdx];
+    if (newPhase.zone !== appState.lastZone) {
+      announceZone(newPhase);
+      vibrate([60, 40, 60]);
+    }
+  }
+
+  const phase       = appState.phases[appState.phaseIdx];
   const phaseRemain = phase.dur - appState.phaseElapsed;
 
-  // Cuenta regresiva últimos 10 segundos de la fase
+  // Cuenta regresiva últimos 10 segundos
   if (phaseRemain <= 10 && phaseRemain > 0) {
     const cdEl  = document.getElementById('phase-countdown');
     const cdNum = document.getElementById('phase-countdown-num');
@@ -4615,27 +4652,10 @@ function trainTick() {
     if (!appState.countdown10Fired) {
       appState.countdown10Fired = true;
       vibrate(40);
-      // Solo anunciar si hay fase siguiente y es zona diferente
       const nextPhase = appState.phases[appState.phaseIdx + 1];
       if (nextPhase && nextPhase.zone !== phase.zone) {
         speak(`En ${phaseRemain} segundos, ${nextPhase.name}.`);
       }
-    }
-  }
-
-  if (appState.phaseElapsed >= phase.dur) {
-    document.getElementById('phase-countdown').classList.remove('visible');
-    appState.countdown10Fired = false;
-    appState.phaseIdx++;
-    appState.phaseElapsed = 0;
-    if (appState.phaseIdx >= appState.phases.length) {
-      completeSession();
-      return;
-    }
-    const newPhase = appState.phases[appState.phaseIdx];
-    if (newPhase.zone !== appState.lastZone) {
-      announceZone(newPhase);
-      vibrate([60, 40, 60]);
     }
   }
 
@@ -4644,16 +4664,19 @@ function trainTick() {
 
 function togglePause() {
   appState.paused = !appState.paused;
-  const overlay   = document.getElementById('paused-overlay');
-  const btnPause  = document.getElementById('btn-pause');
-  const btnSkip   = document.getElementById('btn-skip');
+  const overlay  = document.getElementById('paused-overlay');
+  const btnPause = document.getElementById('btn-pause');
+  const btnSkip  = document.getElementById('btn-skip');
   overlay.classList.toggle('visible', appState.paused);
   btnPause.textContent = appState.paused ? '▶ Reanudar' : '⏸ Pausar';
   if (btnSkip) btnSkip.classList.toggle('disabled', appState.paused);
   if (appState.paused) {
+    appState._pausedAt = Date.now();
     vibrate(60);
     speak('Pausa.');
   } else {
+    // Acumular ms de pausa
+    appState._totalPausedMs += Date.now() - appState._pausedAt;
     vibrate([40, 30, 80]);
     speak('Continuamos.');
   }
