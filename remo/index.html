@@ -27,11 +27,12 @@
   --orange:#f97316;--orange-bg:rgba(249,115,22,.1);
   --purple:#a855f7;--purple-bg:rgba(168,85,247,.1);
   --teal:#14b8a6;--teal-bg:rgba(20,184,166,.1);
-  --z1:#38bdf8;--z1b:rgba(56,189,248,.25);
-  --z2:#22c55e;--z2b:rgba(34,197,94,.25);
-  --z3:#eab308;--z3b:rgba(234,179,8,.25);
-  --z4:#f97316;--z4b:rgba(249,115,22,.25);
-  --z5:#ef4444;--z5b:rgba(239,68,68,.25);
+  --rest:#94a3b8; --rest-bg:rgba(148,163,184,0.13);
+  --z1:#60a5fa;   --z1b:rgba(96,165,250,0.13);
+  --z2:#34d399;   --z2b:rgba(52,211,153,0.13);
+  --z3:#fbbf24;   --z3b:rgba(251,191,36,0.13);
+  --z4:#f97316;   --z4b:rgba(249,115,22,0.13);
+  --z5:#ef4444;   --z5b:rgba(239,68,68,0.13);
   --fd:'Barlow Condensed',sans-serif;
   --fm:'JetBrains Mono',monospace;
   --fb:'Barlow',sans-serif;
@@ -169,7 +170,7 @@ body{min-height:100dvh;display:flex;flex-direction:column}
 
 /* ZONE PILL */
 .zp{display:inline-block;padding:3px 7px;border-radius:20px;font-family:var(--fm);font-size:10px;font-weight:600}
-.zZ1,.zREST{background:var(--z1b);color:var(--z1)}.zZ2{background:var(--z2b);color:var(--z2)}
+.zREST{background:var(--rest-bg);color:var(--rest)}.zZ1{background:var(--z1b);color:var(--z1)}.zZ2{background:var(--z2b);color:var(--z2)}
 .zZ3{background:var(--z3b);color:var(--z3)}.zZ4{background:var(--z4b);color:var(--z4)}
 .zZ5,.zALL{background:var(--z5b);color:var(--z5)}
 
@@ -573,7 +574,7 @@ function tabB(r){
   }
   return o;
 }
-const ZC={Z1:'var(--z1)',Z2:'var(--z2)',Z3:'var(--z3)',Z4:'var(--z4)',Z5:'var(--z5)',ALL:'var(--z5)',REST:'var(--z1)'};
+const ZC={REST:'var(--rest)',Z1:'var(--z1)',Z2:'var(--z2)',Z3:'var(--z3)',Z4:'var(--z4)',Z5:'var(--z5)',ALL:'var(--z5)'};
 const MET_Z={Z1:3.5,Z2:6,Z3:8,Z4:11,Z5:14,ALL:14,REST:2.5};
 // Watts sugeridos por zona × nivel [Principiante, Medio, Avanzado]
 const WATTS_RANGE={
@@ -868,7 +869,7 @@ function startCountdown(callback) {
 // BIOMETRÍA + FC
 // ═══════════════════════════════════════════════════
 // %FC máx por zona
-const FC_PCT={Z1:[.50,.60],Z2:[.60,.70],Z3:[.70,.80],Z4:[.80,.90],Z5:[.90,1.0],ALL:[.90,1.0],REST:[.45,.55]};
+const FC_PCT={REST:[.40,.50],Z1:[.50,.60],Z2:[.60,.70],Z3:[.70,.80],Z4:[.80,.90],Z5:[.90,1.00],ALL:[.90,1.00]};
 
 function getFCmax(){
   const age=parseInt(localStorage.getItem('rm_age'))||40;
@@ -915,7 +916,7 @@ function saveWeight(){
 // CHART DE SESIÓN
 // ═══════════════════════════════════════════════════
 const ZONE_H={Z1:.3,Z2:.5,Z3:.65,Z4:.82,Z5:1,ALL:1,REST:.2};
-const ZONE_COL={Z1:'var(--z1)',Z2:'var(--z2)',Z3:'var(--z3)',Z4:'var(--z4)',Z5:'var(--z5)',ALL:'var(--z5)',REST:'var(--z1)'};
+const ZONE_COL={REST:'var(--rest)',Z1:'var(--z1)',Z2:'var(--z2)',Z3:'var(--z3)',Z4:'var(--z4)',Z5:'var(--z5)',ALL:'var(--z5)'};
 
 function renderChart(){
   const chart=document.getElementById('sess-chart');
