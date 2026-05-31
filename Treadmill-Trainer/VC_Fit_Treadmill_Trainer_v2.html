@@ -2158,10 +2158,10 @@ body {
       <div class="metric-label">Watts</div>
       <div class="metric-val" id="m-watts">—<span class="metric-unit">W</span></div>
     </div>
-    <div class="metric-card">
-      <div class="metric-label">FC est.</div>
-      <div class="metric-val" id="m-hr">—<span class="metric-unit">bpm</span></div>
-      <div style="font-size:0.65rem;color:var(--text3);margin-top:2px" id="m-hr-range">—</div>
+    <div class="metric-card" id="m-hr-card">
+      <div class="metric-label">FC estimada · zona activa</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1.5rem;line-height:1;color:var(--text);margin-top:2px" id="m-hr">— – — <span style="font-size:0.85rem;font-weight:500;color:var(--text2)">bpm</span></div>
+      <div style="font-size:0.68rem;color:var(--text3);margin-top:3px" id="m-hr-range">—% – —% FCmax</div>
     </div>
     <!-- RPE outdoor -->
     <div class="metric-card wide outdoor-only" id="m-rpe-card" style="display:none">
@@ -4744,9 +4744,11 @@ function updateTrainDisplay() {
   document.getElementById('m-vel').innerHTML   = `${vel}<span class="metric-unit">km/h</span>`;
   document.getElementById('m-pace').innerHTML  = `${pace}<span class="metric-unit">min/km</span>`;
   document.getElementById('m-watts').innerHTML = `${Math.round(watts)}<span class="metric-unit">W</span>`;
-  document.getElementById('m-hr').innerHTML    = `${hr}<span class="metric-unit">bpm</span>`;
+  // FC rango mín–máx con porcentajes de FCmax
+  const hrEl    = document.getElementById('m-hr');
   const hrRange = document.getElementById('m-hr-range');
-  if (hrRange) hrRange.textContent = `${fc.min}–${fc.max} bpm · ${fc.pctLow}–${fc.pctHigh}% FCmax`;
+  if (hrEl)    hrEl.innerHTML = `${fc.min} – ${fc.max} <span style="font-size:0.85rem;font-weight:500;color:var(--text2)">bpm</span>`;
+  if (hrRange) hrRange.textContent = `${fc.pctLow}% – ${fc.pctHigh}% de FCmax (${fc.fcmax} bpm)`;
   document.getElementById('m-kcal').innerHTML  = `${Math.round(appState.kcalAccum)}<span class="metric-unit">kcal</span>`;
 
   // Inclinación / terreno según modo
