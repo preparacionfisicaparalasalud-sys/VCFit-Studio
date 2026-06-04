@@ -1341,8 +1341,78 @@ body {
 }
 
 /* ═══════════════════════════════════════════
-   OUTDOOR MODULE
+   SCRUB BAR — barra de navegación de sesión
 ═══════════════════════════════════════════ */
+.scrub-wrap {
+  margin: 10px 14px 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.scrub-time-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.68rem;
+  color: var(--text3);
+  margin-bottom: 5px;
+  font-family: 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.04em;
+}
+.scrub-track {
+  position: relative;
+  height: 28px;
+  border-radius: 14px;
+  background: var(--bg3);
+  overflow: hidden;
+  cursor: pointer;
+  touch-action: none;
+}
+.scrub-phases-bg {
+  position: absolute;
+  inset: 0;
+  display: flex;
+}
+.scrub-phase-seg {
+  height: 100%;
+  opacity: 0.28;
+  flex-shrink: 0;
+}
+.scrub-progress {
+  position: absolute;
+  inset: 0;
+  right: auto;
+  background: rgba(255,255,255,0.08);
+  border-radius: 14px 0 0 14px;
+  pointer-events: none;
+  transition: width 0.5s linear;
+}
+.scrub-handle {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  pointer-events: none;
+  transition: left 0.5s linear;
+  z-index: 2;
+}
+.scrub-wrap.dragging .scrub-handle,
+.scrub-wrap.dragging .scrub-progress { transition: none; }
+.scrub-zone-label {
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.6rem;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.5);
+  pointer-events: none;
+  white-space: nowrap;
+}
 .btn-icon.outdoor-btn.active-mode {
   background: color-mix(in srgb, var(--z1) 20%, transparent);
   border-color: var(--z1);
@@ -2085,6 +2155,20 @@ body {
     </div>
   </div>
 
+  <!-- Barra de scrubbing -->
+  <div class="scrub-wrap" id="scrub-wrap">
+    <div class="scrub-time-row">
+      <span id="scrub-elapsed">0:00</span>
+      <span style="color:var(--accent);font-weight:700" id="scrub-phase-label">—</span>
+      <span id="scrub-total">—</span>
+    </div>
+    <div class="scrub-track" id="scrub-track">
+      <div class="scrub-phases-bg" id="scrub-phases-bg"></div>
+      <div class="scrub-progress"  id="scrub-progress"  style="width:0%"></div>
+      <div class="scrub-handle"    id="scrub-handle"    style="left:0%"></div>
+    </div>
+  </div>
+
   <!-- Timer de fase prominente (v2) -->
   <div class="phase-timer-block" id="phase-timer-block">
     <div class="phase-timer-left">
@@ -2440,49 +2524,6 @@ body {
         Empezar sesión →
       </button>
     </div>
-  </div>
-</div>
-
-<!-- ╔══════════════════════════════════════════╗
-     ║         SCREEN: RUNNING OUTDOOR         ║
-     ╚══════════════════════════════════════════╝ -->
-<div id="s-outdoor" class="screen">
-  <div class="screen-topbar">
-    <button class="btn-back" onclick="closeOutdoor()">← Volver</button>
-    <span class="screen-topbar-title">🏃 Running Outdoor</span>
-  </div>
-  <div class="scroll-area" id="outdoor-scroll">
-
-    <div>
-      <div class="label-xs">Modo outdoor activo</div>
-      <div class="page-title" style="margin-top:6px">¿Qué hacemos<br>hoy afuera?</div>
-      <div class="page-subtitle">Protocolos basados en pace, RPE y zonas de FC. La app te guía por voz.</div>
-    </div>
-
-    <div class="outdoor-mode-banner">
-      <span>🎤</span>
-      <span>En modo outdoor la voz es tu entrenador. La app indica pace objetivo, zona y esfuerzo percibido en cada bloque.</span>
-    </div>
-
-    <div class="obj-cards" id="outdoor-obj-cards"></div>
-
-    <div class="metrics-panel" id="outdoor-metrics-panel">
-      <div class="metrics-panel-header">
-        <span class="metrics-panel-title" id="outdoor-mp-title">—</span>
-        <span id="outdoor-mp-level-chip"></span>
-      </div>
-      <div class="metrics-panel-body" id="outdoor-mp-body"></div>
-    </div>
-
-    <div id="outdoor-session-section" style="display:none">
-      <div class="label-xs" style="margin-bottom:10px">Sesiones disponibles</div>
-      <div class="session-list" id="outdoor-session-list"></div>
-    </div>
-
-    <button class="btn-primary" id="btn-start-outdoor" disabled onclick="startOutdoorCountdown()">
-      🏃 Salir a correr →
-    </button>
-
   </div>
 </div>
 
@@ -3995,6 +4036,7 @@ const appState = {
   mode: 'treadmill',
   outdoorObj: null,
   outdoorSess: null,
+  outdoorLevel: null,
   voiceEnabled: true,
   prevScreen: 's-level',
   currentScreen: 's-level',
@@ -4036,9 +4078,9 @@ function showAux(id) {
 }
 
 function closeAux() {
-  // Cierra las pantallas auxiliares y vuelve a donde estaba
-  const safe = ['s-hist','s-glos'];
+  const safe = ['s-hist','s-glos','s-outdoor','s-program'];
   if (safe.includes(appState.currentScreen)) {
+    if (appState.currentScreen === 's-outdoor') cleanOutdoorState();
     showScreen(appState.prevScreen || 's-level');
   }
 }
@@ -4490,6 +4532,142 @@ const ZONE_SVG_COLORS = {
   z4:'#f97316', z5:'#ef4444', hill:'#dc2626', rest:'#94a3b8'
 };
 
+/* ════════════════════════════════════════════════════════
+   SCRUB BAR — construcción, actualización y eventos
+════════════════════════════════════════════════════════ */
+function buildScrubBar(phases) {
+  const total   = phases.reduce((a, p) => a + p.dur, 0);
+  const bgEl    = document.getElementById('scrub-phases-bg');
+  const totalEl = document.getElementById('scrub-total');
+  if (!bgEl) return;
+
+  bgEl.innerHTML = '';
+  phases.forEach(p => {
+    const seg = document.createElement('div');
+    seg.className = 'scrub-phase-seg';
+    seg.style.width = (p.dur / total * 100) + '%';
+    seg.style.background = (ZONE_INFO[p.zone] || ZONE_INFO.z2).color;
+    bgEl.appendChild(seg);
+  });
+
+  if (totalEl) totalEl.textContent = fmtTime(total);
+  initScrubEvents();
+}
+
+function updateScrubBar() {
+  const elapsed = appState.totalElapsed || 0;
+  const total   = appState.totalDur || 1;
+  const pct     = Math.min(elapsed / total * 100, 100);
+  const phase   = appState.phases ? appState.phases[appState.phaseIdx] : null;
+
+  const progress  = document.getElementById('scrub-progress');
+  const handle    = document.getElementById('scrub-handle');
+  const elapsedEl = document.getElementById('scrub-elapsed');
+  const labelEl   = document.getElementById('scrub-phase-label');
+
+  if (progress)  progress.style.width = pct + '%';
+  if (handle)    handle.style.left    = pct + '%';
+  if (elapsedEl) elapsedEl.textContent = fmtTime(elapsed);
+  if (labelEl && phase) {
+    const zi = ZONE_INFO[phase.zone] || ZONE_INFO.z2;
+    labelEl.textContent  = phase.name;
+    labelEl.style.color  = zi.color;
+  }
+}
+
+function fmtTime(secs) {
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+function initScrubEvents() {
+  const track = document.getElementById('scrub-track');
+  const wrap  = document.getElementById('scrub-wrap');
+  if (!track || track._scrubInit) return;
+  track._scrubInit = true;
+
+  let dragging = false;
+
+  function getPct(clientX) {
+    const rect = track.getBoundingClientRect();
+    return Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+  }
+
+  function scrubTo(pct) {
+    const total      = appState.totalDur || 1;
+    const targetSecs = Math.floor(pct * total);
+
+    // Ajustar _startTime para saltar al segundo correcto
+    const diff = targetSecs - getElapsedSecs();
+    appState._startTime  -= diff * 1000;
+    appState.totalElapsed = targetSecs;
+
+    // Recalcular fase
+    let acc = 0, newIdx = 0, newElapsed = 0;
+    for (let i = 0; i < appState.phases.length; i++) {
+      if (targetSecs < acc + appState.phases[i].dur) {
+        newIdx     = i;
+        newElapsed = targetSecs - acc;
+        break;
+      }
+      acc += appState.phases[i].dur;
+      newIdx = i + 1;
+    }
+    if (newIdx >= appState.phases.length) newIdx = appState.phases.length - 1;
+
+    const phaseChanged = newIdx !== appState.phaseIdx;
+    appState.phaseIdx     = newIdx;
+    appState.phaseElapsed = newElapsed;
+    appState.countdown10Fired = false;
+    document.getElementById('phase-countdown').classList.remove('visible');
+
+    if (phaseChanged) {
+      announceZone(appState.phases[newIdx]);
+      vibrate([40, 20, 40]);
+    }
+    updateTrainDisplay();
+    updateScrubBar();
+  }
+
+  // Touch
+  track.addEventListener('touchstart', e => {
+    if (appState.paused) return;
+    dragging = true;
+    wrap.classList.add('dragging');
+    scrubTo(getPct(e.touches[0].clientX));
+    e.preventDefault();
+  }, { passive: false });
+
+  track.addEventListener('touchmove', e => {
+    if (!dragging) return;
+    scrubTo(getPct(e.touches[0].clientX));
+    e.preventDefault();
+  }, { passive: false });
+
+  track.addEventListener('touchend', () => {
+    dragging = false;
+    wrap.classList.remove('dragging');
+  });
+
+  // Mouse (para PC/laptop)
+  track.addEventListener('mousedown', e => {
+    if (appState.paused) return;
+    dragging = true;
+    wrap.classList.add('dragging');
+    scrubTo(getPct(e.clientX));
+  });
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    scrubTo(getPct(e.clientX));
+  });
+  document.addEventListener('mouseup', () => {
+    if (!dragging) return;
+    dragging = false;
+    wrap.classList.remove('dragging');
+  });
+}
+
 function buildPhaseChart(phases) {
   const svg = document.getElementById('phase-chart-svg');
   if (!svg || !phases.length) return;
@@ -4588,6 +4766,7 @@ function initTraining() {
   if (cueBox) cueBox.style.display = 'none';
 
   buildPhaseChart(sess.phases);
+  buildScrubBar(sess.phases);
   renderPhaseList();
   updateTrainDisplay();
   requestWakeLock();
@@ -4660,6 +4839,7 @@ function trainTick() {
   }
 
   updateTrainDisplay();
+  saveSessionState();
 }
 
 function togglePause() {
@@ -4684,17 +4864,26 @@ function togglePause() {
 
 function skipPhase() {
   if (appState.paused) return;
-  const phase = appState.phases[appState.phaseIdx];
-  if (!phase) return;
   const nextIdx = appState.phaseIdx + 1;
   if (nextIdx >= appState.phases.length) {
     completeSession();
     return;
   }
-  document.getElementById('phase-countdown').classList.remove('visible');
+
+  // Calcular el tiempo acumulado hasta el inicio de la siguiente fase
+  const targetElapsed = appState.phases
+    .slice(0, nextIdx)
+    .reduce((a, p) => a + p.dur, 0);
+
+  // Ajustar _startTime para que el motor de reloj real "salte" al nuevo tiempo
+  const diff = targetElapsed - getElapsedSecs();
+  appState._startTime   -= diff * 1000;
+  appState.totalElapsed  = targetElapsed;
+  appState.phaseIdx      = nextIdx;
+  appState.phaseElapsed  = 0;
   appState.countdown10Fired = false;
-  appState.phaseIdx     = nextIdx;
-  appState.phaseElapsed = 0;
+
+  document.getElementById('phase-countdown').classList.remove('visible');
   const newPhase = appState.phases[appState.phaseIdx];
   announceZone(newPhase);
   vibrate([80, 40, 80]);
@@ -4758,7 +4947,7 @@ function updateTrainDisplay() {
     document.getElementById('incline-val').textContent = incl + '%';
   }
 
-  // Phase list
+  updateScrubBar();
   updatePhaseListHighlight();
   // Gráfica + timer de fase (v2)
   updatePhaseChart(appState.phases, appState.phaseIdx, appState.phaseElapsed, elapsed, appState.totalDur);
@@ -4853,6 +5042,7 @@ function closeConfirmStop() {
 function doStop() {
   closeConfirmStop();
   clearInterval(appState.timerInterval);
+  clearSessionState();   // ← limpiar estado persistido
   releaseWakeLock();
   cleanOutdoorState();
   const fromProgram = !!appState.programContext;
@@ -4869,6 +5059,7 @@ function doStop() {
 ════════════════════════════════════════════════════════ */
 function completeSession() {
   clearInterval(appState.timerInterval);
+  clearSessionState();   // ← limpiar estado persistido
   releaseWakeLock();
   cleanOutdoorState();
   vibrate([200, 100, 200, 100, 400]);
@@ -5110,6 +5301,64 @@ function vibrate(ms) {
 }
 
 /* ════════════════════════════════════════════════════════
+   PERSISTENCIA DE SESIÓN ACTIVA
+════════════════════════════════════════════════════════ */
+const SESSION_KEY = 'vcfit-treadmill-session';
+
+function saveSessionState() {
+  if (!appState.phases || !appState.phases.length) return;
+  try {
+    const state = {
+      _startTime:      appState._startTime,
+      _totalPausedMs:  appState._totalPausedMs,
+      _pausedAt:       appState._pausedAt,
+      paused:          appState.paused,
+      mode:            appState.mode,
+      level:           appState.level,
+      selectedObj:     appState.selectedObj,
+      selectedSess:    appState.selectedSess,
+      outdoorLevel:    appState.outdoorLevel || null,
+      programContext:  appState.programContext || null,
+      ts:              Date.now()
+    };
+    localStorage.setItem(SESSION_KEY, JSON.stringify(state));
+  } catch(e) {}
+}
+
+function clearSessionState() {
+  localStorage.removeItem(SESSION_KEY);
+}
+
+function restoreSessionState() {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (!raw) return false;
+    const s = JSON.parse(raw);
+    // Descartar si tiene más de 4 horas (sesión fantasma)
+    if (!s.ts || Date.now() - s.ts > 4 * 60 * 60 * 1000) {
+      clearSessionState();
+      return false;
+    }
+    // Si estaba corriendo (no pausada), ajustar _startTime por el tiempo
+    // que la app estuvo fuera de foco (ya incluido en Date.now())
+    appState._startTime     = s._startTime;
+    appState._totalPausedMs = s._totalPausedMs;
+    appState._pausedAt      = s._pausedAt;
+    appState.paused         = s.paused;
+    appState.mode           = s.mode || 'treadmill';
+    appState.level          = s.level;
+    appState.selectedObj    = s.selectedObj;
+    appState.selectedSess   = s.selectedSess;
+    if (s.outdoorLevel)   appState.outdoorLevel   = s.outdoorLevel;
+    if (s.programContext) appState.programContext  = s.programContext;
+    return true;
+  } catch(e) {
+    clearSessionState();
+    return false;
+  }
+}
+
+/* ════════════════════════════════════════════════════════
    WAKELOK — activo siempre que la app está visible
 ════════════════════════════════════════════════════════ */
 let wakeLock = null;
@@ -5124,10 +5373,15 @@ async function requestWakeLock() {
 async function releaseWakeLock() {
   if (wakeLock) { try { await wakeLock.release(); } catch(e) {} wakeLock = null; }
 }
-// Re-solicitar el WakeLock cada vez que la app vuelve a primer plano
+// Re-solicitar el WakeLock y resincronizar timer al volver al foco
 document.addEventListener('visibilitychange', async () => {
   if (document.visibilityState === 'visible') {
     await requestWakeLock();
+    // Si hay sesión activa y corriendo, forzar un tick inmediato para
+    // sincronizar el display con el tiempo real transcurrido
+    if (appState.timerInterval && !appState.paused) {
+      trainTick();
+    }
   }
 });
 
@@ -5248,6 +5502,66 @@ self.addEventListener('fetch', e => {
     document.getElementById('btn-program').style.display = 'flex';
     renderProgramBanner();
   }
+
+  // ── Restaurar sesión activa si la app se cerró durante un entrenamiento ──
+  (function tryRestoreSession() {
+    const restored = restoreSessionState();
+    if (!restored) return;
+    // Buscar el objeto sesión para reconstruir phases
+    let sess = null, obj = null;
+    if (appState.mode === 'outdoor') {
+      for (const o of OUTDOOR_OBJECTIVES) {
+        const lvl = appState.outdoorLevel || appState.level;
+        if (!o.sessions || !o.sessions[lvl]) continue;
+        const found = o.sessions[lvl].find(s => s.id === appState.selectedSess);
+        if (found) { sess = found; obj = o; break; }
+      }
+    } else {
+      for (const o of OBJECTIVES) {
+        const lvls = Object.keys(o.sessions || {});
+        for (const lvl of lvls) {
+          const found = o.sessions[lvl].find(s => s.id === appState.selectedSess);
+          if (found) { sess = found; obj = o; break; }
+        }
+        if (sess) break;
+      }
+    }
+    if (!sess || !obj) { clearSessionState(); return; }
+
+    // Reconstruir appState sin resetear el timer
+    appState.phases       = sess.phases;
+    appState.totalDur     = sess.phases.reduce((a, p) => a + p.dur, 0);
+    appState.phaseIdx     = 0;
+    appState.phaseElapsed = 0;
+    appState.totalElapsed = 0;
+    appState.kcalAccum    = 0;
+    appState.lastZone     = null;
+    appState.countdown10Fired = false;
+
+    // Si estaba pausada al cerrar, sumar el tiempo desde _pausedAt hasta ahora
+    // para que el reloj no avance durante ese limbo
+    if (appState.paused && appState._pausedAt > 0) {
+      appState._totalPausedMs += Date.now() - appState._pausedAt;
+      appState._pausedAt = 0;
+    }
+
+    document.getElementById('train-obj-name').textContent  = obj.name;
+    document.getElementById('train-sess-name').textContent = sess.name;
+    document.getElementById('btn-pause').textContent = appState.paused ? '▶ Reanudar' : '⏸ Pausar';
+    const overlay = document.getElementById('paused-overlay');
+    if (overlay) overlay.classList.toggle('visible', appState.paused);
+    document.getElementById('phase-countdown').classList.remove('visible');
+    _currentVariant = null;
+
+    buildPhaseChart(sess.phases);
+    buildScrubBar(sess.phases);
+    renderPhaseList();
+    updateTrainDisplay();
+    requestWakeLock();
+    showScreen('s-train');
+    appState.timerInterval = setInterval(trainTick, 500);
+    showToast('Sesión restaurada ✓');
+  })();
 })();
 
 
@@ -6061,14 +6375,136 @@ const OUTDOOR_ZONE_LABELS = {
    OUTDOOR — FUNCIONES
 ════════════════════════════════════════════════════════ */
 function openOutdoor() {
+  // Verificar perfil completo
+  const noProfile = document.getElementById('outdoor-no-profile');
+  const withProfile = document.getElementById('outdoor-with-profile');
   if (!appState.weight || !appState.age || !appState.sex) {
-    showToast('Completá tu perfil primero (peso, edad, sexo)');
-    goToConfig();
-    return;
+    if (noProfile)   noProfile.style.display   = 'block';
+    if (withProfile) withProfile.style.display = 'none';
+  } else {
+    if (noProfile)   noProfile.style.display   = 'none';
+    if (withProfile) withProfile.style.display = 'block';
+    renderOutdoorLevelCards();
   }
-  renderOutdoorObjectives();
   document.getElementById('btn-outdoor').classList.add('active-mode');
   showAux('s-outdoor');
+}
+
+function renderOutdoorLevelCards() {
+  const container = document.getElementById('outdoor-level-cards');
+  if (!container) return;
+  const levels = [
+    { val:'beginner',     label:'Principiante', color:'var(--z2)', desc:'Empiezo o vuelvo. Ritmos suaves.' },
+    { val:'intermediate', label:'Intermedio',   color:'var(--z3)', desc:'Entreno regular. 20+ min continuos.' },
+    { val:'advanced',     label:'Avanzado',     color:'var(--z5)', desc:'Buena base. Manejo bien la intensidad.' },
+  ];
+  container.innerHTML = '';
+  levels.forEach(lvl => {
+    const div = document.createElement('div');
+    div.className = `level-card${appState.level === lvl.val ? ' selected' : ''}`;
+    div.style.setProperty('--lc', lvl.color);
+    div.innerHTML = `
+      <div class="level-card-check">✓</div>
+      <div class="level-chip">${lvl.label}</div>
+      <div class="level-name">${lvl.label}</div>
+      <div class="level-desc">${lvl.desc}</div>`;
+    div.addEventListener('click', () => {
+      document.querySelectorAll('#outdoor-level-cards .level-card').forEach(c => c.classList.remove('selected'));
+      div.classList.add('selected');
+      appState.outdoorLevel = lvl.val;
+      // Mostrar objetivos
+      const objSection = document.getElementById('outdoor-obj-section');
+      if (objSection) {
+        objSection.style.display = 'block';
+        renderOutdoorObjectivesNew();
+      }
+      vibrate(25);
+    });
+    container.appendChild(div);
+  });
+}
+
+function renderOutdoorObjectivesNew() {
+  const container = document.getElementById('outdoor-obj-cards');
+  if (!container) return;
+  container.innerHTML = '';
+  OUTDOOR_OBJECTIVES.forEach(obj => {
+    const isExpress = !!obj.express;
+    const div = document.createElement('div');
+    div.className = 'obj-card' + (isExpress ? ' express-obj' : '');
+    div.style.setProperty('--oc', obj.color);
+    div.innerHTML = `
+      <div class="obj-card-icon">${obj.icon}</div>
+      <div class="obj-card-text">
+        <div class="obj-card-name" style="display:flex;align-items:center;gap:8px">
+          ${obj.name}${isExpress ? '<span class="express-badge">⚡ Express</span>' : ''}
+        </div>
+        <div class="obj-card-desc">${obj.desc}</div>
+      </div>
+      <div class="obj-card-arrow">›</div>`;
+    div.addEventListener('click', () => {
+      document.querySelectorAll('#outdoor-obj-cards .obj-card').forEach(c => c.classList.remove('selected'));
+      div.classList.add('selected');
+      appState.outdoorObj  = obj.id;
+      appState.outdoorSess = null;
+      document.getElementById('btn-start-outdoor').disabled = true;
+      renderOutdoorSessionsNew(obj);
+      vibrate(25);
+    });
+    container.appendChild(div);
+  });
+}
+
+function renderOutdoorSessionsNew(obj) {
+  const section  = document.getElementById('outdoor-sess-section');
+  const list     = document.getElementById('outdoor-sess-list');
+  const lvl      = appState.outdoorLevel || appState.level;
+  const sessions = obj.sessions[lvl] || [];
+  const isExpress = !!obj.express;
+  if (!section || !list) return;
+  list.innerHTML = '';
+  sessions.forEach((sess, idx) => {
+    const usedZones = [...new Set(sess.phases.map(p => p.zone))];
+    const zonesHtml = usedZones.map(z => `<div class="zone-pill ${z}">${z.toUpperCase()}</div>`).join('');
+    const durBadge  = isExpress
+      ? `<span class="express-badge">⚡ ${sess.dur} min</span>`
+      : `<span class="dur-badge">⏱ ${sess.dur} min</span>`;
+    const div = document.createElement('div');
+    div.className = 'sess-card';
+    div.style.setProperty('--sc', obj.color);
+    div.innerHTML = `
+      <div class="sess-num">${idx + 1}</div>
+      <div class="sess-info">
+        <div class="sess-name" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">${sess.name} ${durBadge}</div>
+        <div class="sess-meta"><span>${sess.phases.length} fases</span></div>
+        <div class="sess-zones">${zonesHtml}</div>
+        ${sess.desc ? `<div style="font-size:0.73rem;color:var(--text2);margin-top:3px">${sess.desc}</div>` : ''}
+      </div>`;
+    div.addEventListener('click', () => {
+      document.querySelectorAll('#outdoor-sess-list .sess-card').forEach(c => c.classList.remove('selected'));
+      div.classList.add('selected');
+      appState.outdoorSess = sess.id;
+      document.getElementById('btn-start-outdoor').disabled = false;
+      vibrate(25);
+    });
+    list.appendChild(div);
+  });
+  section.style.display = 'block';
+}
+
+function startOutdoorCountdown() {
+  if (!appState.outdoorSess || !appState.outdoorObj) return;
+  const lvl  = appState.outdoorLevel || appState.level;
+  appState.mode = 'outdoor';
+  const obj  = OUTDOOR_OBJECTIVES.find(o => o.id === appState.outdoorObj);
+  const sess = obj.sessions[lvl].find(s => s.id === appState.outdoorSess);
+  appState.selectedObj  = appState.outdoorObj;
+  appState.selectedSess = appState.outdoorSess;
+  appState._outdoorObj  = obj;
+  appState._outdoorSess = sess;
+  // Usar el nivel outdoor si es diferente al de cinta
+  if (appState.outdoorLevel) appState.level = appState.outdoorLevel;
+  startCountdown();
 }
 
 function closeOutdoor() {
@@ -6260,6 +6696,7 @@ function cleanOutdoorState() {
     appState.mode = 'treadmill';
     appState._outdoorObj = appState._outdoorSess = null;
     appState.outdoorObj  = appState.outdoorSess  = null;
+    appState.outdoorLevel = null;
     restoreTreadmillDisplay();
     const btn = document.getElementById('btn-outdoor');
     if (btn) btn.classList.remove('active-mode');
