@@ -16896,13 +16896,78 @@ function confirmImportStudent() {
   border: 1px solid var(--orange-border);
   border-radius: 14px;
   padding: 0.85rem 1rem;
-  width: 260px;
+  width: 280px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.5);
   display: none;
   flex-direction: column;
   gap: 0.7rem;
 }
 #vc-music-panel.open { display: flex; }
+
+.vc-mp-divider {
+  height: 1px;
+  background: var(--orange-border);
+  margin: 0.1rem 0;
+}
+.vc-mp-list-header {
+  font-family: var(--font-label);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--gray-light);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+#vc-mp-playlist {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  max-height: 200px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--orange-border) transparent;
+}
+#vc-mp-playlist::-webkit-scrollbar { width: 3px; }
+#vc-mp-playlist::-webkit-scrollbar-track { background: transparent; }
+#vc-mp-playlist::-webkit-scrollbar-thumb { background: var(--orange-border); border-radius: 2px; }
+.vc-mp-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.38rem 0.5rem;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.12s;
+  border: 1px solid transparent;
+}
+.vc-mp-item:hover { background: var(--dark3); border-color: var(--orange-border); }
+.vc-mp-item.active { background: var(--orange-dim); border-color: var(--orange-border); }
+.vc-mp-item-num {
+  font-size: 0.65rem;
+  color: var(--gray-light);
+  min-width: 16px;
+  text-align: right;
+  font-family: var(--font-mono);
+}
+.vc-mp-item.active .vc-mp-item-num { display: none; }
+.vc-mp-item-eq {
+  font-size: 0.75rem;
+  color: var(--orange);
+  min-width: 16px;
+  text-align: center;
+  display: none;
+}
+.vc-mp-item.active .vc-mp-item-eq { display: block; }
+.vc-mp-item-info { flex: 1; overflow: hidden; }
+.vc-mp-item-title {
+  font-size: 0.75rem;
+  color: var(--white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+.vc-mp-item.active .vc-mp-item-title { color: var(--orange); font-weight: 700; }
+.vc-mp-item-artist { font-size: 0.65rem; color: var(--gray-light); }
 
 .vc-mp-title {
   font-family: var(--font-label);
@@ -17008,6 +17073,9 @@ function confirmImportStudent() {
       <input type="range" id="vc-mp-vol" min="0" max="100" value="60" oninput="vcMpSetVolume(this.value)">
       <span>🔊</span>
     </div>
+    <div class="vc-mp-divider"></div>
+    <div class="vc-mp-list-header">&#128203; Playlist &mdash; <span id="vc-mp-count"></span> temas</div>
+    <div id="vc-mp-playlist"></div>
   </div>
   <button id="vc-music-fab" onclick="vcMpTogglePanel()" title="Música">🎵</button>
 </div>
@@ -17062,20 +17130,54 @@ const vcMpPlayBtn = document.getElementById('vc-mp-play-btn');
 
 // ── Inicialización ───────────────────────────────────────────────
 function vcMpInit() {
-  if (!vcMpPlaylist.length) return; // sin tracks, no hacer nada
+  if (!vcMpPlaylist.length) return;
 
   vcMpAudio.volume = vcMp.vol / 100;
   document.getElementById('vc-mp-vol').value = vcMp.vol;
 
   vcMpBuildOrder();
+  vcMpRenderList();
   vcMpLoadTrack(vcMp.idx, false);
 
   vcMpAudio.addEventListener('ended',       vcMpNext);
   vcMpAudio.addEventListener('timeupdate',  vcMpUpdateProgress);
   vcMpAudio.addEventListener('loadedmetadata', vcMpUpdateDuration);
 
-  // Restaurar shuffle UI
   document.getElementById('vc-mp-shuffle-btn').classList.toggle('active', vcMp.shuffle);
+  var countEl = document.getElementById('vc-mp-count');
+  if (countEl) countEl.textContent = vcMpPlaylist.length;
+}
+
+function vcMpRenderList() {
+  var container = document.getElementById('vc-mp-playlist');
+  if (!container) return;
+  var html = '';
+  for (var i = 0; i < vcMpPlaylist.length; i++) {
+    var t = vcMpPlaylist[i];
+    var activeClass = (i === vcMp.idx) ? ' active' : '';
+    html += '<div class="vc-mp-item' + activeClass + '" onclick="vcMpPlayAt(' + i + ')">' +
+      '<span class="vc-mp-item-num">' + (i + 1) + '</span>' +
+      '<span class="vc-mp-item-eq">&#9654;</span>' +
+      '<div class="vc-mp-item-info">' +
+        '<div class="vc-mp-item-title">' + t.title + '</div>' +
+        '<div class="vc-mp-item-artist">' + (t.artist || '') + '</div>' +
+      '</div>' +
+    '</div>';
+  }
+  container.innerHTML = html;
+}
+
+function vcMpUpdateActiveItem() {
+  var items = document.querySelectorAll('.vc-mp-item');
+  for (var i = 0; i < items.length; i++) {
+    items[i].classList.toggle('active', i === vcMp.idx);
+  }
+  var activeEl = document.querySelector('.vc-mp-item.active');
+  if (activeEl) activeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
+function vcMpPlayAt(idx) {
+  vcMpLoadTrack(idx, true);
 }
 
 function vcMpBuildOrder() {
@@ -17111,6 +17213,7 @@ function vcMpLoadTrack(idx, autoplay) {
       vcMpFab.classList.add('playing');
     }).catch(() => {});
   }
+  vcMpUpdateActiveItem();
 }
 
 // ── Controles ────────────────────────────────────────────────────
