@@ -1068,6 +1068,94 @@ body {
   margin-top: 4px;
 }
 
+/* PANEL METRÓNOMO */
+.metro-panel {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.72);
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 700;
+  padding: 16px;
+  backdrop-filter: blur(4px);
+}
+.metro-panel.visible { display: flex; }
+.metro-panel-box {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 20px;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: slideUp 0.2s ease;
+}
+.metro-panel-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 800;
+  font-size: 1.2rem;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.metro-type-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.metro-type-btn {
+  background: var(--bg3);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 8px;
+  color: var(--text);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s, background 0.15s;
+}
+.metro-type-btn.selected {
+  border-color: var(--accent);
+  background: rgba(99,102,241,0.15);
+  color: var(--accent);
+}
+.metro-vol-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.metro-vol-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.83rem;
+  color: var(--text2);
+}
+.metro-vol-label span { color: var(--text); font-weight: 700; }
+input[type=range].metro-slider {
+  width: 100%;
+  accent-color: var(--accent);
+  height: 6px;
+  cursor: pointer;
+}
+.metro-preview-btn {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  color: var(--text2);
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.15s;
+}
+.metro-preview-btn:active { background: var(--border); }
+
 /* PAUSED OVERLAY */
 .paused-overlay {
   position: absolute;
@@ -1923,6 +2011,10 @@ body {
     <button class="btn-icon" id="btn-program" title="Mi Programa" onclick="showAux('s-program')" style="display:none">📅</button>
     <button class="btn-icon" id="btn-hist" title="Historial" onclick="showAux('s-hist')">📋</button>
     <button class="btn-icon" id="btn-glos" title="Glosario" onclick="showAux('s-glos')">📖</button>
+    <button class="btn-icon" id="btn-metro" title="Metrónomo (mantené para configurar)"
+            onpointerdown="metroPointerDown()"
+            onpointerup="metroPointerUp()"
+            onpointerleave="metroPointerUp()">🥁</button>
     <button class="btn-icon" id="btn-voice" title="Voz" onclick="toggleVoice()">🔊</button>
     <button class="btn-icon" id="btn-theme" title="Tema" onclick="toggleTheme()">🌓</button>
   </div>
@@ -2257,6 +2349,14 @@ body {
       <div class="metric-label">Calorías acumuladas</div>
       <div class="metric-val" id="m-kcal">0<span class="metric-unit">kcal</span></div>
     </div>
+    <div class="metric-card wide" id="m-steps-card">
+      <div class="metric-label">Pasos estimados · cadencia</div>
+      <div style="display:flex;align-items:baseline;gap:10px;margin-top:2px">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1.5rem;line-height:1;color:var(--text)" id="m-steps">0</div>
+        <div style="font-size:0.78rem;color:var(--text2)">pasos</div>
+        <div style="margin-left:auto;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1rem;color:var(--text2)" id="m-cadence">— spm</div>
+      </div>
+    </div>
   </div>
 
   <!-- Cue de variante técnica -->
@@ -2279,6 +2379,39 @@ body {
     </button>
   </div>
 
+</div>
+
+<!-- PANEL: configuración metrónomo -->
+<div class="metro-panel" id="metro-panel" onclick="closeMetroPanel(event)">
+  <div class="metro-panel-box">
+    <div class="metro-panel-title">🥁 Metrónomo</div>
+
+    <div>
+      <div class="metro-vol-label" style="margin-bottom:6px">
+        <span style="font-weight:600;color:var(--text)">Tipo de sonido</span>
+      </div>
+      <div class="metro-type-grid">
+        <button class="metro-type-btn" id="mtype-click"   onclick="setMetroType('click')"     >Click</button>
+        <button class="metro-type-btn" id="mtype-beep"    onclick="setMetroType('beep')"      >Beep</button>
+        <button class="metro-type-btn" id="mtype-wood"    onclick="setMetroType('wood')"      >Woodblock</button>
+        <button class="metro-type-btn" id="mtype-clave"   onclick="setMetroType('clave')"     >Clave</button>
+      </div>
+    </div>
+
+    <div class="metro-vol-row">
+      <div class="metro-vol-label">
+        <span style="font-weight:600;color:var(--text)">Volumen</span>
+        <span id="metro-vol-val">70%</span>
+      </div>
+      <input type="range" class="metro-slider" id="metro-vol-slider"
+             min="0" max="100" value="70"
+             oninput="onMetroVolChange(this.value)">
+    </div>
+
+    <button class="metro-preview-btn" onclick="playTick()">▶ Escuchar preview</button>
+
+    <button class="btn-primary" onclick="closeMetroPanel()">Listo</button>
+  </div>
 </div>
 
 <!-- MODAL: confirmar detener sesión -->
@@ -4747,6 +4880,7 @@ function initTraining() {
   appState.totalElapsed     = 0;
   appState.totalDur         = sess.phases.reduce((a, p) => a + p.dur, 0);
   appState.kcalAccum        = 0;
+  appState.totalSteps       = 0;
   appState.lastZone         = null;
   appState.paused           = false;
   appState.countdown10Fired = false;
@@ -4771,6 +4905,11 @@ function initTraining() {
   updateTrainDisplay();
   requestWakeLock();
   showScreen('s-train');
+
+  // Arrancar metrónomo si está activo
+  if (_metroEnabled && sess.phases.length) {
+    startMetronome(getCadence(sess.phases[0].vel));
+  }
 
   appState.timerInterval = setInterval(trainTick, 500); // 500ms para mayor precisión
 }
@@ -4817,10 +4956,16 @@ function trainTick() {
       announceZone(newPhase);
       vibrate([60, 40, 60]);
     }
+    // Actualizar metrónomo con nueva velocidad de fase
+    updateMetronome(newPhase.vel);
   }
 
   const phase       = appState.phases[appState.phaseIdx];
   const phaseRemain = phase.dur - appState.phaseElapsed;
+
+  // Acumular pasos estimados (1 paso/seg × cadencia/60)
+  const cadence = getCadence(phase.vel);
+  appState.totalSteps = (appState.totalSteps || 0) + (cadence / 60);
 
   // Cuenta regresiva últimos 10 segundos
   if (phaseRemain <= 10 && phaseRemain > 0) {
@@ -4852,11 +4997,17 @@ function togglePause() {
   if (btnSkip) btnSkip.classList.toggle('disabled', appState.paused);
   if (appState.paused) {
     appState._pausedAt = Date.now();
+    stopMetronome();
     vibrate(60);
     speak('Pausa.');
   } else {
     // Acumular ms de pausa
     appState._totalPausedMs += Date.now() - appState._pausedAt;
+    // Reanudar metrónomo si estaba activo
+    if (_metroEnabled && appState.phases && appState.phases.length) {
+      const phase = appState.phases[appState.phaseIdx];
+      if (phase) startMetronome(getCadence(phase.vel));
+    }
     vibrate([40, 30, 80]);
     speak('Continuamos.');
   }
@@ -4953,6 +5104,13 @@ function updateTrainDisplay() {
   updatePhaseChart(appState.phases, appState.phaseIdx, appState.phaseElapsed, elapsed, appState.totalDur);
   updatePhaseTimerBlock(phase, appState.phaseElapsed);
 
+  // Pasos y cadencia
+  const cadNow = getCadence(phase.vel);
+  const stepsEl   = document.getElementById('m-steps');
+  const cadenceEl = document.getElementById('m-cadence');
+  if (stepsEl)   stepsEl.textContent   = Math.round(appState.totalSteps || 0).toLocaleString('es-AR');
+  if (cadenceEl) cadenceEl.textContent = cadNow > 0 ? `${cadNow} spm` : '— spm';
+
   appState.lastZone = phase.zone;
   document.documentElement.style.setProperty('--current-zone-color', zColor);
 }
@@ -5042,7 +5200,8 @@ function closeConfirmStop() {
 function doStop() {
   closeConfirmStop();
   clearInterval(appState.timerInterval);
-  clearSessionState();   // ← limpiar estado persistido
+  clearSessionState();
+  stopMetronome();
   releaseWakeLock();
   cleanOutdoorState();
   const fromProgram = !!appState.programContext;
@@ -5059,7 +5218,8 @@ function doStop() {
 ════════════════════════════════════════════════════════ */
 function completeSession() {
   clearInterval(appState.timerInterval);
-  clearSessionState();   // ← limpiar estado persistido
+  clearSessionState();
+  stopMetronome();
   releaseWakeLock();
   cleanOutdoorState();
   vibrate([200, 100, 200, 100, 400]);
@@ -5123,6 +5283,10 @@ function completeSession() {
     <div class="stat-box">
       <div class="stat-box-val">${sess.phases.length}<span class="su"></span></div>
       <div class="stat-box-label">Fases</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-val">${appState.totalSteps ? appState.totalSteps.toLocaleString('es-AR') : '—'}<span class="su"></span></div>
+      <div class="stat-box-label">Pasos est.</div>
     </div>
   `;
 
@@ -5294,6 +5458,208 @@ function speak(text) {
 }
 
 /* ════════════════════════════════════════════════════════
+   METRÓNOMO — cadencia por velocidad
+════════════════════════════════════════════════════════ */
+// Tabla velocidad (km/h) → cadencia (pasos/min)
+// Basada en relación biomecánica estándar
+const CADENCE_TABLE = [
+  { vel: 3.0, spm: 90  },
+  { vel: 4.0, spm: 100 },
+  { vel: 5.0, spm: 110 },
+  { vel: 6.0, spm: 125 },
+  { vel: 7.0, spm: 140 },
+  { vel: 8.0, spm: 155 },
+  { vel: 9.0, spm: 162 },
+  { vel: 10.0, spm: 168 },
+  { vel: 11.0, spm: 174 },
+  { vel: 12.0, spm: 178 },
+  { vel: 14.0, spm: 182 },
+  { vel: 16.0, spm: 186 },
+];
+
+function getCadence(velKmh) {
+  if (!velKmh || velKmh <= 0) return 0;
+  const t = CADENCE_TABLE;
+  if (velKmh <= t[0].vel) return t[0].spm;
+  if (velKmh >= t[t.length-1].vel) return t[t.length-1].spm;
+  for (let i = 0; i < t.length - 1; i++) {
+    if (velKmh >= t[i].vel && velKmh <= t[i+1].vel) {
+      const ratio = (velKmh - t[i].vel) / (t[i+1].vel - t[i].vel);
+      return Math.round(t[i].spm + ratio * (t[i+1].spm - t[i].spm));
+    }
+  }
+  return 0;
+}
+
+let _metroAudioCtx  = null;
+let _metroInterval  = null;
+let _metroEnabled   = false;
+let _metroCadence   = 0;
+let _metroVolume    = 0.70;   // 0.0 – 1.0
+let _metroType      = 'click'; // click | beep | wood | clave
+let _metroLongTimer = null;
+
+function getAudioCtx() {
+  if (!_metroAudioCtx) {
+    _metroAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  // Reanudar contexto si fue suspendido (política autoplay)
+  if (_metroAudioCtx.state === 'suspended') _metroAudioCtx.resume();
+  return _metroAudioCtx;
+}
+
+function playTick() {
+  try {
+    const ctx = getAudioCtx();
+    const now = ctx.currentTime;
+    const vol = _metroVolume;
+
+    if (_metroType === 'click') {
+      // Senoidal corta, aguda — el original pero con volumen controlado
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1200, now);
+      gain.gain.setValueAtTime(vol, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+      osc.start(now); osc.stop(now + 0.04);
+
+    } else if (_metroType === 'beep') {
+      // Tono redondo más grave, decay más largo
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(800, now);
+      gain.gain.setValueAtTime(vol * 0.8, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+      osc.start(now); osc.stop(now + 0.12);
+
+    } else if (_metroType === 'wood') {
+      // Ruido filtrado pasa-banda — simula bloque de madera
+      const buf    = ctx.createBuffer(1, ctx.sampleRate * 0.06, ctx.sampleRate);
+      const data   = buf.getChannelData(0);
+      for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+      const src    = ctx.createBufferSource();
+      src.buffer   = buf;
+      const filter = ctx.createBiquadFilter();
+      filter.type  = 'bandpass';
+      filter.frequency.value = 1000;
+      filter.Q.value = 3;
+      const gain   = ctx.createGain();
+      src.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+      gain.gain.setValueAtTime(vol * 1.5, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+      src.start(now); src.stop(now + 0.06);
+
+    } else if (_metroType === 'clave') {
+      // Dos frecuencias superpuestas — más percusivo
+      [900, 1400].forEach((freq, i) => {
+        const osc  = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(vol * (i === 0 ? 0.5 : 0.3), now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+        osc.start(now); osc.stop(now + 0.05);
+      });
+    }
+  } catch(e) {}
+}
+
+function startMetronome(spm) {
+  stopMetronome();
+  if (!spm || spm <= 0) return;
+  _metroCadence = spm;
+  const intervalMs = Math.round(60000 / spm);
+  playTick();
+  _metroInterval = setInterval(playTick, intervalMs);
+}
+
+function stopMetronome() {
+  if (_metroInterval) { clearInterval(_metroInterval); _metroInterval = null; }
+  _metroCadence = 0;
+}
+
+// ── Toggle (tap corto) ──
+function toggleMetronome() {
+  _metroEnabled = !_metroEnabled;
+  const btn = document.getElementById('btn-metro');
+  btn.classList.toggle('active', _metroEnabled);
+  localStorage.setItem('vcfit-treadmill-metro', _metroEnabled ? '1' : '0');
+  if (_metroEnabled) {
+    if (appState.phases && appState.phases.length && !appState.paused) {
+      const phase = appState.phases[appState.phaseIdx];
+      if (phase) startMetronome(getCadence(phase.vel));
+    }
+    showToast('Metrónomo activado');
+  } else {
+    stopMetronome();
+    showToast('Metrónomo desactivado');
+  }
+}
+
+// ── Long press → panel de configuración ──
+function metroPointerDown() {
+  _metroLongTimer = setTimeout(() => {
+    _metroLongTimer = null;
+    openMetroPanel();
+  }, 600);
+}
+function metroPointerUp() {
+  if (_metroLongTimer) {
+    clearTimeout(_metroLongTimer);
+    _metroLongTimer = null;
+    toggleMetronome(); // tap corto = toggle
+  }
+}
+
+function openMetroPanel() {
+  // Sincronizar UI del panel con estado actual
+  ['click','beep','wood','clave'].forEach(t => {
+    const b = document.getElementById('mtype-' + t);
+    if (b) b.classList.toggle('selected', t === _metroType);
+  });
+  const slider = document.getElementById('metro-vol-slider');
+  if (slider) slider.value = Math.round(_metroVolume * 100);
+  const volVal = document.getElementById('metro-vol-val');
+  if (volVal) volVal.textContent = Math.round(_metroVolume * 100) + '%';
+  document.getElementById('metro-panel').classList.add('visible');
+}
+
+function closeMetroPanel(e) {
+  // Cierra al tocar el backdrop (fuera del box)
+  if (e && e.target !== document.getElementById('metro-panel')) return;
+  document.getElementById('metro-panel').classList.remove('visible');
+}
+
+function setMetroType(type) {
+  _metroType = type;
+  localStorage.setItem('vcfit-treadmill-metro-type', type);
+  ['click','beep','wood','clave'].forEach(t => {
+    const b = document.getElementById('mtype-' + t);
+    if (b) b.classList.toggle('selected', t === type);
+  });
+  playTick(); // preview inmediato al seleccionar
+}
+
+function onMetroVolChange(val) {
+  _metroVolume = parseInt(val) / 100;
+  localStorage.setItem('vcfit-treadmill-metro-vol', val);
+  const volVal = document.getElementById('metro-vol-val');
+  if (volVal) volVal.textContent = val + '%';
+}
+
+// Llamada desde trainTick cuando cambia de fase
+function updateMetronome(vel) {
+  if (!_metroEnabled) return;
+  const spm = getCadence(vel);
+  if (spm !== _metroCadence) startMetronome(spm);
+}
+
+/* ════════════════════════════════════════════════════════
    VIBRACIÓN
 ════════════════════════════════════════════════════════ */
 function vibrate(ms) {
@@ -5460,6 +5826,30 @@ self.addEventListener('fetch', e => {
     document.getElementById('btn-voice').textContent = '🔇';
   } else {
     document.getElementById('btn-voice').classList.add('active');
+  }
+
+  // ── Metrónomo ──
+  const savedMetro = localStorage.getItem('vcfit-treadmill-metro');
+  if (savedMetro === '1') {
+    _metroEnabled = true;
+    document.getElementById('btn-metro').classList.add('active');
+  }
+  const savedMetroVol = localStorage.getItem('vcfit-treadmill-metro-vol');
+  if (savedMetroVol !== null) {
+    _metroVolume = parseInt(savedMetroVol) / 100;
+    const slider = document.getElementById('metro-vol-slider');
+    if (slider) slider.value = savedMetroVol;
+    const volVal = document.getElementById('metro-vol-val');
+    if (volVal) volVal.textContent = savedMetroVol + '%';
+  }
+  const savedMetroType = localStorage.getItem('vcfit-treadmill-metro-type');
+  if (savedMetroType) {
+    _metroType = savedMetroType;
+    const btn = document.getElementById('mtype-' + savedMetroType);
+    if (btn) btn.classList.add('selected');
+  } else {
+    const btn = document.getElementById('mtype-click');
+    if (btn) btn.classList.add('selected');
   }
 
   // ── Config guardada ──
