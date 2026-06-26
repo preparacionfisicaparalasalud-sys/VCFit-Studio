@@ -1852,9 +1852,7 @@
       <div class="topbar-title" id="detail-student-name">—</div>
       <div class="topbar-sub" id="detail-student-meta">—</div>
     </div>
-    <button class="theme-toggle-btn" onclick="editStudentName()" title="Editar nombre"
-      style="font-size:1rem;border-color:var(--orange-border);color:var(--orange)">✏️</button>
-    <button class="btn btn-secondary btn-sm" onclick="openExportStudentModal()" title="Exportar datos del alumno">📦 Exportar</button>
+    <button class="btn btn-secondary btn-sm" onclick="exportCurrentStudent()" title="Exportar datos del alumno">📦 Exportar</button>
     <button class="theme-toggle-btn" onclick="openAIChatFromStudent()" title="Consultar IA sobre este alumno"
       style="font-size:1rem;border-color:var(--orange-border);color:var(--orange)">🤖</button>
   </div>
@@ -2969,17 +2967,6 @@ ALMUERZO
     <div class="modal-handle"></div>
     <div class="modal-title">Nuevo Alumno</div>
 
-    <!-- Card importar desde backup -->
-    <div class="card" style="margin-bottom:1rem;background:var(--dark3);border:1px solid var(--orange-border)">
-      <div class="card-title" style="color:var(--orange)">📥 Importar desde backup</div>
-      <div class="text-small text-gray" style="margin-bottom:0.8rem;line-height:1.6">
-        ¿Tenés un archivo JSON de otro alumno? Importalo directamente con todos sus datos.
-      </div>
-      <button class="btn btn-secondary btn-sm btn-full" onclick="closeModal('modal-new-student'); openImportStudentModal()">
-        📥 Abrir importador
-      </button>
-    </div>
-
     <!-- Card pegar texto de anamnesis -->
     <div class="card" style="margin-bottom:1rem;background:var(--dark3)">
       <div class="card-title">📋 Cargar desde texto</div>
@@ -3236,185 +3223,80 @@ ALMUERZO
       <button class="btn-icon" onclick="closeImportStudentModal()">✕</button>
     </div>
     <div class="modal-body">
-
+      
       <div class="mb-2">
         <div class="label">Archivo de backup (.json)</div>
-        <input type="file" id="import-file-input" accept=".json" class="input-field"
+        <input type="file" id="import-file-input" accept=".json" class="input-field" 
           onchange="loadImportFile(event)" style="font-size:0.85rem">
-        <div class="text-small text-gray mt-1">Seleccioná el archivo JSON exportado previamente</div>
+        <div class="text-small text-gray mt-1">
+          Seleccioná el archivo JSON exportado previamente
+        </div>
       </div>
 
       <div id="import-preview" style="display:none">
-
-        <!-- Vista previa del archivo -->
         <div class="card mt-2" style="background:var(--dark3);border-color:var(--orange-border)">
           <div class="card-title" style="color:var(--orange)">Vista Previa</div>
           <div class="text-small">
             <div><strong>Nombre:</strong> <span id="import-prev-name">—</span></div>
             <div class="mt-1"><strong>Rutina:</strong> <span id="import-prev-routine">—</span></div>
             <div class="mt-1"><strong>Métricas:</strong> <span id="import-prev-metrics">—</span></div>
-            <div class="mt-1"><strong>Pagos:</strong> <span id="import-prev-payments">—</span></div>
+            <div class="mt-1"><strong>Pagos registrados:</strong> <span id="import-prev-payments">—</span></div>
           </div>
         </div>
 
-        <!-- Presets rápidos -->
         <div class="mt-2">
-          <div class="label" style="margin-bottom:0.4rem">¿Qué datos importar?</div>
-          <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.6rem">
-            <button class="btn btn-secondary btn-sm" onclick="setImportPreset('all')">✅ Todo</button>
-            <button class="btn btn-secondary btn-sm" onclick="setImportPreset('config')">⚙️ Config</button>
-            <button class="btn btn-secondary btn-sm" onclick="setImportPreset('template')">📋 Plantilla</button>
-            <button class="btn btn-secondary btn-sm" onclick="setImportPreset('none')">☐ Ninguno</button>
-          </div>
+          <div class="label">¿Qué datos querés importar?</div>
           <div class="card" style="background:var(--dark3)">
-            <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
-              <input type="checkbox" id="imp-rutina" checked> <span class="text-small">💪 Rutina</span>
+            <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;margin-bottom:0.6rem">
+              <input type="radio" name="import-mode" value="all" checked onchange="updateImportModeDescription()">
+              <div>
+                <div class="bold" style="font-size:0.9rem">✅ TODO</div>
+                <div class="text-small text-gray">Rutina, plan, métricas, historial, pagos, pizarras, todo</div>
+              </div>
             </label>
-            <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
-              <input type="checkbox" id="imp-nutricion" checked> <span class="text-small">🥗 Plan nutricional</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
-              <input type="checkbox" id="imp-anamnesis" checked> <span class="text-small">📋 Anamnesis</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
-              <input type="checkbox" id="imp-metricas" checked> <span class="text-small">📊 Métricas</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
-              <input type="checkbox" id="imp-historial" checked> <span class="text-small">📅 Historial de sesiones</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
-              <input type="checkbox" id="imp-pagos" checked> <span class="text-small">💰 Pagos</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
-              <input type="checkbox" id="imp-pizarras" checked> <span class="text-small">📌 Pizarras</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
-              <input type="checkbox" id="imp-fotos" checked> <span class="text-small">📸 Fotos de progreso</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
-              <input type="checkbox" id="imp-notas" checked> <span class="text-small">📝 Notas de rutina</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- Destino: nuevo o existente -->
-        <div class="mt-2">
-          <div class="label" style="margin-bottom:0.4rem">¿A dónde importar?</div>
-          <div class="card" style="background:var(--dark3)">
-            <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;margin-bottom:0.5rem">
-              <input type="radio" name="import-target" value="new" checked onchange="updateImportTarget()">
-              <span class="text-small bold">➕ Alumno nuevo</span>
+            <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;margin-bottom:0.6rem">
+              <input type="radio" name="import-mode" value="config" onchange="updateImportModeDescription()">
+              <div>
+                <div class="bold" style="font-size:0.9rem">⚙️ SOLO CONFIGURACIÓN</div>
+                <div class="text-small text-gray">Rutina, plan nutricional, pizarras (sin historial ni pagos)</div>
+              </div>
             </label>
             <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer">
-              <input type="radio" name="import-target" value="existing" onchange="updateImportTarget()">
-              <span class="text-small bold">👤 Alumno existente</span>
+              <input type="radio" name="import-mode" value="template" onchange="updateImportModeDescription()">
+              <div>
+                <div class="bold" style="font-size:0.9rem">📋 SOLO PLANTILLA</div>
+                <div class="text-small text-gray">Anamnesis, rutina, plan (sin datos personales ni historial)</div>
+              </div>
             </label>
           </div>
         </div>
 
-        <!-- Campos para alumno nuevo -->
-        <div id="import-target-new" class="mt-2">
+        <div class="mt-2">
           <div class="label">Nombre del nuevo alumno</div>
-          <input type="text" id="import-new-name" class="input-field"
+          <input type="text" id="import-new-name" class="input-field" 
             placeholder="Dejá vacío para usar el nombre original">
-          <div class="label mt-1">PIN de acceso</div>
-          <input type="text" id="import-new-pin" class="input-field" maxlength="4"
-            placeholder="Dejá vacío para usar 0000">
         </div>
 
-        <!-- Selector de alumno existente -->
-        <div id="import-target-existing" class="mt-2" style="display:none">
-          <div class="label">Seleccioná el alumno</div>
-          <select id="import-existing-student" class="input-field"></select>
-          <div class="card mt-1" style="background:rgba(234,179,8,0.1);border-color:rgba(234,179,8,0.3)">
-            <div class="text-small" style="color:var(--yellow)">⚠️ Los campos seleccionados del alumno existente serán <strong>reemplazados</strong>. Esta acción no se puede deshacer.</div>
+        <div class="mt-2">
+          <div class="label">PIN del nuevo alumno</div>
+          <input type="text" id="import-new-pin" class="input-field" maxlength="6"
+            placeholder="Dejá vacío para generar PIN automático (0000)">
+        </div>
+
+        <div class="card mt-2" style="background:rgba(234,179,8,0.1);border-color:rgba(234,179,8,0.3)">
+          <div class="text-small" style="color:var(--yellow)">
+            ⚠️ <strong>Importante:</strong> Se creará un alumno nuevo con estos datos. 
+            El alumno original (si existe) no se modifica.
           </div>
         </div>
-
       </div>
+
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeImportStudentModal()">Cancelar</button>
-      <button class="btn btn-primary" id="btn-confirm-import" onclick="confirmImportStudent()" style="display:none">📥 Importar</button>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════
-     MODAL EXPORTAR ALUMNO (granular)
-     ═══════════════════════════════════════════════════════════ -->
-<div class="modal-overlay" id="modal-export-student">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">📦 Exportar Datos de Alumno</div>
-      <button class="btn-icon" onclick="closeModal('modal-export-student')">✕</button>
-    </div>
-    <div class="modal-body">
-
-      <div class="card" style="background:var(--dark3);margin-bottom:1rem">
-        <div class="text-small"><strong>Alumno:</strong> <span id="export-student-name">—</span></div>
-      </div>
-
-      <div class="label" style="margin-bottom:0.4rem">¿Qué datos exportar?</div>
-      <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.6rem">
-        <button class="btn btn-secondary btn-sm" onclick="setExportPreset('all')">✅ Todo</button>
-        <button class="btn btn-secondary btn-sm" onclick="setExportPreset('config')">⚙️ Config</button>
-        <button class="btn btn-secondary btn-sm" onclick="setExportPreset('none')">☐ Ninguno</button>
-      </div>
-      <div class="card" style="background:var(--dark3)">
-        <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
-          <input type="checkbox" id="exp-rutina" checked> <span class="text-small">💪 Rutina</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
-          <input type="checkbox" id="exp-nutricion" checked> <span class="text-small">🥗 Plan nutricional</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
-          <input type="checkbox" id="exp-anamnesis" checked> <span class="text-small">📋 Anamnesis</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
-          <input type="checkbox" id="exp-metricas" checked> <span class="text-small">📊 Métricas</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
-          <input type="checkbox" id="exp-historial" checked> <span class="text-small">📅 Historial de sesiones</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
-          <input type="checkbox" id="exp-pagos" checked> <span class="text-small">💰 Pagos</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
-          <input type="checkbox" id="exp-pizarras" checked> <span class="text-small">📌 Pizarras</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
-          <input type="checkbox" id="exp-fotos" checked> <span class="text-small">📸 Fotos de progreso</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:0.7rem;padding:0.35rem 0;cursor:pointer">
-          <input type="checkbox" id="exp-notas" checked> <span class="text-small">📝 Notas de rutina</span>
-        </label>
-      </div>
-
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('modal-export-student')">Cancelar</button>
-      <button class="btn btn-primary" onclick="doExportStudent()">📦 Descargar JSON</button>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════
-     MODAL EDITAR NOMBRE ALUMNO
-     ═══════════════════════════════════════════════════════════ -->
-<div class="modal-overlay" id="modal-edit-student-name">
-  <div class="modal" style="max-width:400px">
-    <div class="modal-header">
-      <div class="modal-title">✏️ Editar Nombre</div>
-      <button class="btn-icon" onclick="closeModal('modal-edit-student-name')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="label">Nombre del alumno</div>
-      <input type="text" id="edit-student-name-input" class="input-field" placeholder="Nombre completo">
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('modal-edit-student-name')">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveStudentName()">✅ Guardar</button>
+      <button class="btn btn-primary" id="btn-confirm-import" onclick="confirmImportStudent()" style="display:none">
+        📥 Importar
+      </button>
     </div>
   </div>
 </div>
@@ -6499,9 +6381,9 @@ function smartMerge(localState, remoteState, currentRole, currentStudentId) {
       // routineUpdated, payments, classPacks, trainerNotes, anamnesis, etc.
       // → ya quedan como vienen del servidor, no hacer nada
 
-      // Caso especial: si el entrenador actualizó la rutina (routineUpdated=true en server),
-      // limpiar customWorkoutContent local — aplica aunque el ID no cambie (ej: rutina exclusiva editada)
-      if (remoteStudent.routineUpdated) {
+      // Caso especial: si el entrenador acaba de cambiar la rutina (routineUpdated=true en server),
+      // limpiar customWorkoutContent local porque la rutina cambió
+      if (remoteStudent.routineUpdated && remoteStudent.assignedWorkoutId !== localStudent.assignedWorkoutId) {
         remoteStudent.customWorkoutContent = null;
       }
     }
@@ -9691,19 +9573,58 @@ function renderStudentWelcomeBanner(s) {
 
 function parseWorkoutExercises(content) {
   if (!content) return [];
-  const exercises = [];
   const lines = content.split('\n');
+
+  // Detectar formato predominante: ¿hay líneas con "-" como ejercicios?
+  const dashLines = lines.filter(l => l.trim().startsWith('-') && l.trim().length > 2).length;
+  const colonLines = lines.filter(l => {
+    const t = l.trim();
+    // Colon format: "Nombre: sets" donde lo que sigue al : NO es un dígito solo (evita "1:10")
+    return t.match(/^[^-\d].+:\s*[^\d]/) && !t.startsWith('//');
+  }).length;
+
+  const useDashFormat = dashLines >= colonLines;
+
+  const exercises = [];
   let currentDay = '';
+
   lines.forEach(line => {
     const trimmed = line.trim();
     if (!trimmed) return;
-    if (trimmed.toUpperCase() === trimmed && trimmed.length > 3 && !trimmed.match(/^[\w\s]+:\s*\d/)) {
+
+    // ── Detectar encabezado de día ──
+    // "DÍA 1", "Día 1", "DIA 1", "Day 1", "BLOQUE A", "SEMANA 1" etc.
+    if (trimmed.match(/^(d[íi]a|day|bloque|semana|parte)\s+\S/i) ||
+        (trimmed.toUpperCase() === trimmed && trimmed.length > 2 && trimmed.length < 30
+         && !trimmed.match(/^\d/) && !trimmed.startsWith('-'))) {
       currentDay = trimmed;
-    } else if (trimmed.match(/^.+:\s*.+/)) {
-      const [name, sets] = trimmed.split(':').map(s => s.trim());
-      exercises.push({ name, sets, day: currentDay });
+      return;
+    }
+
+    if (useDashFormat) {
+      // ── Formato VC Fit: líneas con "-" ──
+      if (trimmed.startsWith('-')) {
+        const name = trimmed.substring(1).trim();
+        if (name.length > 1) exercises.push({ name, sets: '', day: currentDay });
+      }
+      // También acepta formato "Nombre: sets" mezclado
+      else if (trimmed.match(/^[^-\d].+:\s*[^\d]/) && trimmed.length < 80) {
+        const colonIdx = trimmed.indexOf(':');
+        const name = trimmed.substring(0, colonIdx).trim();
+        const sets = trimmed.substring(colonIdx + 1).trim();
+        if (name.length > 2 && sets.length > 0) exercises.push({ name, sets, day: currentDay });
+      }
+    } else {
+      // ── Formato legacy: "Nombre: sets x reps" ──
+      if (trimmed.match(/^[^-\d].+:\s*[^\d]/) && trimmed.length < 100) {
+        const colonIdx = trimmed.indexOf(':');
+        const name = trimmed.substring(0, colonIdx).trim();
+        const sets = trimmed.substring(colonIdx + 1).trim();
+        if (name.length > 2) exercises.push({ name, sets, day: currentDay });
+      }
     }
   });
+
   return exercises;
 }
 
@@ -16633,665 +16554,210 @@ function setPill(groupId, selectId, value, btn) {
 // BACKUP/RESTORE DE ALUMNOS
 // ═══════════════════════════════════════════════════════════════
 
-
-// ── EDITAR NOMBRE DEL ALUMNO ──────────────────────────────────
-
-function editStudentName() {
-  const s = state.students.find(x => x.id === state.currentStudentId);
-  if (!s) return;
-  document.getElementById('edit-student-name-input').value = s.name;
-  openModal('modal-edit-student-name');
-}
-
-function saveStudentName() {
-  const s = state.students.find(x => x.id === state.currentStudentId);
-  if (!s) return;
-  const newName = document.getElementById('edit-student-name-input').value.trim();
-  if (!newName) { alert('El nombre no puede estar vacío'); return; }
-  s.name = newName;
-  saveState();
-  document.getElementById('detail-student-name').textContent = newName;
-  renderStudentsList();
-  closeModal('modal-edit-student-name');
-}
-
-// ── EXPORTAR ALUMNO — granular con checkboxes ─────────────────
-
-function openExportStudentModal() {
-  const s = state.students.find(x => x.id === state.currentStudentId);
-  if (!s) return;
-  document.getElementById('export-student-name').textContent = s.name;
-  setExportPreset('all');
-  openModal('modal-export-student');
-}
-
-function setExportPreset(preset) {
-  const campos = ['rutina','nutricion','anamnesis','metricas','historial','pagos','pizarras','fotos','notas'];
-  const config   = ['rutina','nutricion','pizarras','notas'];
-  const template = ['rutina','nutricion','anamnesis'];
-  campos.forEach(f => {
-    const el = document.getElementById('exp-' + f);
-    if (!el) return;
-    if (preset === 'all')      el.checked = true;
-    else if (preset === 'none') el.checked = false;
-    else if (preset === 'config')   el.checked = config.includes(f);
-    else if (preset === 'template') el.checked = template.includes(f);
-  });
-}
-
-function doExportStudent() {
-  const s = state.students.find(x => x.id === state.currentStudentId);
-  if (!s) return;
-  const g = id => document.getElementById(id)?.checked;
-
-  const exported = {
-    id: s.id, name: s.name, pin: s.pin,
-    email: s.email || '', phone: s.phone || '',
-    photo: s.photo || null,
-    selfData: s.selfData || {},
-    lastCompleted: s.lastCompleted || {},
-    proximasSesiones: s.proximasSesiones || [],
-    classPacks: s.classPacks || [],
-    routineUpdated: false,
-    progressPhotos: g('exp-fotos') ? (s.progressPhotos || {}) : {}
+function exportCurrentStudent() {
+  const studentId = state.currentStudentId;
+  if (!studentId) {
+    alert('No hay alumno seleccionado');
+    return;
+  }
+  
+  const student = state.students.find(s => s.id === studentId);
+  if (!student) {
+    alert('Alumno no encontrado');
+    return;
+  }
+  
+  // Crear objeto de backup con metadatos
+  const backup = {
+    version: '1.0',
+    exportDate: new Date().toISOString(),
+    exportedBy: 'VC Fit Studio',
+    studentData: student
   };
-  if (g('exp-rutina'))    { exported.assignedWorkoutId = s.assignedWorkoutId || null; exported.exclusiveWorkout = s.exclusiveWorkout || null; exported.customWorkoutContent = null; }
-  if (g('exp-nutricion')) exported.nutritionPlan     = s.nutritionPlan || '';
-  if (g('exp-anamnesis')) exported.anamnesis         = s.anamnesis     || {};
-  if (g('exp-metricas'))  exported.metricsLog        = s.metricsLog    || [];
-  if (g('exp-historial')) exported.progressLog       = s.progressLog   || [];
-  if (g('exp-pagos'))     exported.payments          = s.payments      || [];
-  if (g('exp-pizarras'))  { exported.pizarraBienvenida = s.pizarraBienvenida || ''; exported.pizarraMotivacion = s.pizarraMotivacion || ''; }
-  if (g('exp-notas'))     exported.workoutNote       = s.workoutNote   || '';
-
-  const backup = { version: '1.0', exportDate: new Date().toISOString(), exportedBy: 'VC Fit Studio', studentData: exported };
-  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href     = url;
-  const safe = s.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'_');
-  a.download = `${safe}_backup_${new Date().toISOString().split('T')[0]}.json`;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  
+  // Convertir a JSON
+  const json = JSON.stringify(backup, null, 2);
+  
+  // Crear blob y descargar
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  
+  // Nombre del archivo: nombre_apellido_backup_fecha.json
+  const safeName = student.name.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // quitar acentos
+    .replace(/[^a-z0-9]/g, '_');
+  const dateStr = new Date().toISOString().split('T')[0];
+  a.download = `${safeName}_backup_${dateStr}.json`;
+  
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  closeModal('modal-export-student');
-  alert(`✅ Datos de ${s.name} exportados`);
+  
+  alert(`✅ Datos de ${student.name} exportados exitosamente`);
 }
-
-// ── IMPORTAR ALUMNO — implementación unificada sobre modal estático ──
 
 function openImportStudentModal() {
-  const fileInput = document.getElementById('import-file-input');
-  if (fileInput) fileInput.value = '';
-  document.getElementById('import-preview').style.display = 'none';
-  document.getElementById('btn-confirm-import').style.display = 'none';
-  setImportPreset('all');
-  const radioNew = document.querySelector('input[name="import-target"][value="new"]');
-  if (radioNew) radioNew.checked = true;
-  updateImportTarget();
-  document.getElementById('import-new-name').value = '';
-  document.getElementById('import-new-pin').value  = '';
-  window._importStudentData = null;
-  openModal('modal-import-student');
-}
-
-function closeImportStudentModal() {
-  closeModal('modal-import-student');
-  window._importStudentData = null;
-}
-
-function setImportPreset(preset) {
-  const campos = ['rutina','nutricion','anamnesis','metricas','historial','pagos','pizarras','fotos','notas'];
-  const config   = ['rutina','nutricion','pizarras','notas'];
-  const template = ['rutina','nutricion','anamnesis'];
-  campos.forEach(f => {
-    const el = document.getElementById('imp-' + f);
-    if (!el) return;
-    if (preset === 'all')      el.checked = true;
-    else if (preset === 'none') el.checked = false;
-    else if (preset === 'config')   el.checked = config.includes(f);
-    else if (preset === 'template') el.checked = template.includes(f);
-  });
-}
-
-function updateImportTarget() {
-  const isNew = document.querySelector('input[name="import-target"]:checked')?.value === 'new';
-  document.getElementById('import-target-new').style.display      = isNew ? 'block' : 'none';
-  document.getElementById('import-target-existing').style.display = isNew ? 'none'  : 'block';
-  if (!isNew) {
-    // Poblar selector con alumnos actuales
-    const sel = document.getElementById('import-existing-student');
-    sel.innerHTML = state.students.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+  // Crear input file si no existe
+  let input = document.getElementById('import-student-file-input');
+  if (!input) {
+    input = document.createElement('input');
+    input.type = 'file';
+    input.id = 'import-student-file-input';
+    input.accept = '.json';
+    input.style.display = 'none';
+    input.onchange = handleImportStudentFile;
+    document.body.appendChild(input);
   }
+  input.click();
 }
 
-function loadImportFile(event) {
+function handleImportStudentFile(event) {
   const file = event.target.files[0];
   if (!file) return;
+  
   const reader = new FileReader();
   reader.onload = function(e) {
     try {
       const backup = JSON.parse(e.target.result);
-      if (!backup.studentData || !backup.version) { alert('❌ Archivo inválido: no es un backup de VC Fit Studio'); return; }
-      const s = backup.studentData;
-      window._importStudentData = s;
-      document.getElementById('import-prev-name').textContent    = s.name || '—';
-      document.getElementById('import-prev-routine').textContent = s.exclusiveWorkout ? 'Rutina exclusiva' : s.assignedWorkoutId ? 'Rutina asignada' : 'Sin rutina';
-      document.getElementById('import-prev-metrics').textContent = (s.metricsLog  ? s.metricsLog.length  : 0) + ' registros';
-      document.getElementById('import-prev-payments').textContent= (s.payments    ? s.payments.length    : 0) + ' pagos';
-      document.getElementById('import-new-name').value = s.name + ' (copia)';
-      document.getElementById('import-new-pin').value  = '0000';
-      document.getElementById('import-preview').style.display        = 'block';
-      document.getElementById('btn-confirm-import').style.display    = 'block';
-    } catch (err) { alert('❌ Error al leer el archivo: ' + err.message); }
+      
+      // Validar estructura
+      if (!backup.studentData || !backup.version) {
+        alert('❌ Archivo inválido: no es un backup de VC Fit Studio');
+        return;
+      }
+      
+      // Mostrar modal de confirmación
+      showImportConfirmModal(backup.studentData);
+      
+    } catch (error) {
+      alert('❌ Error al leer el archivo: ' + error.message);
+    }
   };
   reader.readAsText(file);
 }
 
+function showImportConfirmModal(importedStudent) {
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="modal" style="max-width:500px">
+      <div class="modal-header">
+        <div class="modal-title">📥 Importar alumno</div>
+        <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="card" style="background:var(--dark3);margin-bottom:1rem">
+          <div class="bold" style="margin-bottom:0.5rem">Datos a importar:</div>
+          <div style="font-size:0.85rem;color:var(--muted2)">
+            <div>👤 <strong>${importedStudent.name}</strong></div>
+            <div>📧 ${importedStudent.email || 'Sin email'}</div>
+            <div>📱 ${importedStudent.phone || 'Sin teléfono'}</div>
+          </div>
+        </div>
+        
+        <div style="margin-bottom:1rem">
+          <label class="input-label">Modo de importación</label>
+          <select id="import-mode-select" class="input-field">
+            <option value="full">📦 TODO — Rutina, plan, métricas, historial, pagos, pizarras</option>
+            <option value="config">⚙️ CONFIGURACIÓN — Solo rutina, plan y pizarras (sin historial)</option>
+            <option value="template">📋 PLANTILLA — Solo anamnesis, rutina y plan (sin datos personales)</option>
+          </select>
+        </div>
+        
+        <div style="margin-bottom:1rem">
+          <label class="input-label">Nombre del nuevo alumno</label>
+          <input type="text" id="import-new-name" class="input-field" value="${importedStudent.name} (copia)">
+        </div>
+        
+        <div style="margin-bottom:1rem">
+          <label class="input-label">PIN de acceso</label>
+          <input type="text" id="import-new-pin" class="input-field" value="0000" maxlength="4">
+          <div class="text-small text-gray" style="margin-top:0.3rem">El alumno podrá cambiarlo desde su perfil</div>
+        </div>
+        
+        <div style="display:flex;gap:0.8rem">
+          <button class="btn btn-secondary btn-full" onclick="this.closest('.modal-overlay').remove()">Cancelar</button>
+          <button class="btn btn-primary btn-full" onclick="confirmImportStudent()">✅ Importar</button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  
+  // Guardar datos temporalmente
+  window._importStudentData = importedStudent;
+}
+
 function confirmImportStudent() {
-  const src = window._importStudentData;
-  if (!src) { alert('Seleccioná un archivo de backup primero'); return; }
-
-  const g      = id => document.getElementById(id)?.checked;
-  const isNew  = document.querySelector('input[name="import-target"]:checked')?.value === 'new';
-
-  // Construir objeto de campos a copiar según checkboxes
-  const fields = {};
-  if (g('imp-rutina'))    { fields.assignedWorkoutId = src.assignedWorkoutId || null; fields.exclusiveWorkout = src.exclusiveWorkout || null; fields.customWorkoutContent = null; fields.routineUpdated = true; }
-  if (g('imp-nutricion')) fields.nutritionPlan     = src.nutritionPlan  || '';
-  if (g('imp-anamnesis')) fields.anamnesis         = src.anamnesis      || {};
-  if (g('imp-metricas'))  fields.metricsLog        = src.metricsLog     || [];
-  if (g('imp-historial')) fields.progressLog       = src.progressLog    || [];
-  if (g('imp-pagos'))     { fields.payments = src.payments || []; fields.classPacks = src.classPacks || []; }
-  if (g('imp-pizarras'))  { fields.pizarraBienvenida = src.pizarraBienvenida || ''; fields.pizarraMotivacion = src.pizarraMotivacion || ''; }
-  if (g('imp-fotos'))     fields.progressPhotos    = src.progressPhotos || {};
-  if (g('imp-notas'))     fields.workoutNote       = src.workoutNote    || '';
-
-  if (isNew) {
-    // ── ALUMNO NUEVO ──
-    const newName = document.getElementById('import-new-name').value.trim() || src.name;
-    const newPin  = document.getElementById('import-new-pin').value.trim()  || '0000';
-    if (!newName) { alert('Ingresá un nombre para el alumno'); return; }
-    if (newPin.length !== 4) { alert('El PIN debe tener exactamente 4 dígitos'); return; }
-
-    const newStudent = {
-      id: 'imp_' + Date.now() + '_' + Math.random().toString(36).substr(2,9),
-      name: newName, pin: newPin,
-      email: src.email || '', phone: src.phone || '',
-      photo: src.photo || null,
-      selfData: src.selfData || { weight:'', note:'' },
-      lastCompleted: src.lastCompleted || { date:'', workoutName:'' },
-      proximasSesiones: [], classPacks: [],
-      payments: [], metricsLog: [], progressLog: [], progressPhotos: {},
-      anamnesis: {}, nutritionPlan: '', workoutNote: '',
-      assignedWorkoutId: null, exclusiveWorkout: null, customWorkoutContent: null,
-      pizarraBienvenida: '', pizarraMotivacion: '', routineUpdated: false,
-      ...fields
-    };
-    state.students.push(newStudent);
-    saveState();
-    closeImportStudentModal();
-    alert(`✅ Alumno "${newName}" creado exitosamente`);
-    renderStudentsList();
-
-  } else {
-    // ── ALUMNO EXISTENTE ──
-    const targetId = document.getElementById('import-existing-student').value;
-    const target   = state.students.find(x => x.id === targetId);
-    if (!target) { alert('Alumno no encontrado'); return; }
-    Object.assign(target, fields);
-    saveState();
-    closeImportStudentModal();
-    alert(`✅ Datos actualizados en "${target.name}"`);
-    renderStudentsList();
-    // Si estamos viendo ese alumno, refrescar
-    if (state.currentStudentId === targetId) openStudentDetail(targetId);
+  const importedStudent = window._importStudentData;
+  if (!importedStudent) {
+    alert('Error: no hay datos para importar');
+    return;
   }
+  
+  const mode = document.getElementById('import-mode-select').value;
+  const newName = document.getElementById('import-new-name').value.trim();
+  const newPin = document.getElementById('import-new-pin').value.trim();
+  
+  if (!newName) {
+    alert('Ingresá un nombre para el alumno');
+    return;
+  }
+  
+  if (!newPin || newPin.length !== 4) {
+    alert('El PIN debe tener 4 dígitos');
+    return;
+  }
+  
+  // Crear nuevo alumno con ID único
+  const newStudent = {
+    id: 'imp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+    name: newName,
+    pin: newPin,
+    email: mode === 'template' ? '' : importedStudent.email,
+    phone: mode === 'template' ? '' : importedStudent.phone,
+    photo: mode === 'template' ? null : importedStudent.photo,
+    classPacks: [],
+    payments: mode === 'full' ? (importedStudent.payments || []) : [],
+    metricsLog: mode === 'full' ? (importedStudent.metricsLog || []) : [],
+    progressLog: mode === 'full' ? (importedStudent.progressLog || []) : [],
+    progressPhotos: mode === 'full' ? (importedStudent.progressPhotos || {}) : {},
+    anamnesis: importedStudent.anamnesis || {},
+    assignedWorkoutId: importedStudent.assignedWorkoutId || null,
+    exclusiveWorkout: importedStudent.exclusiveWorkout || null,
+    customWorkoutContent: importedStudent.customWorkoutContent || null,
+    nutritionPlan: importedStudent.nutritionPlan || '',
+    workoutNote: importedStudent.workoutNote || '',
+    pizarraBienvenida: (mode === 'full' || mode === 'config') ? (importedStudent.pizarraBienvenida || '') : '',
+    pizarraMotivacion: (mode === 'full' || mode === 'config') ? (importedStudent.pizarraMotivacion || '') : '',
+    selfData: mode === 'template' ? { weight: '', note: '' } : (importedStudent.selfData || { weight: '', note: '' }),
+    lastCompleted: mode === 'full' ? (importedStudent.lastCompleted || { date: '', workoutName: '' }) : { date: '', workoutName: '' },
+    routineUpdated: false,
+    proximasSesiones: []
+  };
+  
+  // Agregar a la lista de alumnos
+  state.students.push(newStudent);
+  saveState();
+  
+  // Cerrar modal
+  document.querySelector('.modal-overlay').remove();
+  delete window._importStudentData;
+  
+  // Mostrar confirmación
+  alert(`✅ Alumno "${newName}" importado exitosamente\n\nModo: ${mode === 'full' ? 'TODO' : mode === 'config' ? 'CONFIGURACIÓN' : 'PLANTILLA'}`);
+  
+  // Actualizar lista
+  renderStudents();
 }
 
 // ═══════════════════════════════════════════════════════════════
 // FIN GOD WORKOUTS MODULE
 // ═══════════════════════════════════════════════════════════════
-</script>
-
-<!-- ═══════════════════════════════════════════════════════════
-     MUSIC PLAYER FLOTANTE — VC FIT STUDIO
-     ═══════════════════════════════════════════════════════════ -->
-<style>
-#vc-music-player {
-  position: fixed;
-  bottom: 1.2rem;
-  left: 1.2rem;
-  z-index: 9999;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.5rem;
-  font-family: var(--font-body);
-}
-
-#vc-music-fab {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: var(--orange);
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.3rem;
-  box-shadow: 0 4px 16px rgba(255,107,0,0.45);
-  transition: transform 0.15s, box-shadow 0.15s;
-  flex-shrink: 0;
-}
-#vc-music-fab:hover { transform: scale(1.08); box-shadow: 0 6px 20px rgba(255,107,0,0.6); }
-#vc-music-fab.playing { animation: vc-pulse 2s infinite; }
-@keyframes vc-pulse {
-  0%,100% { box-shadow: 0 4px 16px rgba(255,107,0,0.45); }
-  50%      { box-shadow: 0 4px 28px rgba(255,107,0,0.75); }
-}
-
-#vc-music-panel {
-  background: var(--dark2);
-  border: 1px solid var(--orange-border);
-  border-radius: 14px;
-  padding: 0.85rem 1rem;
-  width: 280px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-  display: none;
-  flex-direction: column;
-  gap: 0.7rem;
-}
-#vc-music-panel.open { display: flex; }
-
-.vc-mp-divider {
-  height: 1px;
-  background: var(--orange-border);
-  margin: 0.1rem 0;
-}
-.vc-mp-list-header {
-  font-family: var(--font-label);
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: var(--gray-light);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-#vc-mp-playlist {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  max-height: 200px;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--orange-border) transparent;
-}
-#vc-mp-playlist::-webkit-scrollbar { width: 3px; }
-#vc-mp-playlist::-webkit-scrollbar-track { background: transparent; }
-#vc-mp-playlist::-webkit-scrollbar-thumb { background: var(--orange-border); border-radius: 2px; }
-.vc-mp-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.38rem 0.5rem;
-  border-radius: 7px;
-  cursor: pointer;
-  transition: background 0.12s;
-  border: 1px solid transparent;
-}
-.vc-mp-item:hover { background: var(--dark3); border-color: var(--orange-border); }
-.vc-mp-item.active { background: var(--orange-dim); border-color: var(--orange-border); }
-.vc-mp-item-num {
-  font-size: 0.65rem;
-  color: var(--gray-light);
-  min-width: 16px;
-  text-align: right;
-  font-family: var(--font-mono);
-}
-.vc-mp-item.active .vc-mp-item-num { display: none; }
-.vc-mp-item-eq {
-  font-size: 0.75rem;
-  color: var(--orange);
-  min-width: 16px;
-  text-align: center;
-  display: none;
-}
-.vc-mp-item.active .vc-mp-item-eq { display: block; }
-.vc-mp-item-info { flex: 1; overflow: hidden; }
-.vc-mp-item-title {
-  font-size: 0.75rem;
-  color: var(--white);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-weight: 500;
-}
-.vc-mp-item.active .vc-mp-item-title { color: var(--orange); font-weight: 700; }
-.vc-mp-item-artist { font-size: 0.65rem; color: var(--gray-light); }
-
-.vc-mp-title {
-  font-family: var(--font-label);
-  font-weight: 700;
-  font-size: 0.78rem;
-  color: var(--orange);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-.vc-mp-track {
-  font-size: 0.83rem;
-  color: var(--white);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.3;
-}
-.vc-mp-track span {
-  font-size: 0.72rem;
-  color: var(--white-dim);
-  display: block;
-  margin-top: 0.1rem;
-}
-.vc-mp-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.vc-mp-btn {
-  background: var(--dark3);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 8px;
-  color: var(--white);
-  font-size: 1rem;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background 0.15s;
-  flex-shrink: 0;
-}
-.vc-mp-btn:hover { background: var(--orange-dim); border-color: var(--orange-border); }
-.vc-mp-btn.active { background: var(--orange); border-color: var(--orange); }
-.vc-mp-btn.play-btn {
-  width: 40px; height: 40px;
-  background: var(--orange);
-  border-color: var(--orange);
-  font-size: 1.1rem;
-}
-.vc-mp-btn.play-btn:hover { background: var(--orange-light); }
-
-.vc-mp-volume {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.vc-mp-volume input[type=range] {
-  flex: 1;
-  accent-color: var(--orange);
-  height: 4px;
-  cursor: pointer;
-}
-.vc-mp-volume span { font-size: 0.9rem; }
-
-.vc-mp-progress {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.vc-mp-progress input[type=range] {
-  flex: 1;
-  accent-color: var(--orange);
-  height: 3px;
-  cursor: pointer;
-}
-.vc-mp-time {
-  font-size: 0.7rem;
-  color: var(--white-dim);
-  white-space: nowrap;
-  min-width: 65px;
-  text-align: right;
-}
-</style>
-
-<div id="vc-music-player">
-  <div id="vc-music-panel">
-    <div class="vc-mp-title">🎵 VC Fit — Music</div>
-    <div class="vc-mp-track" id="vc-mp-track-name">Cargando...</div>
-    <div class="vc-mp-progress">
-      <input type="range" id="vc-mp-seek" min="0" max="100" value="0" oninput="vcMpSeek(this.value)">
-      <div class="vc-mp-time"><span id="vc-mp-cur">0:00</span> / <span id="vc-mp-dur">0:00</span></div>
-    </div>
-    <div class="vc-mp-controls">
-      <button class="vc-mp-btn" onclick="vcMpPrev()" title="Anterior">⏮</button>
-      <button class="vc-mp-btn play-btn" id="vc-mp-play-btn" onclick="vcMpToggle()" title="Play/Pause">▶</button>
-      <button class="vc-mp-btn" onclick="vcMpNext()" title="Siguiente">⏭</button>
-      <button class="vc-mp-btn" id="vc-mp-shuffle-btn" onclick="vcMpToggleShuffle()" title="Shuffle">🔀</button>
-    </div>
-    <div class="vc-mp-volume">
-      <span>🔈</span>
-      <input type="range" id="vc-mp-vol" min="0" max="100" value="60" oninput="vcMpSetVolume(this.value)">
-      <span>🔊</span>
-    </div>
-    <div class="vc-mp-divider"></div>
-    <div class="vc-mp-list-header">&#128203; Playlist &mdash; <span id="vc-mp-count"></span> temas</div>
-    <div id="vc-mp-playlist"></div>
-  </div>
-  <button id="vc-music-fab" onclick="vcMpTogglePanel()" title="Música">🎵</button>
-</div>
-
-<audio id="vc-mp-audio" preload="metadata"></audio>
-
-<script>
-// ── VC FIT MUSIC PLAYER ─────────────────────────────────────────
-// Para agregar tus canciones: subí los MP3 a la carpeta /music/
-// en el repositorio de GitHub y agregá el nombre del archivo
-// en el array vcMpPlaylist abajo.
-
-const vcMpPlaylist = [
-  { file: 'music/Fuego en la sangre 1.mp3',                       title: 'Fuego en la Sangre 1',                    artist: 'VC Fit' },
-  { file: 'music/Fuego en la sangre 2.mp3',                       title: 'Fuego en la Sangre 2',                    artist: 'VC Fit' },
-  { file: 'music/Fuego en la sangre 3.mp3',                       title: 'Fuego en la Sangre 3',                    artist: 'VC Fit' },
-  { file: 'music/Fuego en la sangre 4.mp3',                       title: 'Fuego en la Sangre 4',                    artist: 'VC Fit' },
-  { file: 'music/Fuego En Sangre (V 5).mp3',                      title: 'Fuego en la Sangre V5',                   artist: 'VC Fit' },
-  { file: 'music/Fuego En Sangre (V 6).mp3',                      title: 'Fuego en la Sangre V6',                   artist: 'VC Fit' },
-  { file: 'music/Fuego en la sangre (V epica 1).mp3',             title: 'Fuego en la Sangre — Épica 1',            artist: 'VC Fit' },
-  { file: 'music/Fuego en la sangre (V epica 2).mp3',             title: 'Fuego en la Sangre — Épica 2',            artist: 'VC Fit' },
-  { file: 'music/Fuego en la sangre (V Epico 3).mp3',             title: 'Fuego en la Sangre — Épico 3',            artist: 'VC Fit' },
-  { file: 'music/Fuego en la sangre (V Epico 4).mp3',             title: 'Fuego en la Sangre — Épico 4',            artist: 'VC Fit' },
-  { file: 'music/mas alla del limite.mp3',                         title: 'Más Allá del Límite',                     artist: 'VC Fit' },
-  { file: 'music/hierro y sangre 4.mp3',                          title: 'Hierro y Sangre',                         artist: 'VC Fit' },
-  { file: 'music/Acero y dragon.mp3',                             title: 'Acero y Dragón',                          artist: 'VC Fit' },
-  { file: 'music/Hacha de Fuego.mp3',                             title: 'Hacha de Fuego',                          artist: 'VC Fit' },
-  { file: 'music/Hierro y gran dragon.mp3',                       title: 'Hierro y Gran Dragón',                    artist: 'VC Fit' },
-  { file: 'music/Lanza en Llamas.mp3',                            title: 'Lanza en Llamas',                         artist: 'VC Fit' },
-  { file: 'music/Estatua de Hierro y Acero del Heroe.mp3',        title: 'Estatua de Hierro y Acero del Héroe',     artist: 'VC Fit' },
-  { file: 'music/Hierro Medieval.mp3',                            title: 'Hierro Medieval',                         artist: 'VC Fit' },
-  { file: 'music/Hierro y estandarte.mp3',                        title: 'Hierro y Estandarte',                     artist: 'VC Fit' },
-  { file: 'music/la marcha del guerrero 1.mp3',                   title: 'La Marcha del Guerrero',                  artist: 'VC Fit' },
-  { file: 'music/rey de mi mismo.mp3',                            title: 'Rey de Mí Mismo',                         artist: 'VC Fit' },
-  { file: 'music/Eternia from Masters of the Universe.mp3',       title: 'Eternia — Masters of the Universe',        artist: 'VC Fit' },
-];
-
-// ── Estado interno ───────────────────────────────────────────────
-const vcMp = {
-  idx:     parseInt(localStorage.getItem('vcmp_idx')  || '0'),
-  shuffle: localStorage.getItem('vcmp_shuffle') === '1',
-  vol:     parseInt(localStorage.getItem('vcmp_vol')  || '60'),
-  open:    false,
-  order:   [],   // orden de reproducción (normal o shuffled)
-  seeking: false
-};
-
-const vcMpAudio   = document.getElementById('vc-mp-audio');
-const vcMpPanel   = document.getElementById('vc-music-panel');
-const vcMpFab     = document.getElementById('vc-music-fab');
-const vcMpPlayBtn = document.getElementById('vc-mp-play-btn');
-
-// ── Inicialización ───────────────────────────────────────────────
-function vcMpInit() {
-  if (!vcMpPlaylist.length) return;
-
-  vcMpAudio.volume = vcMp.vol / 100;
-  document.getElementById('vc-mp-vol').value = vcMp.vol;
-
-  vcMpBuildOrder();
-  vcMpRenderList();
-  vcMpLoadTrack(vcMp.idx, false);
-
-  vcMpAudio.addEventListener('ended',       vcMpNext);
-  vcMpAudio.addEventListener('timeupdate',  vcMpUpdateProgress);
-  vcMpAudio.addEventListener('loadedmetadata', vcMpUpdateDuration);
-
-  document.getElementById('vc-mp-shuffle-btn').classList.toggle('active', vcMp.shuffle);
-  var countEl = document.getElementById('vc-mp-count');
-  if (countEl) countEl.textContent = vcMpPlaylist.length;
-}
-
-function vcMpRenderList() {
-  var container = document.getElementById('vc-mp-playlist');
-  if (!container) return;
-  var html = '';
-  for (var i = 0; i < vcMpPlaylist.length; i++) {
-    var t = vcMpPlaylist[i];
-    var activeClass = (i === vcMp.idx) ? ' active' : '';
-    html += '<div class="vc-mp-item' + activeClass + '" onclick="vcMpPlayAt(' + i + ')">' +
-      '<span class="vc-mp-item-num">' + (i + 1) + '</span>' +
-      '<span class="vc-mp-item-eq">&#9654;</span>' +
-      '<div class="vc-mp-item-info">' +
-        '<div class="vc-mp-item-title">' + t.title + '</div>' +
-        '<div class="vc-mp-item-artist">' + (t.artist || '') + '</div>' +
-      '</div>' +
-    '</div>';
-  }
-  container.innerHTML = html;
-}
-
-function vcMpUpdateActiveItem() {
-  var items = document.querySelectorAll('.vc-mp-item');
-  for (var i = 0; i < items.length; i++) {
-    items[i].classList.toggle('active', i === vcMp.idx);
-  }
-  var activeEl = document.querySelector('.vc-mp-item.active');
-  if (activeEl) activeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-}
-
-function vcMpPlayAt(idx) {
-  vcMpLoadTrack(idx, true);
-}
-
-function vcMpBuildOrder() {
-  vcMp.order = [...Array(vcMpPlaylist.length).keys()];
-  if (vcMp.shuffle) {
-    for (let i = vcMp.order.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [vcMp.order[i], vcMp.order[j]] = [vcMp.order[j], vcMp.order[i]];
-    }
-  }
-}
-
-function vcMpLoadTrack(idx, autoplay) {
-  if (!vcMpPlaylist.length) return;
-  const safeIdx = ((idx % vcMpPlaylist.length) + vcMpPlaylist.length) % vcMpPlaylist.length;
-  vcMp.idx = safeIdx;
-  localStorage.setItem('vcmp_idx', safeIdx);
-
-  const track = vcMpPlaylist[vcMp.order[safeIdx]];
-  vcMpAudio.src = track.file;
-  vcMpAudio.load();
-
-  const nameEl = document.getElementById('vc-mp-track-name');
-  nameEl.innerHTML = `${track.title}<span>${track.artist || ''}</span>`;
-
-  document.getElementById('vc-mp-seek').value = 0;
-  document.getElementById('vc-mp-cur').textContent  = '0:00';
-  document.getElementById('vc-mp-dur').textContent  = '0:00';
-
-  if (autoplay) {
-    vcMpAudio.play().then(() => {
-      vcMpPlayBtn.textContent = '⏸';
-      vcMpFab.classList.add('playing');
-    }).catch(() => {});
-  }
-  vcMpUpdateActiveItem();
-}
-
-// ── Controles ────────────────────────────────────────────────────
-function vcMpToggle() {
-  if (!vcMpPlaylist.length) {
-    alert('🎵 No hay canciones cargadas.\n\nSubí tus MP3 a la carpeta /music/ del repositorio y agregarlos en el array vcMpPlaylist del código.');
-    return;
-  }
-  if (vcMpAudio.paused) {
-    vcMpAudio.play().then(() => {
-      vcMpPlayBtn.textContent = '⏸';
-      vcMpFab.classList.add('playing');
-    }).catch(() => {});
-  } else {
-    vcMpAudio.pause();
-    vcMpPlayBtn.textContent = '▶';
-    vcMpFab.classList.remove('playing');
-  }
-}
-
-function vcMpNext() {
-  const next = (vcMp.idx + 1) % vcMpPlaylist.length;
-  vcMpLoadTrack(next, true);
-}
-
-function vcMpPrev() {
-  if (vcMpAudio.currentTime > 3) {
-    vcMpAudio.currentTime = 0; return;
-  }
-  const prev = (vcMp.idx - 1 + vcMpPlaylist.length) % vcMpPlaylist.length;
-  vcMpLoadTrack(prev, true);
-}
-
-function vcMpToggleShuffle() {
-  vcMp.shuffle = !vcMp.shuffle;
-  localStorage.setItem('vcmp_shuffle', vcMp.shuffle ? '1' : '0');
-  document.getElementById('vc-mp-shuffle-btn').classList.toggle('active', vcMp.shuffle);
-  vcMpBuildOrder();
-}
-
-function vcMpSetVolume(val) {
-  vcMp.vol = parseInt(val);
-  vcMpAudio.volume = vcMp.vol / 100;
-  localStorage.setItem('vcmp_vol', vcMp.vol);
-}
-
-function vcMpSeek(val) {
-  if (vcMpAudio.duration) {
-    vcMpAudio.currentTime = (val / 100) * vcMpAudio.duration;
-  }
-}
-
-function vcMpTogglePanel() {
-  vcMp.open = !vcMp.open;
-  vcMpPanel.classList.toggle('open', vcMp.open);
-}
-
-// ── Progress bar ─────────────────────────────────────────────────
-function vcMpFmtTime(sec) {
-  if (isNaN(sec)) return '0:00';
-  const m = Math.floor(sec / 60);
-  const s = Math.floor(sec % 60);
-  return `${m}:${s.toString().padStart(2,'0')}`;
-}
-
-function vcMpUpdateProgress() {
-  if (!vcMpAudio.duration) return;
-  const pct = (vcMpAudio.currentTime / vcMpAudio.duration) * 100;
-  document.getElementById('vc-mp-seek').value = pct;
-  document.getElementById('vc-mp-cur').textContent = vcMpFmtTime(vcMpAudio.currentTime);
-}
-
-function vcMpUpdateDuration() {
-  document.getElementById('vc-mp-dur').textContent = vcMpFmtTime(vcMpAudio.duration);
-}
-
-// ── Arrancar ─────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', vcMpInit);
 </script>
 </body>
 </html>
