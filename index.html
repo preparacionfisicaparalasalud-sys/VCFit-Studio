@@ -9775,36 +9775,13 @@ function renderTodayWorkout(s) {
     </div>
   </div>`;
 
-  if (exercises.length === 0) {
-    html += `<div class="card"><pre style="white-space:pre-wrap;font-size:0.88rem;line-height:1.7;color:var(--white-dim)">${workoutContent}</pre></div>`;
-  } else {
-    Object.keys(days).forEach(day => {
-      if (day) html += `<div class="card-title mt-2" style="padding-left:0.2rem;margin-bottom:0.5rem">${day}</div>`;
-      days[day].forEach(ex => {
-        const check = state.exerciseChecks[checksKey][ex.idx] || {};
-        // Observación del entrenador para este ejercicio
-        const trainerObs = (w.exerciseNotes && w.exerciseNotes[ex.idx]) || '';
-        html += `
-          <div class="exercise-item ${check.done ? 'done' : ''}" id="ex-item-${checksKey}-${ex.idx}">
-            <button class="exercise-check ${check.done ? 'checked' : ''}" onclick="toggleExercise('${checksKey}','${ex.idx}')">
-              ${check.done ? '✓' : ''}
-            </button>
-            <div class="exercise-details">
-              <div class="exercise-name">${ex.name}</div>
-              <div class="exercise-sets">${ex.sets}</div>
-              ${trainerObs ? `<div style="font-size:0.78rem;color:var(--orange);margin-top:0.2rem;font-style:italic">💬 ${trainerObs}</div>` : ''}
-              <input type="text" class="exercise-note-input" placeholder="Mi nota: peso usado, sensaciones..."
-                value="${check.note || ''}"
-                onchange="saveExerciseNote('${checksKey}','${ex.idx}',this.value)">
-            </div>
-          </div>`;
-      });
-    });
-  }
+  // VISTA TEXTO PLANO — siempre muestra la rutina completa como texto editable
+  html += `<div class="card">
+    <pre style="white-space:pre-wrap;font-size:0.92rem;line-height:1.8;color:var(--white);font-family:var(--font-body);margin:0">${workoutContent}</pre>
+  </div>`;
 
   container.innerHTML = html;
-  completeBtnWrapper.style.display = 'block';
-  updateCompleteButton(checksKey, exercises.length);
+  completeBtnWrapper.style.display = 'none';
 }
 
 function toggleStudentWorkoutEditor(studentId, wId) {
