@@ -236,8 +236,8 @@ textarea.inp{resize:none;}
 .prog-fill.wl{background:var(--wl);}
 
 /* ══ TIMER OVERLAY ══ */
-.timer-overlay{position:fixed;bottom:86px;left:50%;transform:translateX(-50%);z-index:300;background:var(--s1);border:2px solid var(--or);border-radius:18px;padding:12px 20px;display:flex;align-items:center;gap:14px;box-shadow:0 8px 32px rgba(0,0,0,.6);transition:all .28s;min-width:210px;}
-.timer-overlay.hidden{opacity:0;pointer-events:none;transform:translateX(-50%) translateY(18px);}
+.timer-overlay{position:fixed;bottom:86px;right:10px;z-index:300;background:var(--s1);border:2px solid var(--or);border-radius:18px;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,.6);transition:all .28s;max-width:168px;}
+.timer-overlay.hidden{opacity:0;pointer-events:none;transform:translateY(18px);}
 .timer-overlay.finishing{border-color:var(--ok);}
 .timer-ring{position:relative;width:50px;height:50px;flex-shrink:0;}
 .timer-svg{transform:rotate(-90deg);}
@@ -275,6 +275,10 @@ textarea.inp{resize:none;}
 .btb.comp{background:var(--comp);color:var(--comp-c);border:1px solid rgba(155,89,182,.3);}
 .btb.transition{background:var(--tran);color:var(--tran-c);border:1px solid rgba(26,188,156,.3);}
 
+/* ══ DAY CHIPS (S12: dias especificos de entrenamiento) ══ */
+.daychip{padding:9px 12px;border:2px solid var(--border);border-radius:9px;text-align:center;cursor:pointer;transition:all .14s;background:var(--s2);font-family:var(--fr);font-size:.76rem;font-weight:700;letter-spacing:.04em;color:var(--text2);user-select:none;}
+.daychip:active{transform:scale(.93);}
+.daychip.sel{border-color:var(--or);background:var(--or-dim);color:var(--or);}
 /* ══ SPORT SELECTOR ══ */
 .sport-sel{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;}
 .sport-opt{padding:12px 6px;border:2px solid var(--border);border-radius:9px;text-align:center;cursor:pointer;transition:all .14s;background:var(--s2);}
@@ -831,8 +835,30 @@ function loadLocal(){
 ══════════════════════════════════════════════════ */
 function goView(v){
   if(v==='auto-presc'){S.ui.wizStep=1;S.ui.wizModel='classic';S.ui.wizDateMode='objetivo';}
+  const wasSess=S.ui.view==='sess-exec';
   S.ui.view=v;window.scrollTo(0,0);render();
+  if(v==='sess-exec'&&!wasSess)requestWakeLock();
+  else if(wasSess&&v!=='sess-exec')releaseWakeLock();
 }
+// S12: pantalla encendida durante la sesion. Soporte parcial en iOS Safari (16.4+) y
+// distinto en PWA instalada — si el navegador no lo soporta, no hace nada (no rompe).
+let _wakeLock=null;
+async function requestWakeLock(){
+  try{
+    if('wakeLock' in navigator){
+      _wakeLock=await navigator.wakeLock.request('screen');
+      _wakeLock.addEventListener('release',()=>{_wakeLock=null;});
+    }
+  }catch(e){console.warn('Wake Lock no disponible:',e.message);}
+}
+async function releaseWakeLock(){
+  try{ if(_wakeLock){await _wakeLock.release();_wakeLock=null;} }catch(e){}
+}
+document.addEventListener('visibilitychange', async ()=>{
+  if(document.visibilityState==='visible' && S.ui.view==='sess-exec' && !_wakeLock){
+    await requestWakeLock();
+  }
+});
 function loginCoach(){S.role='coach';goView('coach-home');}
 function logout(){S.role=null;S.athleteId=null;S.ui.pinInput='';stopTimer();goView('login');}
 
@@ -1089,6 +1115,7 @@ async function delAth(id){
 ══════════════════════════════════════════════════ */
 function vAthProfile(){
   const ath=getAth();if(!ath){goView('ath-detail');return'';}
+  _epTrainDays=(Array.isArray(ath.trainDays)&&ath.trainDays.length)?ath.trainDays.slice().sort((a,b)=>a-b):getTrainDayIdxs(ath);
   return`<div class="topbar">
     <button class="back-btn" onclick="goView('ath-detail')">←</button>
     <div class="topbar-title">PERFIL — ${ath.name.toUpperCase()}</div>
@@ -1128,10 +1155,13 @@ function vAthProfile(){
       <textarea class="inp" id="ep-weak" rows="2" placeholder="ej: Salida del suelo DL, recepción baja arrancada...">${ath.weaknesses||''}</textarea></div>
     <div class="inp-group"><label class="inp-label cap">Lesiones / Restricciones</label>
       <textarea class="inp" id="ep-inj" rows="2" placeholder="ej: Sin flexión lumbar cargada, dolor rodilla derecha...">${ath.injuries||''}</textarea></div>
-    <div class="inp-group"><label class="inp-label cap">Días disponibles / semana</label>
-      <select class="inp" id="ep-days">
-        ${[2,3,4,5,6].map(d=>`<option value="${d}" ${(ath.days||3)==d?'selected':''}>${d} días</option>`).join('')}
-      </select></div>
+    <div class="inp-group"><label class="inp-label cap">Días de entrenamiento</label>
+      <div class="row" style="gap:6px;flex-wrap:wrap" id="ep-traindays">
+        ${['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'].map((lbl,i)=>
+          `<div class="daychip${_epTrainDays.includes(i)?' sel':''}" data-idx="${i}" onclick="toggleEpDay(${i})">${lbl}</div>`
+        ).join('')}
+      </div>
+      <div class="muted small mt6" id="ep-days-count">${_epTrainDays.length} día${_epTrainDays.length===1?'':'s'}/semana seleccionados</div></div>
     <div class="inp-group"><label class="inp-label cap">Fecha objetivo / competencia</label>
       <input class="inp" id="ep-goal-date" type="date" value="${ath.goalDate||''}"></div>
     <div class="inp-group"><label class="inp-label cap">Sistema de prescripción</label>
@@ -1144,6 +1174,19 @@ function vAthProfile(){
 }
 
 let _epSport='both';
+let _epTrainDays=[0,2,4];
+function toggleEpDay(i){
+  const pos=_epTrainDays.indexOf(i);
+  if(pos>=0){ if(_epTrainDays.length>1)_epTrainDays.splice(pos,1); } // no se permite dejar 0 dias
+  else _epTrainDays.push(i);
+  _epTrainDays.sort((a,b)=>a-b);
+  document.querySelectorAll('#ep-traindays .daychip').forEach(el=>{
+    const idx=parseInt(el.dataset.idx);
+    el.classList.toggle('sel', _epTrainDays.includes(idx));
+  });
+  const cnt=document.getElementById('ep-days-count');
+  if(cnt)cnt.textContent=_epTrainDays.length+' día'+(_epTrainDays.length===1?'':'s')+'/semana seleccionados';
+}
 function epSelSport(s){
   _epSport=s;
   document.querySelectorAll('#ep-sport-sel .sport-opt').forEach(el=>{
@@ -1163,7 +1206,8 @@ async function saveAthProfile(){
   ath.goal=document.getElementById('ep-goal').value;
   ath.weaknesses=document.getElementById('ep-weak').value.trim();
   ath.injuries=document.getElementById('ep-inj').value.trim();
-  ath.days=parseInt(document.getElementById('ep-days').value)||3;
+  ath.trainDays=_epTrainDays.slice().sort((a,b)=>a-b);
+  ath.days=ath.trainDays.length;
   ath.goalDate=document.getElementById('ep-goal-date').value;
   ath.system=document.getElementById('ep-sys').value;
   await saveState();toast('Perfil guardado ✓','success');goView('ath-detail');
@@ -1535,6 +1579,8 @@ function vSessExec(){
   const plan=getWeekPlan(S.athleteId,S.ui.viewWeekId);
   const dp=plan.find(p=>p.sessionId===S.ui.curSessId);
   const saved=dp?.status==='done';
+  const dupKey=sess.exercises.find(e=>e.isMain&&e.dupType)?.dupType;
+  const dupInfo=dupKey?DUP_TYPES[dupKey]:null;
 
   const exCards=sess.exercises.map((ex,xi)=>{
     const isOpen=S.ui.expandedEx===xi;
@@ -1601,6 +1647,7 @@ function vSessExec(){
   </div>
   <div class="screen pb">
     ${S.role==='athlete'?`<div class="row mb12" style="align-items:center"><div class="badge badge-muted" style="font-size:.8rem">⏱️ <span id="sess-clock">${fmtClock(sessClockElapsedMs())}</span></div><div class="sp"></div><button class="btn-sm btn-ghost" onclick="toggleSessPause()">${sessClock.paused?'▶ Reanudar':'⏸ Pausar'}</button></div>`:''}
+    ${dupInfo?`<div class="row mb8"><span class="dup-type-badge ${dupInfo.cls}">${dupInfo.label}</span></div>`:''}
     <div class="row mb8"><div class="muted">${doneSets}/${totalSets} sets</div><div class="sp"></div>
       <div class="${allDone?'or':''} bold">${pct}%</div></div>
     <div class="prog-bar mb20">
@@ -1811,28 +1858,40 @@ function calcWeekPct(params, weekNum, totalWeeks, blockType){
 // Generate a full week prescription for athlete
 function generateWeekPrescription(ath, weekNum=1, totalWeeks=4, blockType='accum', adjOverride){
   const params=getPrescParams(ath,adjOverride);
-  const days=ath.days||3;
   const mainLifts=getMainLifts(ath.sport);
-  const trainDayIdxs=getTrainDayIdxs(days);
+  const trainDayIdxs=getTrainDayIdxs(ath);
   const isDeload=blockType==='deload';
   const finalPct=calcWeekPct(params,weekNum,totalWeeks,blockType); // ya incluye deload + redondeo
   const deloadMod=isDeload?0.6:1;
   const deloadSets=isDeload?Math.ceil(params.sets*0.5):params.sets;
+  // S12: DUP conectado al motor real. El deload NO ondula (baja pareja a proposito, es
+  // semana de recuperacion). Con 1 solo dia/semana tampoco hay nada que ondular.
+  const dupPattern=(!isDeload && trainDayIdxs.length>1) ? (DUP_PATTERNS[trainDayIdxs.length]||DUP_PATTERNS[3]) : null;
   const result=[];
   trainDayIdxs.forEach((dayIdx,di)=>{
     const dayLifts=assignLiftsToDay(mainLifts,di,trainDayIdxs.length,ath.sport);
+    const dupKey=dupPattern?dupPattern[di%dupPattern.length]:null;
+    const dup=dupKey?DUP_TYPES[dupKey]:null;
+    // El dia "heavy" preserva finalPct tal cual (offset 0) = la referencia del bloque.
+    const dayPct=dup?Math.max(40,Math.min(finalPct+DUP_PCT_OFFSET[dupKey],95)):finalPct;
+    const daySets=dup?Math.max(2,Math.round(deloadSets*DUP_SET_MULT[dupKey])):deloadSets;
+    // Light/speed tienen un proposito cualitativo distinto (volumen/tecnica o velocidad de
+    // barra), por eso ahi si toman el esquema de reps propio de DUP en vez del de params.
+    const dayReps=(dup&&(dupKey==='light'||dupKey==='speed'))?dup.reps:params.reps;
+    const dayRest=dup?dup.rest:Math.round(params.rest*deloadMod);
     const accExercises=[];
     dayLifts.forEach(liftId=>{
       const orm=ath.oneRMs?.[liftId]?.value;
-      const load=orm?roundLoad(orm*(finalPct/100),liftId):null;
+      const load=orm?roundLoad(orm*(dayPct/100),liftId):null;
       accExercises.push({
         exerciseId:liftId,
         isMain:true,
-        sets:Array.from({length:deloadSets},()=>({reps:params.reps,pct:finalPct})),
+        sets:Array.from({length:daySets},()=>({reps:dayReps,pct:dayPct})),
         prescribedLoad:load,
-        prescribedPct:finalPct,
+        prescribedPct:dayPct,
         prescribedRpe:isDeload?6:params.rpe,
-        rest:Math.round(params.rest*deloadMod),
+        rest:dayRest,
+        dupType:dupKey,
       });
     });
     // Add 1-2 accessories
@@ -1853,7 +1912,7 @@ function generateWeekPrescription(ath, weekNum=1, totalWeeks=4, blockType='accum
         });
       }
     }
-    result.push({dayIdx,exercises:accExercises,weekPct:finalPct});
+    result.push({dayIdx,exercises:accExercises,weekPct:dayPct,dupType:dupKey});
   });
   return result;
 }
@@ -1867,8 +1926,14 @@ function assignLiftsToDay(mainLifts,dayPos,totalDays,sport){
   return mainLifts.slice(start,start+liftsPerDay);
 }
 
-function getTrainDayIdxs(n){
-  const p={2:[0,3],3:[0,2,4],4:[0,1,3,4],5:[0,1,2,3,4],6:[0,1,2,3,4,5]};
+function getTrainDayIdxs(ath){
+  // S12: si el atleta eligio dias especificos (checkboxes Lun-Dom), esos mandan.
+  if(ath && Array.isArray(ath.trainDays) && ath.trainDays.length){
+    return ath.trainDays.slice().sort((a,b)=>a-b);
+  }
+  // Retrocompatibilidad: atletas viejos sin trainDays, o llamada con numero crudo.
+  const n=(ath && typeof ath==='object') ? (ath.days||3) : (ath||3);
+  const p={1:[0],2:[0,3],3:[0,2,4],4:[0,1,3,4],5:[0,1,2,3,4],6:[0,1,2,3,4,5]};
   return p[n]||p[3];
 }
 
@@ -1893,10 +1958,14 @@ function vAutoPresc(){
         <div class="presc-ex-load">${load}</div>
       </div>`;
     }).join('');
+    const dupLbl=day.dupType?DUP_TYPES[day.dupType]?.label:null;
     return`<div class="presc-card">
       <div class="presc-header">
         <div class="presc-day-name">${DAYS[day.dayIdx]}</div>
-        <div class="badge badge-or">${day.weekPct}% 1RM</div>
+        <div class="row" style="gap:6px">
+          ${dupLbl?`<span class="dup-type-badge ${DUP_TYPES[day.dupType].cls}">${dupLbl}</span>`:''}
+          <div class="badge badge-or">${day.weekPct}% 1RM</div>
+        </div>
       </div>
       <div class="presc-body">${exRows}</div>
     </div>`;
@@ -2158,7 +2227,7 @@ async function confirmAutoPresc(){
       const wkDates=[];
       for(let d=0;d<7&&cur<end;d++){wkDates.push(cur.toISOString().split('T')[0]);const nc=new Date(cur);nc.setDate(nc.getDate()+1);cur=nc;}
       const weekPresc=generateWeekPrescription(ath,weekNum,blk.weeks,blk.type);
-      const trainIdxs=getTrainDayIdxs(ath.days||3);
+      const trainIdxs=getTrainDayIdxs(ath);
       wkDates.forEach((dt,di)=>{
         const posInWeek=di; // 0=Mon relative
         if(!trainIdxs.includes(posInWeek))return;
@@ -2229,7 +2298,7 @@ function blockSuggestion(ath, blk){
 function regenFuturePlan(ath){
   const today=new Date().toISOString().split('T')[0];
   if(!ath.fullPlan)ath.fullPlan={};
-  const trainIdxs=getTrainDayIdxs(ath.days||3);
+  const trainIdxs=getTrainDayIdxs(ath);
   (ath.blocks||[]).forEach(blk=>{
     if(blk.startDate<=today)return;            /* no tocar pasado ni bloque en curso */
     let cur=new Date(blk.startDate+'T00:00:00'); const end=new Date(blk.endDate+'T00:00:00'); let weekNum=0;
@@ -2409,7 +2478,7 @@ function vProgramView(){
     // Get weeks in block
     let cur=new Date(blk.startDate+'T00:00:00');const end=new Date(blk.endDate+'T00:00:00');
     let weekNum=0;const weekRows=[];
-    const trainIdxs=getTrainDayIdxs(ath.days||3);
+    const trainIdxs=getTrainDayIdxs(ath);
     while(cur<end){
       weekNum++;const wkDates=[];
       for(let d=0;d<7&&cur<end;d++){wkDates.push(cur.toISOString().split('T')[0]);const nc=new Date(cur);nc.setDate(nc.getDate()+1);cur=nc;}
@@ -3364,17 +3433,25 @@ const DUP_TYPES = {
 
 // DUP rotation patterns
 const DUP_PATTERNS = {
+  1: ['heavy'],
+  2: ['heavy','light'],
   3: ['heavy','light','moderate'],
   4: ['heavy','light','moderate','speed'],
   5: ['heavy','light','moderate','speed','heavy'],
   6: ['heavy','light','moderate','speed','heavy','light'],
 };
+// S12: offsets/multiplicadores para conectar DUP al motor real (generateWeekPrescription).
+// El dia "heavy" preserva el %1RM que ya calcula la periodizacion del bloque (offset 0) —
+// asi el bloque sigue siendo el que manda la tendencia semana a semana; los demas dias
+// modulan alrededor de esa referencia, no la reemplazan.
+const DUP_PCT_OFFSET = { heavy:0, moderate:-8, light:-18, speed:-25 };
+const DUP_SET_MULT   = { heavy:1, moderate:0.9, light:0.7, speed:1.1 };
 
 function generateDUPWeek(ath, weekNum=1){
   const days=ath.days||3;
   const pattern=DUP_PATTERNS[days]||DUP_PATTERNS[3];
   const mainLifts=getMainLifts(ath.sport);
-  const trainIdxs=getTrainDayIdxs(days);
+  const trainIdxs=getTrainDayIdxs(ath);
   // Progressive overload: increase pct range slightly each week
   const wkBonus=Math.min((weekNum-1)*2, 8); // +2%/sem max +8%
   const DAYS=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
@@ -4209,7 +4286,7 @@ function buildPrintPlan(ath){
     html+=`<div class="pr-empty">Este atleta todavía no tiene un programa generado. Usá ⚡ Auto-Prescribir para crearlo.</div>`;
   }
 
-  const trainIdxs=getTrainDayIdxs(ath.days||3);
+  const trainIdxs=getTrainDayIdxs(ath);
   blocks.forEach(blk=>{
     const ti=BLK[blk.type]||{label:blk.type,color:'#FF6B00'};
     html+=`<div class="pr-block" style="border-color:${ti.color}">
