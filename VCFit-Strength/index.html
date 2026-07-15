@@ -525,6 +525,8 @@ textarea.inp{resize:none;}
     <div id="modal-inner"></div>
   </div>
 </div>
+<!-- AYUDA CONTEXTUAL -->
+<div id="help-btn" onclick="showScreenHelp()" style="position:fixed;bottom:16px;left:10px;z-index:299;width:42px;height:42px;border-radius:50%;background:var(--s1);border:2px solid var(--or);display:flex;align-items:center;justify-content:center;font-size:1.15rem;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.5);">❓</div>
 <!-- TIMER -->
 <div id="timer-overlay" class="timer-overlay hidden">
   <div class="timer-ring">
@@ -1035,7 +1037,11 @@ async function addAthlete(){
   S.athletes.push({id:uid(),name,pin,sport:_newSport,age,level,goal,injuries,
     oneRMs:{},blocks:[],sessions_plan:{},rmHistory:[],fullPlan:{},coachNotes:{},cycleAdjust:0,blockDecisions:{},
     createdAt:Date.now()});
-  await saveState();closeModal();toast(`${name} agregado ✓`,'success');render();
+  await saveState();closeModal();toast(`${name} agregado ✓ Vamos a configurarlo`,'success');
+  // S12: arranca la guia interactiva atleta -> perfil -> 1RMs -> macrociclo
+  S.athleteId=S.athletes[S.athletes.length-1].id;
+  S.ui.guidedFlow=true;S.ui.guidedStep=1;
+  goView('ath-profile');
 }
 
 function openAth(id){S.athleteId=id;S.ui.editSessId=null;goView('ath-detail');}
@@ -1122,6 +1128,7 @@ function vAthProfile(){
     <button class="btn-sm btn-ghost" onclick="saveAthProfile()">GUARDAR</button>
   </div>
   <div class="screen">
+    ${guidedBanner(1,null,null)}
     <div class="inp-group"><label class="inp-label cap">Nombre</label>
       <input class="inp" id="ep-nm" value="${ath.name||''}"></div>
     <div class="inp-group"><label class="inp-label cap">PIN</label>
@@ -1194,6 +1201,29 @@ function epSelSport(s){
     el.className='sport-opt'+(key===s?` sel-${s}`:'');
   });
 }
+/* ══════════════════════════════════════════════════
+   GUÍA INTERACTIVA (S12: atleta → perfil → 1RMs → macrociclo)
+══════════════════════════════════════════════════ */
+function guidedBanner(step,nextLabel,nextAction){
+  if(!S.ui.guidedFlow)return'';
+  const labels=['Perfil','1RMs','Generar ciclo'];
+  const dots=labels.map((l,i)=>`<span style="width:8px;height:8px;border-radius:50%;background:${i+1<=step?'var(--or)':'var(--border)'};display:inline-block;margin-right:4px"></span>`).join('');
+  return`<div class="card" style="margin-bottom:14px;border-color:var(--or);background:var(--or-dim)">
+    <div class="row" style="align-items:center;margin-bottom:8px">${dots}<span class="muted small" style="margin-left:4px">Paso ${step} de 3 — Configuración guiada</span></div>
+    <div class="row" style="gap:8px">
+      ${nextAction?`<button class="btn btn-pri btn-sm" style="flex:1" onclick="${nextAction}">${nextLabel} →</button>`:''}
+      <button class="btn-sm btn-ghost" onclick="skipGuidedFlow()">Saltar guía</button>
+    </div>
+  </div>`;
+}
+function skipGuidedFlow(){S.ui.guidedFlow=false;render();}
+function guidedNextFromRMs(){
+  const ath=getAth();if(!ath)return;
+  const hasAny=Object.values(ath.oneRMs||{}).some(v=>v?.value>0);
+  if(!hasAny){toast('Cargá al menos un 1RM antes de seguir','error');return;}
+  S.ui.guidedStep=3;goView('auto-presc');
+}
+
 async function saveAthProfile(){
   const ath=getAth();if(!ath)return;
   ath.name=document.getElementById('ep-nm').value.trim()||ath.name;
@@ -1210,7 +1240,9 @@ async function saveAthProfile(){
   ath.days=ath.trainDays.length;
   ath.goalDate=document.getElementById('ep-goal-date').value;
   ath.system=document.getElementById('ep-sys').value;
-  await saveState();toast('Perfil guardado ✓','success');goView('ath-detail');
+  await saveState();toast('Perfil guardado ✓','success');
+  if(S.ui.guidedFlow){S.ui.guidedStep=2;goView('one-rms');}
+  else goView('ath-detail');
 }
 
 /* ══════════════════════════════════════════════════
@@ -1248,6 +1280,7 @@ function vOneRMs(){
     <div class="topbar-title">1RMs — ${ath?.name?.toUpperCase()}</div>
   </div>
   <div class="screen">
+    ${guidedBanner(2,'Continuar','guidedNextFromRMs()')}
     <div class="muted mb20">Las cargas se calculan automáticamente. Olímpicos se redondean a 2.5kg.</div>
     ${rows}
   </div>`;
@@ -2000,6 +2033,7 @@ function vAutoPresc(){
       <div class="topbar-title">AUTO-PRESCRIBIR — PASO 1/2</div>
     </div>
     <div class="screen pb">
+      ${guidedBanner(3,null,null)}
       <div class="cap mb8">Elegí el modelo de periodización para ${ath.name.toUpperCase()}</div>
       ${modelCards}
       <div class="row mt16" style="gap:8px">
@@ -2014,6 +2048,7 @@ function vAutoPresc(){
     <div class="topbar-title">AUTO-PRESCRIBIR — PASO 2/2</div>
   </div>
   <div class="screen pb">
+    ${guidedBanner(3,null,null)}
     <div class="card card-or mb16">
       <div class="cap mb8">PARÁMETROS CALCULADOS PARA ${ath.name.toUpperCase()}</div>
       <div class="row" style="flex-wrap:wrap;gap:10px">
@@ -2244,7 +2279,12 @@ async function confirmAutoPresc(){
   // Also save as sessions for the current week
   await _syncPlanToSessions(ath);
   await saveState();
-  toast(`✓ Programa generado: ${blocks.length} bloques · ${totalDays} sesiones`,'success');
+  if(S.ui.guidedFlow){
+    S.ui.guidedFlow=false;
+    toast(`✓ ¡Listo! ${ath.name} ya tiene su ciclo completo: ${blocks.length} bloques · ${totalDays} sesiones`,'success');
+  }else{
+    toast(`✓ Programa generado: ${blocks.length} bloques · ${totalDays} sesiones`,'success');
+  }
   goView('program-view');
 }
 /* ===================== S7 #6 \u2014 AJUSTE AUTOMATICO INTER-CICLO ===================== */
@@ -4138,6 +4178,44 @@ function fmtClock(ms){
 }
 
 /* ── AYUDA CONTEXTUAL (ℹ️) ─────────────────────── */
+/* ── AYUDA POR PANTALLA (S12: tutorial contextual, boton flotante ❓) ─── */
+const SCREEN_HELP = {
+  'login': {t:'Ingreso', s:'Elegí si entrás como coach o como atleta y usá tu PIN. Cada atleta tiene su propio PIN para ver solo su información — el coach ve todo.'},
+  'pin': {t:'PIN de acceso', s:'Ingresá tu PIN de 4 dígitos. Si sos atleta, te lo tiene que haber dado tu coach al darte de alta.'},
+  'coach-home': {t:'Inicio del coach', s:'Tu pantalla principal: la lista completa de tus atletas. Tocá "+ Nuevo Atleta" para dar de alta a alguien, o tocá un atleta para entrar a su ficha. Desde el menú superior accedés al Dashboard general y al Glosario.'},
+  'ath-detail': {t:'Ficha del atleta', s:'El centro de operaciones de cada atleta: Perfil, 1RMs, Programa activo, e Historial. El orden lógico para arrancar de cero es Perfil → 1RMs → Auto-Prescribir.'},
+  'one-rms': {t:'Máximos (1RM)', s:'Cargá acá los máximos de cada levantamiento — sentadilla, banca, peso muerto, arrancada, dos tiempos, según el deporte del atleta. Son la base de todos los cálculos de porcentaje del generador automático.'},
+  'sess-builder': {t:'Constructor manual de sesión', s:'Armado manual de una sesión suelta, ejercicio por ejercicio, para cuando no querés usar el generador automático — por ejemplo, una sesión puntual fuera del macrociclo.'},
+  'week-assign': {t:'Asignar semana', s:'Asigná manualmente qué sesión va en cada día. Se usa para sesiones sueltas armadas con el constructor manual, no para las que genera el wizard automático (esas ya quedan asignadas solas).'},
+  'ath-home': {t:'Inicio del atleta', s:'Lo primero que ve el atleta al entrar con su PIN: la sesión del día, acceso a su historial y a dejar su feedback post-entrenamiento.'},
+  'sess-exec': {t:'Ejecución de sesión', s:'Entrenamiento en vivo: marcá cada set al completarlo, el % de carga es editable en el momento si hace falta ajustar, y el timer de descanso vive en la esquina para no taparte la rutina. La pantalla no se apaga sola mientras estás acá.'},
+  'coach-hist': {t:'Historial de sesiones', s:'Sesiones completadas de este atleta, semana por semana, con el detalle de qué se hizo en cada una.'},
+  'auto-presc': {t:'Auto-Prescribir', s:'El generador automático de macrociclos. Elegís el modelo de periodización (Clásico, Doble pico, Sheiko, MRV-MEV), las fechas, y el sistema arma todo el ciclo con progresión de cargas real — incluyendo ondulación diaria de intensidad si el atleta entrena más de un día por semana. Podés previsualizar antes de confirmar, no se guarda nada hasta que apretás generar.'},
+  'program-view': {t:'Programa activo', s:'El ciclo completo del atleta: bloques, semanas, y el detalle día por día. Desde acá podés regenerar el ciclo, eliminarlo, renombrarlo (✏️), o ver el historial de ciclos anteriores (📜).'},
+  'ath-profile': {t:'Perfil del atleta', s:'Deporte, nivel, objetivo, lesiones, y los días específicos de entrenamiento — elegís cuáles días de la semana, no solo cuántos. Todo esto alimenta directamente al generador automático.'},
+  'coach-dashboard': {t:'Dashboard', s:'Vista general de todos tus atletas de un vistazo: quién entrenó hoy, adherencia, y alertas rápidas — para saber dónde poner el ojo sin entrar atleta por atleta.'},
+  'warmup': {t:'Entrada en calor', s:'Genera la rampa de calentamiento automática para el ejercicio principal de la sesión, calculada en base al peso de trabajo del día.'},
+  'alternatives': {t:'Alternativas', s:'Ejercicios equivalentes para reemplazar uno puntual — útil si falta algún elemento en el gimnasio o hay alguna molestia que evitar.'},
+  'indices': {t:'Índices de fuerza', s:'Wilks 2020, DOTS y Sinclair IWF 2024-2028 para powerlifting y halterofilia, calculados en base a los 1RM cargados y el peso corporal del atleta.'},
+  'feedback': {t:'Feedback post-sesión', s:'El atleta registra cómo se sintió: sensación general, y si hubo dolor en alguna zona. Esto alimenta el motor de ajuste inter-ciclo automático junto con la adherencia real.'},
+  'dup-config': {t:'Calculadora DUP', s:'Herramienta de referencia para armar ondulación diaria (pesado/moderado/liviano/velocidad) a mano — independiente del generador automático, para consultas puntuales.'},
+  'comp-plan': {t:'Plan de competencia', s:'Planificación de intentos para el día de la competencia: primer, segundo y tercer intento por levantamiento, con el total proyectado.'},
+  'comp-live': {t:'Competencia en vivo', s:'Seguimiento en tiempo real durante la competencia: vas cargando cada intento (éxito o fallo) y el sistema recalcula el total y sugiere el peso del próximo intento.'},
+  'vbt': {t:'VBT estimado', s:'Estimación de velocidad de barra por ejercicio, en base al %1RM de la sesión. Es una referencia orientativa, no reemplaza un medidor de velocidad real.'},
+  'glossary': {t:'Glosario', s:'Todos los términos técnicos usados en la app, explicados en criollo. Podés buscar por palabra desde el buscador de arriba.'},
+  'rm-history': {t:'Historial de 1RM', s:'Evolución de los máximos del atleta en el tiempo, con gráfico. Se actualiza solo cada vez que cargás un nuevo 1RM.'},
+  'cycle-history': {t:'Historial de ciclos', s:'Los ciclos de entrenamiento que reemplazaste o eliminaste quedan guardados acá: nombre, fechas, adherencia real que tuvieron, y qué bloques incluían. Se guardan los últimos 10 por atleta.'},
+};
+function showScreenHelp(){
+  const h=SCREEN_HELP[S.ui.view];
+  if(!h){toast('Esta pantalla todavía no tiene ayuda cargada','error');return;}
+  openModal(`<div style="text-align:left">
+    <div class="bold" style="color:var(--or);font-size:1.05rem;margin-bottom:8px">❓ ${h.t}</div>
+    <div style="line-height:1.5">${h.s}</div>
+    <button class="btn btn-sec btn-sm mt12" onclick="closeModal()">Entendido</button>
+  </div>`);
+}
+
 function infoIcon(key){
   return GLOSARIO[key]?`<span onclick="event.stopPropagation();showTerm('${key}')" style="cursor:pointer;opacity:.65;font-size:.78rem;margin-left:4px">\u2139\ufe0f</span>`:'';
 }
