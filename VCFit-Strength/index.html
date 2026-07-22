@@ -2584,11 +2584,11 @@ function adjBanner(blk,sug){
 
 
 // Sync fullPlan entries for current week to sessions/weekPlans
-async function _syncPlanToSessions(ath){
-  const today=new Date().toISOString().split('T')[0];
+async function _syncPlanToSessions(ath, preserveStatus){
   const wid=WEEK_ID;const weekDates=getWeekDates(wid);
   if(!S.sessions[ath.id])S.sessions[ath.id]={};
   if(!S.weekPlans[ath.id])S.weekPlans[ath.id]={};
+  const prevPlan=S.weekPlans[ath.id][wid]||[];
   const plan=[];
   weekDates.forEach((date,di)=>{
     const dt=date.toISOString().split('T')[0];
@@ -2606,7 +2606,10 @@ async function _syncPlanToSessions(ath){
       })),generated:true,updatedAt:Date.now()
     };
     S.sessions[ath.id][sessId]=sess;
-    plan.push({day:di,sessionId:sessId,status:'pending'});
+    // S12: al reconfigurar frecuencia a mitad de ciclo, preserva el status ya marcado
+    // (done/pending) de sesiones que no cambiaron de contenido — no pisa lo ya entrenado.
+    const prevEntry=preserveStatus?prevPlan.find(p=>p.sessionId===sessId):null;
+    plan.push({day:di,sessionId:sessId,status:prevEntry?prevEntry.status:'pending'});
   });
   if(plan.length)S.weekPlans[ath.id][wid]=plan;
 }
@@ -2655,6 +2658,71 @@ async function renameCycle(athId){
   (ath.blocks||[]).forEach(b=>b.cycleName=val);
   await saveState();closeModal();toast('\u2713 Ciclo renombrado','success');render();
 }
+/* ===================== RECONFIGURAR FRECUENCIA A MITAD DE CICLO ===================== */
+// S12: cambiar cuantos/cuales dias entrena el atleta SIN tocar el objetivo, las fechas de
+// los bloques, ni nada de lo ya entrenado. Solo reconfigura los dias FUTUROS (desde manana)
+// dentro del mismo ciclo activo. No archiva nada — no es un ciclo nuevo, es el mismo ciclo
+// con otra distribucion de dias de aca en mas.
+let _rfTrainDays=[];
+function openReconfigureFreqModal(athId){
+  const ath=S.athletes.find(a=>a.id===athId);if(!ath)return;
+  if(!ath.blocks||!ath.blocks.length){toast('Este atleta no tiene un ciclo activo','error');return;}
+  _rfTrainDays=(Array.isArray(ath.trainDays)&&ath.trainDays.length)?ath.trainDays.slice().sort((a,b)=>a-b):getTrainDayIdxs(ath);
+  openModal(`<div class="modal-title">CAMBIAR DÍAS DESDE MAÑANA</div>
+    <div class="muted small mb14">El objetivo, las fechas de los bloques y todo lo ya entrenado quedan exactamente igual. Solo se reconfiguran los días futuros con la nueva frecuencia.</div>
+    <div class="row" style="gap:6px;flex-wrap:wrap;margin-bottom:16px" id="rf-traindays">
+      ${['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'].map((lbl,i)=>
+        `<div class="daychip${_rfTrainDays.includes(i)?' sel':''}" data-idx="${i}" onclick="toggleRfDay(${i})">${lbl}</div>`
+      ).join('')}
+    </div>
+    <button class="btn btn-pri" onclick="confirmReconfigureFreq('${athId}')">APLICAR DESDE MAÑANA</button>
+    <button class="btn btn-ghost mt8" onclick="closeModal()">CANCELAR</button>`);
+}
+function toggleRfDay(i){
+  const pos=_rfTrainDays.indexOf(i);
+  if(pos>=0){ if(_rfTrainDays.length>1)_rfTrainDays.splice(pos,1); }
+  else _rfTrainDays.push(i);
+  _rfTrainDays.sort((a,b)=>a-b);
+  document.querySelectorAll('#rf-traindays .daychip').forEach(el=>{
+    const idx=parseInt(el.dataset.idx);
+    el.classList.toggle('sel',_rfTrainDays.includes(idx));
+  });
+}
+async function confirmReconfigureFreq(athId){
+  const ath=S.athletes.find(a=>a.id===athId);if(!ath)return;
+  const newDays=_rfTrainDays.slice().sort((a,b)=>a-b);
+  if(!newDays.length){toast('Elegí al menos un día','error');return;}
+  ath.trainDays=newDays;ath.days=newDays.length;
+  const todayStr=new Date().toISOString().split('T')[0];
+  let regenCount=0;
+  (ath.blocks||[]).forEach(blk=>{
+    if(blk.endDate<=todayStr)return; // bloque ya terminado — intocable
+    let cur=new Date(blk.startDate+'T00:00:00');
+    const end=new Date(blk.endDate+'T00:00:00');
+    let weekNum=0;
+    while(cur<end){
+      weekNum++;
+      const wkDates=[];
+      for(let d=0;d<7&&cur<end;d++){wkDates.push(cur.toISOString().split('T')[0]);const nc=new Date(cur);nc.setDate(nc.getDate()+1);cur=nc;}
+      const weekPresc=generateWeekPrescription(ath,weekNum,blk.weeks,blk.type);
+      const trainIdxs=getTrainDayIdxs(ath);
+      wkDates.forEach((dt,di)=>{
+        if(dt<=todayStr)return; // hoy y el pasado: intocable, ni contenido ni status
+        const posInWeek=di;
+        if(!trainIdxs.includes(posInWeek)){ delete ath.fullPlan[dt]; return; } // ya no se entrena ese dia
+        const dayPresc=weekPresc.find(d=>d.dayIdx===posInWeek);
+        if(!dayPresc)return;
+        ath.fullPlan[dt]={date:dt,blockId:blk.id,blockName:blk.name,blockType:blk.type,weekNum,exercises:dayPresc.exercises,weekPct:dayPresc.weekPct,generated:true};
+        regenCount++;
+      });
+    }
+  });
+  await _syncPlanToSessions(ath,true); // preserva status de lo ya hecho en la semana actual
+  await saveState();closeModal();
+  toast(`✓ ${newDays.length} días/semana desde mañana · ${regenCount} sesiones reconfiguradas`,'success');
+  render();
+}
+
 function confirmDelProgram(athId){
   const ath=S.athletes.find(a=>a.id===athId);if(!ath)return;
   const nGen=Object.values(S.sessions[athId]||{}).filter(s=>s.generated).length;
@@ -2761,6 +2829,7 @@ function vProgramView(){
       ${sportBadge(ath.sport)}
     </div>
     ${blkCards}
+    <button class="btn btn-sec mt8" onclick="openReconfigureFreqModal('${ath.id}')">🔀 CAMBIAR DÍAS DESDE MAÑANA</button>
     <button class="btn btn-ghost mt8" onclick="goView('auto-presc')">⚡ RE-GENERAR PLAN</button>
     <button class="btn btn-danger mt16" onclick="confirmDelProgram('${ath.id}')">🗑 ELIMINAR PROGRAMA</button>
   </div>`;
