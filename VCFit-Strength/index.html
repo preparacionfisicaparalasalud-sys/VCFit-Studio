@@ -2768,7 +2768,7 @@ function vProgramView(){
       const sessInWk=(S.weekPlans[ath.id]?.[getWeekId(new Date(wkDates[0]+'T00:00:00'))]||[]).filter(p=>p.status==='done').length;
       const planDays=wkDates.filter((dt,di)=>trainIdxs.includes(di)&&ath.fullPlan?.[dt]);
       const wkPct=ath.fullPlan?.[planDays[0]]?.weekPct;
-      weekRows.push(`<div class="card" style="padding:10px 12px;margin-bottom:6px;cursor:default">
+      weekRows.push(`<div class="card" style="padding:10px 12px;margin-bottom:6px;cursor:pointer" onclick="openWeekPreview('${ath.id}','${blk.id}',${weekNum})">
         <div class="row mb6">
           <span class="bold" style="font-family:var(--fr);font-size:.82rem;letter-spacing:.04em">SEM ${weekNum}</span>
           ${wkPct?`<span class="badge badge-or" style="margin-left:7px">${wkPct}%</span>`:''}
@@ -2787,7 +2787,7 @@ function vProgramView(){
               <span style="font-size:.58rem;color:var(--text3);">${DAYS[di]}</span></div>`;
             const bcol=isDayDone?'var(--ok)':isToday?'var(--or)':dayPlan?ti.color:'var(--s3)';
             return`<div style="width:38px;border-radius:6px;border:1px solid ${bcol}30;background:${bcol}15;padding:5px 3px;text-align:center;cursor:${dayPlan?'pointer':'default'}"
-              onclick="${dayPlan?`openPlanDay('${dt}','${blk.id}')`:''}" >
+              onclick="${dayPlan?`event.stopPropagation();openPlanDay('${dt}','${blk.id}')`:''}" >
               <div style="font-size:.56rem;color:var(--text2);font-family:var(--fr);text-transform:uppercase">${DAYS[di]}</div>
               <div style="font-size:.9rem;font-family:var(--fd);color:${isDayDone?'var(--ok)':isToday?'var(--or)':dayPlan?ti.color:'var(--text3)'}">
                 ${isDayDone?'✓':dayPlan?dayPlan.weekPct+'%':'—'}
@@ -2857,6 +2857,47 @@ function vCycleHistory(){
   return`<div class="topbar"><button class="back-btn" onclick="goView('program-view')">←</button>
     <div class="topbar-title">HISTORIAL — ${ath.name.toUpperCase()}</div></div>
   <div class="screen pb">${cards}</div>`;
+}
+// S12: preview de semana completa (solo lectura) — separado de openPlanDay, que lanza
+// ejecucion de sesion. Esto es lo que se abre al tocar el HEADER de una semana entera.
+function openWeekPreview(athId,blkId,weekNum){
+  const ath=S.athletes.find(a=>a.id===athId);if(!ath)return;
+  const blk=(ath.blocks||[]).find(b=>b.id===blkId);if(!blk)return;
+  const DOW=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  let cur=new Date(blk.startDate+'T00:00:00');
+  for(let w=1;w<weekNum;w++)cur.setDate(cur.getDate()+7);
+  const wkDates=[];
+  for(let d=0;d<7;d++){wkDates.push(cur.toISOString().split('T')[0]);cur.setDate(cur.getDate()+1);}
+  const trainIdxs=getTrainDayIdxs(ath);
+  const dayCards=wkDates.map((dt,di)=>{
+    if(!trainIdxs.includes(di))return'';
+    const dp=ath.fullPlan?.[dt];if(!dp)return'';
+    const dupKey=dp.exercises.find(e=>e.dupType)?.dupType;
+    const dupInfo=dupKey?DUP_TYPES[dupKey]:null;
+    const exRows=dp.exercises.map(ex=>{
+      const name=exName(ex.exerciseId);
+      const load=ex.prescribedLoad?displayLoad(ex.prescribedLoad):'—';
+      return`<div class="presc-ex-row">
+        <div class="presc-ex-name">${ex.isMain?'● ':'○ '}${name}</div>
+        <div class="presc-ex-sets">${(ex.sets||[]).length}×${ex.sets?.[0]?.reps||'—'}</div>
+        <div class="presc-ex-load">${load}</div>
+      </div>`;
+    }).join('');
+    return`<div class="presc-card" style="margin-bottom:10px;cursor:pointer" onclick="closeModal();openPlanDay('${dt}','${blk.id}')">
+      <div class="presc-header">
+        <div class="presc-day-name">${DOW[di]} · ${fdStr(dt)}</div>
+        <div class="row" style="gap:6px">
+          ${dupInfo?`<span class="dup-type-badge ${dupInfo.cls}">${dupInfo.label}</span>`:''}
+          <div class="badge badge-or">${dp.weekPct}% 1RM</div>
+        </div>
+      </div>
+      <div class="presc-body">${exRows}</div>
+    </div>`;
+  }).join('');
+  openModal(`<div class="modal-title">SEMANA ${weekNum} — ${blk.name}</div>
+    <div class="muted small mb14">Tocá un día para abrirlo como sesión.</div>
+    ${dayCards||'<div class="muted">Sin sesiones generadas esta semana.</div>'}
+    <button class="btn btn-sec mt8" onclick="closeModal()">CERRAR</button>`);
 }
 function openPlanDay(dt,blkId){
   // Navigate to session for this date
