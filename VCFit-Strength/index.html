@@ -851,7 +851,7 @@ function loadLocal(){
    NAVEGACIÓN
 ══════════════════════════════════════════════════ */
 function goView(v){
-  if(v==='auto-presc'){S.ui.wizStep=1;S.ui.wizModel='classic';S.ui.wizDateMode='objetivo';}
+  if(v==='auto-presc'){S.ui.wizStep=1;S.ui.wizModel='classic';S.ui.wizDateMode='objetivo';S.ui.wizYearMode=false;}
   const wasSess=S.ui.view==='sess-exec';
   S.ui.view=v;window.scrollTo(0,0);render();
   if(v==='sess-exec'&&!wasSess)requestWakeLock();
@@ -2256,6 +2256,13 @@ function vAutoPresc(){
       <label class="inp-label cap">Fecha objetivo / competencia</label>
       <input class="inp" id="presc-goal-date" type="date" value="${ath.goalDate||''}">
       <div class="muted small mt4" id="presc-weeks-avail"></div>
+    </div>
+    <div class="card mb16" style="cursor:pointer;${S.ui.wizYearMode?'border-color:var(--or);background:var(--or-dim)':''}" onclick="S.ui.wizYearMode=!S.ui.wizYearMode;updateMacroPreview();render();">
+      <div class="row" style="align-items:center;gap:8px">
+        <span style="font-size:1.1rem">${S.ui.wizYearMode?'☑':'☐'}</span>
+        <span class="cap bold">🔁 Modo año — repetir este modelo hasta la fecha objetivo</span>
+      </div>
+      ${S.ui.wizYearMode?`<div class="muted small mt8">Genera TODO el macrociclo de una, repitiendo el modelo las veces que hagan falta. Importante: todas las repeticiones usan los 1RM actuales — el ajuste automático entre ciclos se gana con datos reales de adherencia, que todavía no existen para los tramos futuros. Cuando el atleta progrese de verdad, actualizá los 1RM y regenerá desde ese punto en adelante.</div>`:`<div class="muted small mt6">Sin marcar: genera un solo ciclo (13-20 semanas según el modelo). Marcado: llena todo el año hasta la fecha objetivo.</div>`}
     </div>`}
 
     <div class="d3 mb12">MACROCICLO COMPLETO</div>
@@ -2305,10 +2312,25 @@ function updatePrescEndPreview(){
 // real por main lift), calculado en modo "dry run" - reusa la MISMA logica de fechas que
 // confirmAutoPresc pero sin tocar ath.blocks ni guardar nada. Se recalcula en vivo al tipear
 // la fecha o cambiar de modelo/submodo.
+// S12: "modo año" — repite el modelo elegido las veces necesarias para cubrir una duracion
+// objetivo mayor a un solo ciclo (13-20 sem. segun modelo). El bloque MAS ANTIGUO (el primero
+// cronologicamente) absorbe las semanas sobrantes que no completan una repeticion entera —
+// una fase de acumulacion mas larga al arranque es metodologicamente normal, no un parche.
+function buildTiledBlockDefs(blkDefs,totalWeeksTarget){
+  const cycleWeeks=blkDefs.reduce((a,c)=>a+c.w,0);
+  if(cycleWeeks<=0||totalWeeksTarget<=cycleWeeks)return blkDefs.map(c=>({...c,rep:1,totalReps:1}));
+  const reps=Math.max(1,Math.round(totalWeeksTarget/cycleWeeks));
+  let tiled=[];
+  for(let r=0;r<reps;r++)blkDefs.forEach(c=>tiled.push({...c,rep:r+1,totalReps:reps}));
+  const leftover=totalWeeksTarget-tiled.reduce((a,c)=>a+c.w,0);
+  if(leftover!==0&&tiled.length)tiled[0]={...tiled[0],w:Math.max(1,tiled[0].w+leftover)};
+  return tiled;
+}
+
 function computeMacroPreviewHtml(){
   const ath=getAth();if(!ath)return'';
   const model=S.ui.wizModel||'classic';
-  const blkDefs=GEN_MODELS[model]||GEN_MODELS.classic;
+  const baseBlkDefs=GEN_MODELS[model]||GEN_MODELS.classic;
   const dateMode=S.ui.wizDateMode||'objetivo';
   const params=getPrescParams(ath,0); // S11 FIX P4: ciclo limpio, ver nota en vAutoPresc
   const mainLifts=getMainLifts(ath.sport);
@@ -2317,7 +2339,7 @@ function computeMacroPreviewHtml(){
     const startDate=document.getElementById('presc-start-date')?.value||ath.cycleStartDate;
     if(!startDate)return`<div class="muted small mb16">Ingresá una fecha de inicio para ver el macrociclo completo.</div>`;
     let cursor=startDate;
-    blkDefs.forEach(cfg=>{
+    baseBlkDefs.forEach(cfg=>{
       const start=cursor,end=fwStr(start,cfg.w);
       blocks.push({t:cfg.t,w:cfg.w,startDate:start,endDate:end});
       cursor=end;
@@ -2325,10 +2347,12 @@ function computeMacroPreviewHtml(){
   }else{
     const goalDate=document.getElementById('presc-goal-date')?.value||ath.goalDate;
     if(!goalDate)return`<div class="muted small mb16">Ingresá una fecha objetivo para ver el macrociclo completo.</div>`;
+    const today=new Date().toISOString().split('T')[0];
+    const blkDefs=S.ui.wizYearMode?buildTiledBlockDefs(baseBlkDefs,Math.max(1,wbStr(today,goalDate))):baseBlkDefs;
     let cursor=goalDate;const rev=[];
     [...blkDefs].reverse().forEach(cfg=>{
       const end=cursor,start=swStr(end,cfg.w);
-      rev.unshift({t:cfg.t,w:cfg.w,startDate:start,endDate:end});
+      rev.unshift({t:cfg.t,w:cfg.w,startDate:start,endDate:end,rep:cfg.rep,totalReps:cfg.totalReps});
       cursor=start;
     });
     blocks=rev;
@@ -2345,7 +2369,7 @@ function computeMacroPreviewHtml(){
     }).join('');
     return`<div class="card mb8" style="cursor:default;border-left:3px solid ${BLK[b.t].color}">
       <div class="row" style="justify-content:space-between;align-items:center">
-        <div class="bold">${BLK[b.t].label}</div>
+        <div class="bold">${BLK[b.t].label}${b.totalReps>1?` <span class="muted small">· rep. ${b.rep}/${b.totalReps}</span>`:''}</div>
         <div class="muted small">${fdStr(b.startDate)} → ${fdStr(b.endDate)} · ${b.w} sem.</div>
       </div>
       <div class="mt4" style="display:flex;gap:6px;flex-wrap:wrap">${liftChips}</div>
@@ -2380,7 +2404,7 @@ async function confirmAutoPresc(){
   const ath=getAth();if(!ath)return;
   if((ath.blocks||[]).length)archiveCurrentCycle(ath,'reemplazado');
   const model=S.ui.wizModel||'classic';
-  const blkDefs=GEN_MODELS[model]||GEN_MODELS.classic;
+  const baseBlkDefs=GEN_MODELS[model]||GEN_MODELS.classic;
   const dateMode=S.ui.wizDateMode||'objetivo';
   let blocks=[];
   if(dateMode==='manual'){
@@ -2389,7 +2413,7 @@ async function confirmAutoPresc(){
     if(!startDate){toast('Ingresá una fecha de inicio','error');return;}
     ath.cycleStartDate=startDate;
     let cursor=startDate;
-    blkDefs.forEach(cfg=>{
+    baseBlkDefs.forEach(cfg=>{
       const start=cursor,end=fwStr(start,cfg.w);
       blocks.push({id:uid(),type:cfg.t,name:BLK[cfg.t].label,startDate:start,endDate:end,weeks:cfg.w});
       cursor=end;
@@ -2399,11 +2423,15 @@ async function confirmAutoPresc(){
     const goalDate=document.getElementById('presc-goal-date')?.value||ath.goalDate;
     if(!goalDate){toast('Ingresá una fecha objetivo','error');return;}
     ath.goalDate=goalDate;
+    // S12: modo año — repite el modelo hasta cubrir la distancia real hasta el objetivo
+    const today=new Date().toISOString().split('T')[0];
+    const blkDefs=S.ui.wizYearMode?buildTiledBlockDefs(baseBlkDefs,Math.max(1,wbStr(today,goalDate))):baseBlkDefs;
     // Generate blocks backward from goal date
     let cursor=goalDate;
     [...blkDefs].reverse().forEach(cfg=>{
       const end=cursor,start=swStr(end,cfg.w);
-      blocks.unshift({id:uid(),type:cfg.t,name:BLK[cfg.t].label,startDate:start,endDate:end,weeks:cfg.w});
+      const lbl=BLK[cfg.t].label+(cfg.totalReps>1?` · rep. ${cfg.rep}/${cfg.totalReps}`:'');
+      blocks.unshift({id:uid(),type:cfg.t,name:lbl,startDate:start,endDate:end,weeks:cfg.w});
       cursor=start;
     });
   }
