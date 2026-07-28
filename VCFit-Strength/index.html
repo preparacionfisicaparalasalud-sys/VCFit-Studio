@@ -675,7 +675,6 @@ let S = {
     weekOffset:0,
   }
 };
-let builder = {name:'',sport:'both',exercises:[]};
 let execState = {};
 let timerState = {active:false,secs:0,duration:0,interval:null};
 // Session 1 only builds these — prescription engine state
@@ -699,7 +698,6 @@ function wbStr(a,b){return Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:0
 function ini(n){return(n||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);}
 function getAth(id){return S.athletes.find(a=>a.id===(id||S.athleteId))||null;}
 function getSess(sid){return((S.sessions[S.athleteId]||{})[sid])||null;}
-function getSessList(aid){return Object.values(S.sessions[aid||S.athleteId]||{});}
 function getWeekPlan(aid,wid){return((S.weekPlans[aid||S.athleteId]||{})[wid||S.ui.viewWeekId])||[];}
 function exName(id){return EX_DB[id]?.n||id;}
 function exVideoUrl(exId){const ex=EX_DB[exId];if(!ex)return null;const sp=ex.sport==='wl'?'halterofilia':ex.sport==='pl'?'powerlifting':'';const q=`${ex.n} técnica ${sp}`.trim();return 'https://www.youtube.com/results?search_query='+encodeURIComponent(q);}
@@ -826,6 +824,28 @@ document.getElementById('modal-bg').addEventListener('click',e=>{if(e.target===d
 /* ══════════════════════════════════════════════════
    FIREBASE / PERSISTENCIA
 ══════════════════════════════════════════════════ */
+// S12: limpieza de datos viejos — el Constructor Manual y Asignar Semana se dieron de baja
+// por confusos (sesiones con nombres congelados, sin relación con la fase real del ciclo).
+// Purga cualquier sesion sin generated:true (=manual, de esas pantallas viejas) y sus
+// referencias sueltas en weekPlans. Las sesiones generadas por Auto-Prescribir (generated:true)
+// nunca se tocan.
+function purgeManualSessions(){
+  let changed=false;
+  Object.keys(S.sessions||{}).forEach(aid=>{
+    const athSess=S.sessions[aid]||{};
+    Object.keys(athSess).forEach(sid=>{
+      if(!athSess[sid]?.generated){delete athSess[sid];changed=true;}
+    });
+  });
+  Object.keys(S.weekPlans||{}).forEach(aid=>{
+    Object.keys(S.weekPlans[aid]||{}).forEach(wid=>{
+      const plan=S.weekPlans[aid][wid]||[];
+      const filtered=plan.filter(p=>(S.sessions[aid]||{})[p.sessionId]);
+      if(filtered.length!==plan.length){S.weekPlans[aid][wid]=filtered;changed=true;}
+    });
+  });
+  return changed;
+}
 function initFirebase(){
   try{
     firebase.initializeApp(FB_CFG);db=firebase.firestore();
@@ -833,9 +853,10 @@ function initFirebase(){
     db.enablePersistence().catch(e=>console.warn('FS persistence:',e?.code||e));
     db.collection('vcfit_strength').doc('state').onSnapshot(snap=>{
       if(snap.exists){const d=snap.data();S.athletes=d.athletes||[];S.sessions=d.sessions||{};S.weekPlans=d.weekPlans||{};S.settings=Object.assign({barWeight:20,loadDisplay:'total'},d.settings||{});}
+      if(purgeManualSessions())saveState();
       render();
-    },err=>{console.warn('Firestore offline:',err);loadLocal();render();});
-  }catch(e){console.warn('Firebase no disponible:',e);loadLocal();render();}
+    },err=>{console.warn('Firestore offline:',err);loadLocal();if(purgeManualSessions())saveState();render();});
+  }catch(e){console.warn('Firebase no disponible:',e);loadLocal();if(purgeManualSessions())saveState();render();}
 }
 async function saveState(){
   const data={athletes:S.athletes,sessions:S.sessions,weekPlans:S.weekPlans,settings:S.settings};
@@ -928,8 +949,7 @@ function render(){
   const views={
     login:vLogin, pin:vPIN,
     'coach-home':vCoachHome, 'ath-detail':vAthDetail,
-    'one-rms':vOneRMs, 'sess-builder':vSessBuilder,
-    'week-assign':vWeekAssign, 'ath-home':vAthHome,
+    'one-rms':vOneRMs, 'ath-home':vAthHome,
     'sess-exec':vSessExec, 'coach-hist':vCoachHist,
     'auto-presc':vAutoPresc, 'program-view':vProgramView,
     'ath-profile':vAthProfile,
@@ -1107,26 +1127,10 @@ function openAth(id){S.athleteId=id;S.ui.editSessId=null;goView('ath-detail');}
 ══════════════════════════════════════════════════ */
 function vAthDetail(){
   const ath=getAth();if(!ath){goView('coach-home');return'';}
-  const sessions=getSessList();
   const tons=calcTonnage(ath.id,WEEK_ID);
   const done=countDone(ath.id,WEEK_ID);
   const rpe=avgRPE(ath.id,WEEK_ID);
   const blks=(ath.blocks||[]).length;
-  const sessCards=sessions.length
-    ?sessions.map(sess=>{
-        const total=sess.exercises.reduce((a,e)=>a+e.sets.length,0);
-        const sportBdg=sportBadge(sess.sport||ath.sport);
-        return`<div class="card card-tap" onclick="editSess('${sess.id}')">
-          <div class="row">
-            <div class="col" style="flex:1">
-              <div class="bold">${sess.name} ${sportBdg}</div>
-              <div class="muted">${sess.exercises.length} ejercicios · ${total} sets</div>
-            </div><div style="color:var(--text2)">›</div>
-          </div>
-        </div>`;
-      }).join('')
-    :`<div class="card" style="text-align:center;padding:20px;cursor:default">
-        <div class="muted">Sin sesiones — creá una o usá Auto-Prescribir</div></div>`;
 
   return`<div class="topbar">
     <button class="back-btn" onclick="goView('coach-home')">←</button>
@@ -1149,16 +1153,13 @@ function vAthDetail(){
     <div class="row mb20" style="gap:7px;flex-wrap:wrap">
       <button class="btn btn-sm btn-ghost" onclick="goView('one-rms')">1RMs</button>
       <button class="btn btn-sm btn-ghost" onclick="goView('rm-history')">📈 1RM</button>
-      <button class="btn btn-sm btn-ghost" onclick="goView('week-assign')">SEMANA</button>
       <button class="btn btn-sm btn-ghost" onclick="goView('ath-profile')">PERFIL</button>
       <button class="btn btn-sm" style="background:var(--or-dim);color:var(--or);border:1px solid rgba(255,107,0,.3)" onclick="goView('auto-presc')">⚡ AUTO-PRESCRIBIR</button>
       <button class="btn btn-sm" style="background:var(--pl-dim);color:var(--pl);border:1px solid rgba(52,152,219,.3)" onclick="goView('program-view')">📋 PROGRAMA</button>
       <button class="btn btn-sm btn-ghost" onclick="goView('indices')">📊 ÍNDICES</button>
       <button class="btn btn-sm btn-danger" onclick="confirmDelAth('${ath.id}','${ath.name}')">🗑</button>
     </div>
-    <div class="d3 mb12">SESIONES</div>${sessCards}
-  </div>
-  <button class="fab" onclick="newSess()">+</button>`;
+  </div>`;
 }
 
 function confirmDelAth(id,name){
@@ -1432,179 +1433,6 @@ async function saveORM(exId){
   if(!ath.rmHistory)ath.rmHistory=[];
   ath.rmHistory.push({date:new Date().toISOString().split('T')[0],lift:exId,estimated:val,manual:true});
   await saveState();closeModal();toast('1RM guardado ✓','success');render();
-}
-
-/* ══════════════════════════════════════════════════
-   SESSION BUILDER (Manual)
-══════════════════════════════════════════════════ */
-function newSess(){builder={name:'',sport:getAth()?.sport||'both',exercises:[]};S.ui.editSessId=null;goView('sess-builder');}
-function editSess(id){const s=getSess(id);if(!s)return;builder=JSON.parse(JSON.stringify(s));S.ui.editSessId=id;goView('sess-builder');}
-
-function vSessBuilder(){
-  const ath=getAth();
-  const sport=builder.sport||ath?.sport||'both';
-  // Exercises filtered by sport
-  const relevantExIds=Object.keys(EX_DB).filter(id=>{
-    const ex=EX_DB[id];
-    if(sport==='wl')return ex.sport==='wl'||ex.sport==='both';
-    if(sport==='pl')return ex.sport==='pl'||ex.sport==='both';
-    return true;
-  });
-  const cats=[...new Set(relevantExIds.map(id=>EX_DB[id].cat))];
-  const isEdit=!!S.ui.editSessId;
-  const builtExs=builder.exercises.map((ex,xi)=>{
-    const sets=ex.sets.map((st,si)=>{
-      const kg=st.pct&&ath?calcKg(S.athleteId,ex.exerciseId,st.pct):null;
-      return`<div class="set-row"><div class="set-n">S${si+1}</div>
-        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-          <input class="inp inp-sm" type="number" min="1" placeholder="Reps" value="${st.reps||''}"
-            onchange="bSetReps(${xi},${si},this.value)" inputmode="numeric">
-          <span class="muted small">×</span>
-          <input class="inp inp-sm" type="number" min="1" max="110" step="0.5" placeholder="%" value="${st.pct||''}"
-            onchange="bSetPct(${xi},${si},this.value)" inputmode="decimal">
-          <span class="muted small">%</span>
-          ${kg?`<span class="or bold">${kg}kg</span>`:''}
-          <button class="btn-icon" onclick="removeSet(${xi},${si})">✕</button>
-        </div>
-      </div>`;
-    }).join('');
-    const altIds=EX_ALT[ex.exerciseId]||[];
-    const altBtns=altIds.length?`<div style="margin-top:7px"><span class="cap" style="font-size:.62rem">Alternativas: </span>
-      ${altIds.map(aid=>`<button class="btn-sm btn-sec" style="font-size:.7rem;padding:3px 8px;margin:2px;" onclick="swapEx(${xi},'${aid}')">${EX_DB[aid]?.n||aid}</button>`).join('')}
-    </div>`:'';
-    return`<div class="ex-card">
-      <div class="ex-head" style="cursor:default">
-        <div class="ex-num">${xi+1}</div>
-        <div class="col" style="flex:1">
-          <div class="bold" style="font-size:.92rem">${exName(ex.exerciseId)}</div>
-          ${EX_DB[ex.exerciseId]?.olympic?'<span class="badge badge-wl" style="font-size:.58rem">OLÍMPICO</span>':''}
-        </div>
-        <button class="btn-icon" onclick="removeBuilderEx(${xi})">🗑</button>
-      </div>
-      <div class="ex-body">${sets}
-        <button class="btn btn-ghost btn-sm" onclick="addSet(${xi})" style="margin-top:3px">+ Set</button>
-        ${altBtns}
-      </div>
-    </div>`;
-  }).join('');
-
-  const selector=cats.map(cat=>`<div class="cat-head">${cat}</div><div class="ex-grid">
-    ${relevantExIds.filter(id=>EX_DB[id].cat===cat).map(id=>{
-      const sel=builder.exercises.some(e=>e.exerciseId===id);
-      const s=EX_DB[id].sport;
-      return`<div class="ex-opt ${sel?(s==='wl'?'sel-wl':s==='pl'?'sel-pl':'sel'):''}" onclick="toggleBuilderEx('${id}')">${EX_DB[id].n}</div>`;
-    }).join('')}</div>`).join('');
-
-  return`<div class="topbar">
-    <button class="back-btn" onclick="goView('ath-detail')">←</button>
-    <div class="topbar-title">${isEdit?'EDITAR':'NUEVA'} SESIÓN</div>
-    <button class="btn-sm btn-pri" onclick="saveSess()">GUARDAR</button>
-  </div>
-  <div class="screen pb">
-    <div class="inp-group mb12">
-      <label class="inp-label cap">Nombre de la sesión</label>
-      <input class="inp" id="sess-nm" type="text" placeholder="ej: Arrancada + Sentadilla"
-        value="${builder.name||''}" oninput="builder.name=this.value"></div>
-    <div class="inp-group mb16">
-      <label class="inp-label cap">Tipo de sesión</label>
-      <div class="sport-sel">
-        <div class="sport-opt ${builder.sport==='wl'?'sel-wl':''}" onclick="setSessType('wl')"><div class="sport-icon">🏋️</div><div class="sport-lbl">WL</div></div>
-        <div class="sport-opt ${builder.sport==='both'?'sel-both':''}" onclick="setSessType('both')"><div class="sport-icon">💪</div><div class="sport-lbl">Mixta</div></div>
-        <div class="sport-opt ${builder.sport==='pl'?'sel-pl':''}" onclick="setSessType('pl')"><div class="sport-icon">🔱</div><div class="sport-lbl">PL</div></div>
-      </div></div>
-    ${builder.exercises.length
-      ?`<div class="d3 mb10">EJERCICIOS</div>${builtExs}`
-      :`<div class="card" style="text-align:center;padding:20px;cursor:default">
-          <div class="muted">Seleccioná ejercicios abajo</div></div>`}
-    <div class="divider"></div>
-    <div class="d3 mb8">AGREGAR EJERCICIO</div>${selector}
-    ${isEdit?`<button class="btn btn-danger mt16" onclick="confirmDelSess('${S.ui.editSessId}')">ELIMINAR SESIÓN</button>`:''}
-  </div>`;
-}
-
-function setSessType(t){builder.sport=t;render();}
-function swapEx(xi,newId){builder.exercises[xi].exerciseId=newId;render();}
-function toggleBuilderEx(exId){
-  const idx=builder.exercises.findIndex(e=>e.exerciseId===exId);
-  if(idx>=0)builder.exercises.splice(idx,1);
-  else builder.exercises.push({exerciseId:exId,sets:[{reps:'',pct:''}]});
-  render();
-}
-function addSet(xi){builder.exercises[xi].sets.push({reps:'',pct:''});render();}
-function removeSet(xi,si){builder.exercises[xi].sets.splice(si,1);render();}
-function removeBuilderEx(xi){builder.exercises.splice(xi,1);render();}
-function bSetReps(xi,si,v){builder.exercises[xi].sets[si].reps=parseInt(v)||'';}
-function bSetPct(xi,si,v){builder.exercises[xi].sets[si].pct=parseFloat(v)||'';render();}
-async function saveSess(){
-  const name=(document.getElementById('sess-nm')?.value||builder.name||'').trim();
-  if(!name){toast('Ingresá un nombre','error');return;}
-  if(!builder.exercises.length){toast('Agregá al menos un ejercicio','error');return;}
-  builder.name=name;
-  if(!S.sessions[S.athleteId])S.sessions[S.athleteId]={};
-  const id=S.ui.editSessId||uid();
-  S.sessions[S.athleteId][id]={...builder,id,updatedAt:Date.now()};
-  await saveState();toast('Sesión guardada ✓','success');goView('ath-detail');
-}
-function confirmDelSess(id){
-  openModal(`<div class="modal-title">ELIMINAR SESIÓN</div>
-    <div class="muted mb14">Esta acción no se puede deshacer.</div>
-    <button class="btn btn-danger" onclick="delSess('${id}')">SÍ, ELIMINAR</button>
-    <button class="btn btn-sec mt8" onclick="closeModal()">CANCELAR</button>`);
-}
-async function delSess(id){
-  delete S.sessions[S.athleteId][id];
-  Object.keys(S.weekPlans[S.athleteId]||{}).forEach(wid=>{
-    if(S.weekPlans[S.athleteId][wid])
-      S.weekPlans[S.athleteId][wid]=S.weekPlans[S.athleteId][wid].filter(p=>p.sessionId!==id);
-  });
-  await saveState();closeModal();toast('Sesión eliminada');goView('ath-detail');
-}
-
-/* ══════════════════════════════════════════════════
-   WEEK ASSIGN (Coach)
-══════════════════════════════════════════════════ */
-function vWeekAssign(){
-  const ath=getAth();const weekDates=getWeekDates(WEEK_ID);
-  const plan=getWeekPlan(ath?.id,WEEK_ID);const sessions=getSessList();
-  if(!sessions.length){
-    return`<div class="topbar"><button class="back-btn" onclick="goView('ath-detail')">←</button>
-      <div class="topbar-title">SEMANA</div></div>
-    <div class="screen"><div class="empty"><div class="empty-icon">📋</div>
-      <div class="d3 mb8">Sin sesiones</div><div class="muted">Creá sesiones primero.</div>
-      <button class="btn btn-pri mt16" onclick="goView('ath-detail')">IR AL PERFIL</button>
-    </div></div>`;
-  }
-  const rows=weekDates.map((date,i)=>{
-    const dp=plan.find(p=>p.day===i);const sess=dp?sessions.find(ss=>ss.id===dp.sessionId):null;
-    const isT=i===todayIdx();
-    return`<div class="day-assign-row" style="${isT?'border-color:var(--or)':''}">
-      <div class="day-assign-label">
-        <div class="bold ${isT?'or':''}">${DAYS_SHORT[date.getDay()]} ${date.getDate()}</div>
-        <div class="muted small">${sess?sess.name:'Descanso'}</div>
-      </div>
-      <select class="inp" style="width:auto;padding:6px 9px;flex:0 0 auto;max-width:150px"
-        onchange="assignDay(${i},this.value)">
-        <option value="">— Descanso</option>
-        ${sessions.map(ss=>`<option value="${ss.id}" ${dp?.sessionId===ss.id?'selected':''}>${ss.name}</option>`).join('')}
-      </select>
-    </div>`;
-  }).join('');
-  return`<div class="topbar"><button class="back-btn" onclick="goView('ath-detail')">←</button>
-    <div class="topbar-title">SEMANA — ${ath?.name?.toUpperCase()}</div></div>
-  <div class="screen">${rows}
-    <button class="btn btn-pri mt20" onclick="saveWeekPlan()">GUARDAR SEMANA</button>
-    <button class="btn btn-sec mt8" onclick="goView('ath-detail')">CANCELAR</button>
-  </div>`;
-}
-let _dayAssign={};
-function assignDay(dayIdx,sessId){_dayAssign[dayIdx]=sessId;}
-async function saveWeekPlan(){
-  const ath=getAth();if(!ath)return;
-  if(!S.weekPlans[ath.id])S.weekPlans[ath.id]={};
-  const plan=[];
-  Object.entries(_dayAssign).forEach(([day,sid])=>{if(sid)plan.push({day:parseInt(day),sessionId:sid,status:'pending'});});
-  if(plan.length){S.weekPlans[ath.id][WEEK_ID]=plan;await saveState();toast('Plan de semana guardado ✓','success');}
-  _dayAssign={};goView('ath-detail');
 }
 
 /* ══════════════════════════════════════════════════
@@ -4498,8 +4326,6 @@ const SCREEN_HELP = {
   'coach-home': {t:'Inicio del coach', s:'Tu pantalla principal: la lista completa de tus atletas. Tocá "+ Nuevo Atleta" para dar de alta a alguien, o tocá un atleta para entrar a su ficha. Desde el menú superior accedés al Dashboard general y al Glosario.'},
   'ath-detail': {t:'Ficha del atleta', s:'El centro de operaciones de cada atleta: Perfil, 1RMs, Programa activo, e Historial. El orden lógico para arrancar de cero es Perfil → 1RMs → Auto-Prescribir.'},
   'one-rms': {t:'Máximos (1RM)', s:'Cargá acá los máximos de cada levantamiento — sentadilla, banca, peso muerto, arrancada, dos tiempos, según el deporte del atleta. Son la base de todos los cálculos de porcentaje del generador automático. Desde acá también configurás el peso de la barra y si querés ver el peso total o el peso por lado en las rutinas.'},
-  'sess-builder': {t:'Constructor manual de sesión', s:'Armado manual de una sesión suelta, ejercicio por ejercicio, para cuando no querés usar el generador automático — por ejemplo, una sesión puntual fuera del macrociclo.'},
-  'week-assign': {t:'Asignar semana', s:'Asigná manualmente qué sesión va en cada día. Se usa para sesiones sueltas armadas con el constructor manual, no para las que genera el wizard automático (esas ya quedan asignadas solas).'},
   'ath-home': {t:'Inicio del atleta', s:'Lo primero que ve el atleta al entrar con su PIN: la sesión del día, acceso a su historial y a dejar su feedback post-entrenamiento.'},
   'sess-exec': {t:'Ejecución de sesión', s:'Entrenamiento en vivo: marcá cada set al completarlo, el % de carga es editable en el momento si hace falta ajustar, y el timer de descanso vive en la esquina para no taparte la rutina. La pantalla no se apaga sola mientras estás acá.'},
   'coach-hist': {t:'Historial de sesiones', s:'Sesiones completadas de este atleta, semana por semana, con el detalle de qué se hizo en cada una.'},
@@ -4727,7 +4553,7 @@ function printPlan(){
 }
 
 function init(){
-  loadLocal();restoreSessionSnapshot();_epSport='both';render();initFirebase();registerSW();
+  loadLocal();restoreSessionSnapshot();_epSport='both';purgeManualSessions();render();initFirebase();registerSW();
   // Live date update for presc view
   document.addEventListener('input',e=>{
     if(e.target.id==='presc-goal-date'){updatePrescWeeks();updateMacroPreview();}
