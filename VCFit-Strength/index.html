@@ -698,7 +698,28 @@ function wbStr(a,b){return Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:0
 function ini(n){return(n||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);}
 function getAth(id){return S.athletes.find(a=>a.id===(id||S.athleteId))||null;}
 function getSess(sid){return((S.sessions[S.athleteId]||{})[sid])||null;}
-function getWeekPlan(aid,wid){return((S.weekPlans[aid||S.athleteId]||{})[wid||S.ui.viewWeekId])||[];}
+let _lazySyncSaveTimer=null;
+function _scheduleLazySave(){
+  if(_lazySyncSaveTimer)clearTimeout(_lazySyncSaveTimer);
+  _lazySyncSaveTimer=setTimeout(()=>{saveState();_lazySyncSaveTimer=null;},400);
+}
+function getWeekPlan(aid,wid){
+  const a=aid||S.athleteId,w=wid||S.ui.viewWeekId;
+  const existing=(S.weekPlans[a]||{})[w];
+  if(!existing||!existing.length){
+    // S12 FIX: antes, solo la semana calendario ACTUAL se convertía de fullPlan a sesiones
+    // reales (via _syncPlanToSessions). Cualquier otra semana —pasada o futura, incluida
+    // la que ve el atleta al navegar con las flechitas, o la que corresponde después de
+    // reconfigurar días o generar "modo año"— quedaba con datos en fullPlan pero SIN
+    // sesiones visibles. Ahora se sincroniza sola, bajo demanda, la primera vez que se pide.
+    const ath=S.athletes.find(x=>x.id===a);
+    if(ath&&ath.fullPlan){
+      const hasData=getWeekDates(w).some(d=>ath.fullPlan[d.toISOString().split('T')[0]]);
+      if(hasData){_syncPlanToSessions(ath,true,w);_scheduleLazySave();}
+    }
+  }
+  return((S.weekPlans[a]||{})[w])||[];
+}
 function exName(id){return EX_DB[id]?.n||id;}
 function exVideoUrl(exId){const ex=EX_DB[exId];if(!ex)return null;const sp=ex.sport==='wl'?'halterofilia':ex.sport==='pl'?'powerlifting':'';const q=`${ex.n} técnica ${sp}`.trim();return 'https://www.youtube.com/results?search_query='+encodeURIComponent(q);}
 
@@ -2440,8 +2461,8 @@ function adjBanner(blk,sug){
 
 
 // Sync fullPlan entries for current week to sessions/weekPlans
-async function _syncPlanToSessions(ath, preserveStatus){
-  const wid=WEEK_ID;const weekDates=getWeekDates(wid);
+async function _syncPlanToSessions(ath, preserveStatus, wid){
+  wid=wid||WEEK_ID;const weekDates=getWeekDates(wid);
   if(!S.sessions[ath.id])S.sessions[ath.id]={};
   if(!S.weekPlans[ath.id])S.weekPlans[ath.id]={};
   const prevPlan=S.weekPlans[ath.id][wid]||[];
